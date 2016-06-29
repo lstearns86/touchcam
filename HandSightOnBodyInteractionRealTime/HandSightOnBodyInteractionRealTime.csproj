@@ -131,6 +131,13 @@
     <Content Include="lib\IduleProvider.dll" />
     <Content Include="lib\opencv_core249.dll" />
     <Content Include="lib\opencv_imgproc249.dll" />
+    <Content Include="refLib\Accord.dll" />
+    <Content Include="refLib\Accord.MachineLearning.dll" />
+    <Content Include="refLib\Accord.Math.dll" />
+    <Content Include="refLib\Accord.Neuro.dll" />
+    <Content Include="refLib\Accord.Statistics.dll" />
+    <Content Include="refLib\AForge.Video.dll" />
+    <Content Include="refLib\AForge.Video.FFMPEG.dll" />
     <Content Include="refLib\AviFile.dll" />
     <Content Include="refLib\Awaiba.dll" />
     <Content Include="refLib\AwFrameProcessing.dll" />
