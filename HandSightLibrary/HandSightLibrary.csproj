@@ -57,6 +57,10 @@
       <HintPath>..\packages\Alea.CUDA.IL.2.2.0.3307\lib\net40\Alea.CUDA.IL.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Alea.CUDA.Unbound, Version=2.2.0.3307, Culture=neutral, PublicKeyToken=ba52afc3c2e933d6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Alea.CUDA.Unbound.2.2.0.3307\lib\net40\Alea.CUDA.Unbound.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Alea.IL, Version=2.2.0.3307, Culture=neutral, PublicKeyToken=ba52afc3c2e933d6, processorArchitecture=MSIL">
       <HintPath>..\packages\Alea.IL.2.2.0.3307\lib\net40\Alea.IL.dll</HintPath>
       <Private>True</Private>
@@ -74,6 +78,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
     </Reference>
+    <Reference Include="FSharp.Core, Version=4.3.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="IduleProvidercs">
       <HintPath>..\HandSightOnBodyInteractionRealTime\refLib\IduleProvidercs.dll</HintPath>
     </Reference>
@@ -95,6 +100,7 @@
     <Compile Include="FPS.cs" />
     <Compile Include="LBP.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VideoFrame.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

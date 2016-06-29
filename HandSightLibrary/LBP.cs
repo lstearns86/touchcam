@@ -1,61 +1,77 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Alea.CUDA;
+using Alea.CUDA.Utilities;
+using Alea.CUDA.IL;
+
 using Emgu.CV;
-using Emgu.CV.Cuda;
 using Emgu.CV.Structure;
+
+using LibDevice = Alea.CUDA.LibDevice;
 
 namespace HandSightLibrary
 {
-    class LBP
+    public class LBP
     {
-        static int numNeighbors = 12, radius = 2;
-        static int[] uniformBins = null;
-        public static double[] GetImageHistogramCPU(Image<Gray, byte> image) { return GetImageHistogramCPU(image.ToUMat()); }
-        public static double[] GetImageHistogramCPU(UMat image)
+        const double PI = Math.PI;
+        const int numNeighbors = 12, radius = 2;
+
+        static int numPatterns = (int)Math.Pow(2, numNeighbors);
+        static int numUniformPatterns = numNeighbors + 2;
+
+        static short[] uniformBins = null;
+        static float[] neighborCoordinates = null;
+        static byte[] imageData = null;
+        static int[] hist = null;
+
+        static Worker worker = Worker.Default;
+        static DeviceMemory<short> lbpImageGPU = null;
+        static DeviceMemory<int> histGPU = null;
+        static DeviceMemory<short> uniformBinsGPU = null;
+        static DeviceMemory<float> neighborCoordinatesGPU = null;
+        static LaunchParam lp = null;
+        static bool initialized = false;
+
+        /// <summary>
+        /// CUDA Kernel that computes the LBP pattern for each image pixel
+        /// </summary>
+        /// <param name="width">image width</param>
+        /// <param name="height">image height</param>
+        /// <param name="image">image data (1D byte array)</param>
+        /// <param name="lbpImage">pre-allocated lbp image data of same size as image (1D int array)</param>
+        /// <param name="uniformBins">lookup table to convert LBP patterns to uniform bins</param>
+        [AOTCompile]
+        static void LBP_Kernel(int width, int height, deviceptr<byte> image, deviceptr<short> lbpImage, deviceptr<short> uniformBins, deviceptr<float> neighborCoordinates)
         {
-            if (uniformBins == null)
-            {
-                uniformBins = new int[(int)Math.Pow(2, numNeighbors)];
-                for (int i = 0; i < uniformBins.Length; i++)
-                {
-                    int bin = GetPatternNum(i);
-                    uniformBins[i] = bin;
-                }
-            }
+            var x = blockIdx.x * blockDim.x + threadIdx.x;
+            var y = blockIdx.y * blockDim.y + threadIdx.y;
+            if (x < radius || x >= width - radius || y < radius || y >= height - radius) return;
 
-            int width = image.Cols, height = image.Rows;
-
-            UMat orig = new UMat();
-            image.ConvertTo(orig, Emgu.CV.CvEnum.DepthType.Cv32F);
-            UMat[] neighbors = new UMat[numNeighbors];
-            UMat patterns = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-            patterns.SetTo(new MCvScalar(0));
-            UMat mean = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-            mean.SetTo(new MCvScalar(0));
+            int code = 0;
+            float v = image[(y) * width + (x)];
             for (int i = 0; i < numNeighbors; i++)
             {
-                UMat img = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-                Matrix<float> filter = new Matrix<float>(2 * radius + 1, 2 * radius + 1);
-                filter.SetZero();
-
-                float x = (float)radius * (float)Math.Cos(2.0 * Math.PI * i / (double)numNeighbors);
-                float y = (float)radius * (float)Math.Sin(2.0 * Math.PI * i / (double)numNeighbors);
+                // perform interpolation around a circle of specified radius
+                //float xx = (float)radius * (float)Math.Cos(2.0 * PI * (double)i / (double)numNeighbors);
+                //float yy = (float)radius * (float)Math.Sin(2.0 * PI * (double)i / (double)numNeighbors);
+                float xx = neighborCoordinates[2 * i];
+                float yy = neighborCoordinates[2 * i + 1];
 
                 // relative indices
-                int fx = (int)Math.Floor(x);
-                int fy = (int)Math.Floor(y);
-                int cx = (int)Math.Ceiling(x);
-                int cy = (int)Math.Ceiling(y);
+                int fx = xx == (int)xx ? (int)xx : (xx > 0 ? (int)xx : (int)xx - 1);
+                int fy = yy == (int)yy ? (int)yy : (yy > 0 ? (int)yy : (int)yy - 1);
+                int cx = xx == (int)xx ? (int)xx : (xx > 0 ? (int)xx + 1 : (int)xx);
+                int cy = yy == (int)yy ? (int)yy : (yy > 0 ? (int)yy + 1 : (int)yy);
 
                 // fractional part
-                float ty = y - fy;
-                float tx = x - fx;
+                float ty = yy - fy;
+                float tx = xx - fx;
 
                 // set interpolation weights
                 float w1 = (1 - tx) * (1 - ty);
@@ -63,173 +79,110 @@ namespace HandSightLibrary
                 float w3 = (1 - tx) * ty;
                 float w4 = tx * ty;
 
-                filter[fy + radius, fx + radius] = w1;
-                if (cx != fx) filter[fy + radius, cx + radius] = w2;
-                if (cy != fy) filter[cy + radius, fx + radius] = w3;
-                if (cx != fx && cy != fy) filter[cy + radius, cx + radius] = w4;
+                var neighbor = w1 * image[(y + fy) * width + (x + fx)]
+                             + w2 * image[(y + fy) * width + (x + cx)]
+                             + w3 * image[(y + cy) * width + (x + fx)]
+                             + w4 * image[(y + cy) * width + (x + cx)];
 
-                CvInvoke.Filter2D(orig, img, filter.ToUMat(), new Point(radius, radius), 0, Emgu.CV.CvEnum.BorderType.Isolated);
-                CvInvoke.Subtract(img, orig, img);
-
-                neighbors[i] = img;
-
-                UMat imgThresh = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-                CvInvoke.Threshold(img, imgThresh, 0, (double)(1 << i), Emgu.CV.CvEnum.ThresholdType.Binary);
-                CvInvoke.Add(patterns, imgThresh, patterns);
-                imgThresh.Dispose();
-
-                CvInvoke.AddWeighted(mean, 1.0, img, 1.0 / numNeighbors, 0, mean);
-
-                filter.Dispose();
+                code |= ((neighbor - v > 1e-5 ? 1 : 0) << (numNeighbors - i - 1));
             }
 
-            Image<Gray, float> patternImg = patterns.ToImage<Gray, float>();
-            
-            double[] histogram = new double[numNeighbors + 2];
-            int[] counters = new int[numNeighbors + 2];
-            Parallel.For(0, width * height, (int i) =>
-            {
-                int y = i / width;
-                int x = i % width;
-
-                {
-                    int pattern = (int)Math.Round(patternImg.Data[y, x, 0]);
-                    
-                    int LBPBin = uniformBins[pattern];
-                    Interlocked.Increment(ref counters[LBPBin]);
-                }
-            });
-            for (int i = 0; i < counters.GetLength(0); i++)
-                histogram[i] = counters[i];
-
-            patternImg.Dispose();
-            mean.Dispose();
-            patterns.Dispose();
-            foreach (UMat neighbor in neighbors) neighbor.Dispose();
-            orig.Dispose();
-
-            return NormalizeHistogram(histogram);
+            //lbpImage[y * width + x] = code;
+            lbpImage[y * width + x] = uniformBins[code];
         }
 
-        public static double[] GetImageHistogramGPU(CudaImage<Gray, byte> image)
+        /// <summary>
+        /// CUDA Kernel that computes a histogram over an array of LBP patterns
+        /// </summary>
+        /// <param name="width">image width</param>
+        /// <param name="height">image height</param>
+        /// <param name="data">LBP image data, computed in the LBP_Kernel function</param>
+        /// <param name="hist">Pre-allocated histogram array for output</param>
+        [AOTCompile]
+        static void Hist_Kernel(int width, int height, deviceptr<short> data, deviceptr<int> hist)
         {
-            if (uniformBins == null)
+            var x = blockIdx.x * blockDim.x + threadIdx.x;
+            var y = blockIdx.y * blockDim.y + threadIdx.y;
+            if (x < radius || x >= width - radius || y < radius || y >= height - radius) return;
+
+            int code = data[(y) * width + (x)];
+            Intrinsic.__atomic_add(hist + code, 1);
+        }
+
+        /// <summary>
+        /// Computes an LBP histogram over the full image
+        /// </summary>
+        /// <param name="image">an EMGU image</param>
+        /// <returns>a normalized histogram of uniform LBP patterns</returns>
+        public static float[] GetUniformHistogram(VideoFrame frame)
+        {
+            if (!initialized) // Note: assumes that the image size will not change
             {
-                uniformBins = new int[(int)Math.Pow(2, numNeighbors)];
+                // initialize data structures to avoid reallocating with every call
+                hist = new int[numUniformPatterns];
+                lbpImageGPU = worker.Malloc<short>(frame.Width * frame.Height);
+                histGPU = worker.Malloc<int>(hist.Length);
+
+                // precompute the uniform bin for each LBP pattern, and push it to the GPU
+                uniformBins = new short[(short)Math.Pow(2, numNeighbors)];
                 for (int i = 0; i < uniformBins.Length; i++)
                 {
-                    int bin = GetPatternNum(i);
+                    short bin = GetPatternNum(i);
                     uniformBins[i] = bin;
                 }
-            }
+                uniformBinsGPU = worker.Malloc(uniformBins);
 
-            int width = image.Size.Width, height = image.Size.Height;
-
-            UMat orig = new UMat();
-            image.ConvertTo(orig, Emgu.CV.CvEnum.DepthType.Cv32F);
-            UMat[] neighbors = new UMat[numNeighbors];
-            UMat patterns = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-            patterns.SetTo(new MCvScalar(0));
-            UMat mean = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-            mean.SetTo(new MCvScalar(0));
-            for (int i = 0; i < numNeighbors; i++)
-            {
-                UMat img = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-                Matrix<float> filter = new Matrix<float>(2 * radius + 1, 2 * radius + 1);
-                filter.SetZero();
-
-                float x = (float)radius * (float)Math.Cos(2.0 * Math.PI * i / (double)numNeighbors);
-                float y = (float)radius * (float)Math.Sin(2.0 * Math.PI * i / (double)numNeighbors);
-
-                // relative indices
-                int fx = (int)Math.Floor(x);
-                int fy = (int)Math.Floor(y);
-                int cx = (int)Math.Ceiling(x);
-                int cy = (int)Math.Ceiling(y);
-
-                // fractional part
-                float ty = y - fy;
-                float tx = x - fx;
-
-                // set interpolation weights
-                float w1 = (1 - tx) * (1 - ty);
-                float w2 = tx * (1 - ty);
-                float w3 = (1 - tx) * ty;
-                float w4 = tx * ty;
-
-                filter[fy + radius, fx + radius] = w1;
-                if (cx != fx) filter[fy + radius, cx + radius] = w2;
-                if (cy != fy) filter[cy + radius, fx + radius] = w3;
-                if (cx != fx && cy != fy) filter[cy + radius, cx + radius] = w4;
-
-                CvInvoke.Filter2D(orig, img, filter.ToUMat(), new Point(radius, radius), 0, Emgu.CV.CvEnum.BorderType.Isolated);
-                CvInvoke.Subtract(img, orig, img);
-
-                neighbors[i] = img;
-
-                UMat imgThresh = new UMat(height, width, Emgu.CV.CvEnum.DepthType.Cv32F, 1);
-                CvInvoke.Threshold(img, imgThresh, 0, (double)(1 << i), Emgu.CV.CvEnum.ThresholdType.Binary);
-                CvInvoke.Add(patterns, imgThresh, patterns);
-                imgThresh.Dispose();
-
-                CvInvoke.AddWeighted(mean, 1.0, img, 1.0 / numNeighbors, 0, mean);
-
-                filter.Dispose();
-            }
-
-            Image<Gray, float> patternImg = patterns.ToImage<Gray, float>();
-
-            double[] histogram = new double[numNeighbors + 2];
-            int[] counters = new int[numNeighbors + 2];
-            Parallel.For(0, width * height, (int i) =>
-            {
-                int y = i / width;
-                int x = i % width;
-
+                neighborCoordinates = new float[2 * numNeighbors];
+                for (int i = 0; i < numNeighbors; i++)
                 {
-                    int pattern = (int)Math.Round(patternImg.Data[y, x, 0]);
-
-                    int LBPBin = uniformBins[pattern];
-                    Interlocked.Increment(ref counters[LBPBin]);
+                    float xx = (float)radius * (float)Math.Cos(2.0 * PI * (double)i / (double)numNeighbors);
+                    float yy = (float)radius * (float)Math.Sin(2.0 * PI * (double)i / (double)numNeighbors);
+                    neighborCoordinates[2 * i] = xx;
+                    neighborCoordinates[2 * i + 1] = yy;
                 }
-            });
-            for (int i = 0; i < counters.GetLength(0); i++)
-                histogram[i] = counters[i];
+                neighborCoordinatesGPU = worker.Malloc(neighborCoordinates);
 
-            patternImg.Dispose();
-            mean.Dispose();
-            patterns.Dispose();
-            foreach (UMat neighbor in neighbors) neighbor.Dispose();
-            orig.Dispose();
+                // initialize CUDA parameters
+                var blockDims = new dim3(32, 32);
+                var gridDims = new dim3(Common.divup(frame.Width, blockDims.x), Common.divup(frame.Height, blockDims.y));
+                lp = new LaunchParam(gridDims, blockDims);
 
-            return NormalizeHistogram(histogram);
+                initialized = true;
+            }
+
+            // reshape the image data to a 1D array, and push it to the GPU
+            //Buffer.BlockCopy(image.Data, 0, imageData, 0, image.Width * image.Height);
+            //byte[, ,] data = image.Data;
+            //int w = image.Width, h = image.Height;
+            //for (int i = 0; i < h; i++)
+            //    for (int j = 0; j < w; j++)
+            //        imageData[i * w + j] = data[i, j, 0];
+            //imageGPU.ScatterScalar(data[i, j, 0], i * w + j);
+            //imageGPU.Scatter(image);
+
+            // run the LBP kernel
+            worker.Launch(LBP_Kernel, lp, frame.Width, frame.Height, frame.ImageGPU.Ptr, lbpImageGPU.Ptr, uniformBinsGPU.Ptr, neighborCoordinatesGPU.Ptr);
+
+            // zero out the histogram data on the GPU, then compute a new histogram from the LBP patterns
+            for (int i = 0; i < hist.Length; i++) hist[i] = 0;
+            histGPU.Scatter(hist);
+            worker.Launch(Hist_Kernel, lp, frame.Width, frame.Height, lbpImageGPU.Ptr, histGPU.Ptr);
+            histGPU.Gather(hist);
+
+            // normalize the histogram (doesn't need to run on GPU)
+            int n = (frame.Width - 2 * radius) * (frame.Height - 2 * radius);
+            float[] histNorm = new float[hist.Length];
+            for (int i = 0; i < hist.Length; i++) histNorm[i] = (float)hist[i] / n;
+
+            return histNorm;
         }
 
-        public static float[] NormalizeHistogramF(float[] hist)
-        {
-            float sum = 0;
-            foreach (float h in hist) sum += h;
-            for (int i = 0; i < hist.Length; i++) hist[i] = hist[i] / sum;
-            return hist;
-        }
-
-        public static double[] NormalizeHistogram(double[] hist)
-        {
-            double sum = 0;
-            foreach (double h in hist) sum += h;
-            for (int i = 0; i < hist.Length; i++) hist[i] = hist[i] / sum;
-            return hist;
-        }
-
-        public static double[,] NormalizeHistogram(double[,] hist)
-        {
-            double sum = 0;
-            foreach (double h in hist) sum += h;
-            for (int i = 0; i < hist.GetLength(0); i++) for (int j = 0; j < hist.GetLength(1); j++) hist[i, j] = hist[i, j] / sum;
-            return hist;
-        }
-
-        private static int GetPatternNum(int pattern)
+        /// <summary>
+        /// Helper function to convert an LBP pattern to a uniform pattern
+        /// </summary>
+        /// <param name="pattern">LBP binary pattern</param>
+        /// <returns>uniform LBP bin</returns>
+        private static short GetPatternNum(int pattern)
         {
             if (CountChanges(pattern) <= 2)
             {
@@ -239,12 +192,17 @@ namespace HandSightLibrary
                     numOnes += pattern & 1;
                     pattern = pattern >> 1;
                 }
-                return numOnes;
+                return (short)numOnes;
             }
             else
-                return GetSize(pattern) + 1;
+                return (short)(GetSize(pattern) + 1);
         }
 
+        /// <summary>
+        /// Helper function to count the number of changes from 0 to 1 or 1 to 0 in the binary pattern
+        /// </summary>
+        /// <param name="pattern">LBP binary pattern</param>
+        /// <returns>number of binary changes</returns>
         private static int CountChanges(int pattern)
         {
             int size = GetSize(pattern);
@@ -262,6 +220,11 @@ namespace HandSightLibrary
             return numChanges;
         }
 
+        /// <summary>
+        /// Helper function to determine the number of bits in a pattern (e.g., 8 for LBP-8, 16 for LBP-16)
+        /// </summary>
+        /// <param name="pattern">LBP binary pattern</param>
+        /// <returns>bit number for the leftmost 1</returns>
         private static int GetSize(int pattern)
         {
             int size = 0;

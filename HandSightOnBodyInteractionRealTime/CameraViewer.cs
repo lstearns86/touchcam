@@ -5,6 +5,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -18,19 +19,28 @@ namespace HandSightOnBodyInteractionRealTime
 {
     public partial class CameraViewer : Form
     {
-        bool calibrating = false;
+        bool calibrating = false, closing = false;
         public CameraViewer()
         {
             InitializeComponent();
 
             Camera.Instance.FrameAvailable += Camera_FrameAvailable;
-            Camera.Instance.Brightness = 50;
+            Camera.Instance.Brightness = 1;
             Camera.Instance.Connect();
         }
 
-        void Camera_FrameAvailable(CudaImage<Gray, float> frame, uint timestamp)
+        //void Camera_FrameAvailable(CudaImage<Gray, float> frame, uint timestamp)
+        void Camera_FrameAvailable(VideoFrame frame)
         {
-            Display.Image = frame.Bitmap;
+            if (closing) return;
+
+            FPS.Camera.Update();
+            LBP.GetUniformHistogram(frame);
+            Invoke(new MethodInvoker(delegate
+            {
+                Display.Image = frame.Image.Bitmap;
+                Text = FPS.Camera.Average.ToString("0") + " fps";
+            }));
         }
 
         void CalibrateButton_Click(object sender, EventArgs e)
@@ -41,6 +51,24 @@ namespace HandSightOnBodyInteractionRealTime
             else
                 Camera.Instance.StopCalibration();
             CalibrateButton.Text = (calibrating ? "Stop" : "Start") + " Calibration";
+        }
+
+        private void CameraViewer_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (!closing)
+            {
+                closing = true;
+                e.Cancel = true;
+
+                // TODO: cleanup any sensors and resources
+                Camera.Instance.Disconnect();
+
+                Task.Factory.StartNew(() =>
+                {
+                    Thread.Sleep(500);
+                    Invoke(new MethodInvoker(delegate { Close(); }));
+                });
+            }
         }
     }
 }

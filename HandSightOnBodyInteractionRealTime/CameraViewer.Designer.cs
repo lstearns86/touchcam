@@ -29,8 +29,8 @@
         private void InitializeComponent()
         {
             this.ToolPanel = new System.Windows.Forms.Panel();
-            this.Display = new System.Windows.Forms.PictureBox();
             this.CalibrateButton = new System.Windows.Forms.Button();
+            this.Display = new System.Windows.Forms.PictureBox();
             this.ToolPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.Display)).BeginInit();
             this.SuspendLayout();
@@ -44,15 +44,6 @@
             this.ToolPanel.Size = new System.Drawing.Size(528, 35);
             this.ToolPanel.TabIndex = 0;
             // 
-            // Display
-            // 
-            this.Display.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Display.Location = new System.Drawing.Point(0, 35);
-            this.Display.Name = "Display";
-            this.Display.Size = new System.Drawing.Size(528, 464);
-            this.Display.TabIndex = 1;
-            this.Display.TabStop = false;
-            // 
             // CalibrateButton
             // 
             this.CalibrateButton.Location = new System.Drawing.Point(4, 4);
@@ -63,6 +54,15 @@
             this.CalibrateButton.UseVisualStyleBackColor = true;
             this.CalibrateButton.Click += new System.EventHandler(this.CalibrateButton_Click);
             // 
+            // Display
+            // 
+            this.Display.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.Display.Location = new System.Drawing.Point(0, 35);
+            this.Display.Name = "Display";
+            this.Display.Size = new System.Drawing.Size(528, 464);
+            this.Display.TabIndex = 1;
+            this.Display.TabStop = false;
+            // 
             // CameraViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -72,6 +72,7 @@
             this.Controls.Add(this.ToolPanel);
             this.Name = "CameraViewer";
             this.Text = "Camera Viewer";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.CameraViewer_FormClosing);
             this.ToolPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.Display)).EndInit();
             this.ResumeLayout(false);

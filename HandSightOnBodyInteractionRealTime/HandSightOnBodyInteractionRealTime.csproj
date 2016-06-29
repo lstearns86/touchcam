@@ -145,7 +145,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>xcopy /d /y "$(ProjectDir)lib\*.dll" "$(TargetDir)"
-xcopy /d /y "C:\Emgu\C:\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\x64\*.dll" "$(TargetDir)"</PostBuildEvent>
+xcopy /d /y "C:\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\x64\*.dll" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
