@@ -86,12 +86,6 @@ namespace HandSightLibrary
         // internal variables
         static bool loggingVideo = false, loggingEvents = false, shouldEndLogging = false;
         static Size videoSize = new Size(640, 640);
-        static int sensorCnt = 2;
-        static int pID = 0;
-        static String inputType = "Taps";
-        static String classID = "Single";
-        static String location = "PalmAll";
-        static String speed = "Fast";
         static string filename = "";
         static VideoFileWriter videoWriter;
         static BlockingCollection<Bitmap> videoQueue = new BlockingCollection<Bitmap>();
@@ -107,17 +101,6 @@ namespace HandSightLibrary
         public static Size VideoSize { get { return videoSize; } set { if (!Running) videoSize = value; } }
         public static string Filename { get { return filename; } set { if (!Running) { if (filename != value) { index = 0; } filename = value; } } }
         public static int Index { get { return index; } set { if (!Running) index = value; } }
-        public static int getSensorCnt() { return sensorCnt; }
-        public static void setPID(String id) { pID = Int32.Parse(id); }
-        public static int getPID() { return pID; }
-        public static void setInputType(String type) { inputType = type; }
-        public static void setClassID(String id) { classID = id; }
-        public static void setSpeed(String type) { speed = type; }
-        public static void setLocation(String id) { location = id; }
-        public static void setFileName()
-        {
-            filename = "p" + pID + "_" + inputType + "_" + classID + "_" + location + "_" + speed + "_";
-        }
 
         #endregion
 
@@ -231,7 +214,7 @@ namespace HandSightLibrary
             eventQueue.Add(new SensorReadingEvent(reading));
         }
 
-        public static void LogLocationEvent(bool manual = true)
+        public static void LogLocationEvent(string location, bool manual = true)
         {
             if (!Running) return;
 

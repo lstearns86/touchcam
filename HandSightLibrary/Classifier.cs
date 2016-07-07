@@ -40,18 +40,10 @@ namespace HandSightLibrary
         private Matrix<float> trainData;
         private Matrix<int> trainLabels;
         private Matrix<int> sampleImportance;
-        //private Dictionary<float, int> nameCount = new Dictionary<float, int>();
-        //private Matrix<int> classIndex;
-        private SVM model;
         private ActivationNetwork network;
-        //private Boost model;
-        //private KNearest knModel;
         private KMeans kmeans;
         private Dictionary<int, Dictionary<int, int>> clusterClasses;
         private MulticlassSupportVectorMachine svm;
-
-        //static int[][] confusion;
-        //static int trainNum = 10;
 
         public Classifier(ClassifierType type, KernelType kernelType = KernelType.Auto)
         {

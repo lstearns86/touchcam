@@ -120,6 +120,9 @@
   <ItemGroup>
     <Compile Include="Classifier.cs" />
     <Compile Include="Hardware\Camera.cs" />
+    <Compile Include="ImageProcessing.cs" />
+    <Compile Include="DataStructures\ImageTemplate.cs" />
+    <Compile Include="Localization.cs" />
     <Compile Include="Utilities\CustomExtensions.cs" />
     <Compile Include="Utilities\FPS.cs" />
     <Compile Include="Algorithms\LBP.cs" />

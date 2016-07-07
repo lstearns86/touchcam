@@ -26,15 +26,14 @@ namespace HandSightLibrary
         static int numUniformPatterns = numNeighbors + 2;
 
         static short[] uniformBins = null;
-        static float[] neighborCoordinates = null;
-        static byte[] imageData = null;
+        static float[] neighborCoordinateX = null, neighborCoordinateY = null;
         static int[] hist = null;
 
         static Worker worker = Worker.Default;
         static DeviceMemory<short> lbpImageGPU = null;
         static DeviceMemory<int> histGPU = null;
         static DeviceMemory<short> uniformBinsGPU = null;
-        static DeviceMemory<float> neighborCoordinatesGPU = null;
+        static DeviceMemory<float> neighborCoordinateXGPU = null, neighborCoordinateYGPU = null;
         static LaunchParam lp = null;
         static bool initialized = false;
 
@@ -47,7 +46,7 @@ namespace HandSightLibrary
         /// <param name="lbpImage">pre-allocated lbp image data of same size as image (1D int array)</param>
         /// <param name="uniformBins">lookup table to convert LBP patterns to uniform bins</param>
         [AOTCompile]
-        static void LBP_Kernel(int width, int height, deviceptr<byte> image, deviceptr<short> lbpImage, deviceptr<short> uniformBins, deviceptr<float> neighborCoordinates)
+        static void LBP_Kernel(int width, int height, deviceptr<byte> image, deviceptr<short> lbpImage, deviceptr<short> uniformBins, deviceptr<float> neighborCoordinateX, deviceptr<float> neighborCoordinateY)
         {
             var x = blockIdx.x * blockDim.x + threadIdx.x;
             var y = blockIdx.y * blockDim.y + threadIdx.y;
@@ -60,8 +59,8 @@ namespace HandSightLibrary
                 // perform interpolation around a circle of specified radius
                 //float xx = (float)radius * (float)Math.Cos(2.0 * PI * (double)i / (double)numNeighbors);
                 //float yy = (float)radius * (float)Math.Sin(2.0 * PI * (double)i / (double)numNeighbors);
-                float xx = neighborCoordinates[2 * i];
-                float yy = neighborCoordinates[2 * i + 1];
+                float xx = radius * neighborCoordinateX[i];
+                float yy = radius * neighborCoordinateY[i];
 
                 // relative indices
                 int fx = xx == (int)xx ? (int)xx : (xx > 0 ? (int)xx : (int)xx - 1);
@@ -132,15 +131,17 @@ namespace HandSightLibrary
                 }
                 uniformBinsGPU = worker.Malloc(uniformBins);
 
-                neighborCoordinates = new float[2 * numNeighbors];
+                neighborCoordinateX = new float[numNeighbors];
+                neighborCoordinateY = new float[numNeighbors];
                 for (int i = 0; i < numNeighbors; i++)
                 {
-                    float xx = (float)radius * (float)Math.Cos(2.0 * PI * (double)i / (double)numNeighbors);
-                    float yy = (float)radius * (float)Math.Sin(2.0 * PI * (double)i / (double)numNeighbors);
-                    neighborCoordinates[2 * i] = xx;
-                    neighborCoordinates[2 * i + 1] = yy;
+                    float xx = (float)Math.Cos(2.0 * PI * (double)i / (double)numNeighbors);
+                    float yy = (float)Math.Sin(2.0 * PI * (double)i / (double)numNeighbors);
+                    neighborCoordinateX[i] = xx;
+                    neighborCoordinateY[i] = yy;
                 }
-                neighborCoordinatesGPU = worker.Malloc(neighborCoordinates);
+                neighborCoordinateXGPU = worker.Malloc(neighborCoordinateX);
+                neighborCoordinateYGPU = worker.Malloc(neighborCoordinateY);
 
                 // initialize CUDA parameters
                 var blockDims = new dim3(32, 32);
@@ -161,7 +162,7 @@ namespace HandSightLibrary
             //imageGPU.Scatter(image);
 
             // run the LBP kernel
-            worker.Launch(LBP_Kernel, lp, frame.Width, frame.Height, frame.ImageGPU.Ptr, lbpImageGPU.Ptr, uniformBinsGPU.Ptr, neighborCoordinatesGPU.Ptr);
+            worker.Launch(LBP_Kernel, lp, frame.Width, frame.Height, frame.ImageGPU.Ptr, lbpImageGPU.Ptr, uniformBinsGPU.Ptr, neighborCoordinateXGPU.Ptr, neighborCoordinateYGPU.Ptr);
 
             // zero out the histogram data on the GPU, then compute a new histogram from the LBP patterns
             for (int i = 0; i < hist.Length; i++) hist[i] = 0;
