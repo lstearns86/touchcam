@@ -14,6 +14,7 @@ using Emgu.CV.Structure;
 using Emgu.CV.Cuda;
 
 using HandSightLibrary;
+using HandSightLibrary.ImageProcessing;
 
 namespace HandSightOnBodyInteractionRealTime
 {

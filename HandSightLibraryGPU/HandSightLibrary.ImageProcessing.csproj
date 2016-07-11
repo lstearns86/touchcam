@@ -1,0 +1,119 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>HandSightLibraryGPU</RootNamespace>
+    <AssemblyName>HandSightLibraryGPU</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Alea.CUDA, Version=2.2.0.3307, Culture=neutral, PublicKeyToken=ba52afc3c2e933d6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Alea.CUDA.2.2.0.3307\lib\net40\Alea.CUDA.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Alea.CUDA.IL, Version=2.2.0.3307, Culture=neutral, PublicKeyToken=ba52afc3c2e933d6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Alea.CUDA.IL.2.2.0.3307\lib\net40\Alea.CUDA.IL.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Alea.CUDA.Unbound, Version=2.2.0.3307, Culture=neutral, PublicKeyToken=ba52afc3c2e933d6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Alea.CUDA.Unbound.2.2.0.3307\lib\net40\Alea.CUDA.Unbound.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Alea.IL, Version=2.2.0.3307, Culture=neutral, PublicKeyToken=ba52afc3c2e933d6, processorArchitecture=MSIL">
+      <HintPath>..\packages\Alea.IL.2.2.0.3307\lib\net40\Alea.IL.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="AviFile">
+      <HintPath>..\HandSightOnBodyInteractionRealTime\refLib\AviFile.dll</HintPath>
+    </Reference>
+    <Reference Include="Awaiba">
+      <HintPath>..\HandSightOnBodyInteractionRealTime\refLib\Awaiba.dll</HintPath>
+    </Reference>
+    <Reference Include="AwFrameProcessing">
+      <HintPath>..\HandSightOnBodyInteractionRealTime\refLib\AwFrameProcessing.dll</HintPath>
+    </Reference>
+    <Reference Include="Emgu.CV.World">
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
+    </Reference>
+    <Reference Include="IduleProvidercs">
+      <HintPath>..\HandSightOnBodyInteractionRealTime\refLib\IduleProvidercs.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Algorithms\AdaptiveLBP.cs" />
+    <Compile Include="Algorithms\LBP.cs" />
+    <Compile Include="DataStructures\ImageTemplate.cs" />
+    <Compile Include="DataStructures\VideoFrame.cs" />
+    <Compile Include="Hardware\Camera.cs" />
+    <Compile Include="ImageProcessing.cs" />
+    <Compile Include="Localization.cs" />
+    <Compile Include="OrientationTracker.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="FodyWeavers.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Utilities\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HandSightLibrary\HandSightLibrary.csproj">
+      <Project>{4a1b3704-7a89-401e-ad99-8ff927dfd152}</Project>
+      <Name>HandSightLibrary</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets" Condition="Exists('..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Alea.CUDA.2.2.0.3307\build\Alea.CUDA.targets'))" />
+    <Error Condition="!Exists('..\packages\Fody.1.28.3\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.1.28.3\build\Fody.targets'))" />
+  </Target>
+  <Import Project="..\packages\Fody.1.28.3\build\Fody.targets" Condition="Exists('..\packages\Fody.1.28.3\build\Fody.targets')" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

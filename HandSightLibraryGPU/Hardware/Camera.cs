@@ -18,7 +18,7 @@ using Emgu.CV;
 using Emgu.CV.Cuda;
 using Emgu.CV.Structure;
 
-namespace HandSightLibrary
+namespace HandSightLibrary.ImageProcessing
 {
     public class Camera
     {

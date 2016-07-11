@@ -1,24 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 using Alea.CUDA;
-using Alea.CUDA.Utilities;
-using Alea.CUDA.IL;
 
 using Emgu.CV;
 using Emgu.CV.Structure;
 
-using HandSightLibrary;
-using System.Diagnostics;
+using HandSightLibrary.ImageProcessing;
 
 namespace HandSightOnBodyInteractionRealTime
 {
@@ -99,7 +92,7 @@ namespace HandSightOnBodyInteractionRealTime
 
             List<string> results = new List<string>();
 
-            float progress = 0;
+            //float progress = 0;
             Stopwatch watch = new Stopwatch();
             int n = 0; foreach (string className in samples.Keys) n = Math.Max(n, samples[className].Count);
             for (int queryIndex = 0; queryIndex < n; queryIndex++)

@@ -16,7 +16,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using Emgu.CV.XFeatures2D;
 
-namespace HandSightLibrary
+namespace HandSightLibrary.ImageProcessing
 {
     public class ImageProcessing
     {

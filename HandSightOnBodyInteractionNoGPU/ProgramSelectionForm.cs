@@ -9,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace HandSightOnBodyInteractionRealTime
+namespace HandSightOnBodyInteractionNoGPU
 {
     public partial class ProgramSelectionForm : Form
     {
@@ -24,7 +24,7 @@ namespace HandSightOnBodyInteractionRealTime
             foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.StartsWith("System.") || !a.FullName.StartsWith("Microsoft.")))
             //foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.StartsWith("System.") || !a.FullName.StartsWith("Microsoft.")))
             {
-                Type[] types = a.GetTypes().Where(t => (typeof(Form).IsAssignableFrom(t)) && t.IsClass && t.FullName.StartsWith("HandSightOnBodyInteractionRealTime.") && t != this.GetType()).ToArray<Type>();
+                Type[] types = a.GetTypes().Where(t => (typeof(Form).IsAssignableFrom(t)) && t.IsClass && t.FullName.StartsWith(this.GetType().Namespace) && t != this.GetType()).ToArray<Type>();
                 //Type[] types = a.GetTypes().Where(t => (typeof(Form).IsAssignableFrom(t))).ToArray<Type>();
 
                 forms.AddRange(types);
@@ -40,7 +40,7 @@ namespace HandSightOnBodyInteractionRealTime
             Properties.Settings.Default.StartupForm = (string)ProgramList.SelectedItem;
             Properties.Settings.Default.Save();
             Type formType = null;
-            foreach (Type type in forms) if (type.Name == ProgramList.SelectedItem) formType = type;
+            foreach (Type type in forms) if (type.Name == ProgramList.SelectedItem.ToString()) formType = type;
             Form form = (Form)Activator.CreateInstance(formType);
             form.Show();
             form.FormClosed += delegate { this.Close(); };

@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.40629.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandSightOnBodyInteractionRealTime", "HandSightOnBodyInteractionRealTime\HandSightOnBodyInteractionRealTime.csproj", "{56D403F6-C924-435A-B590-0CEE7A426503}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandSightOnBodyInteractionGPU", "HandSightOnBodyInteractionGPU\HandSightOnBodyInteractionGPU.csproj", "{56D403F6-C924-435A-B590-0CEE7A426503}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandSightLibrary", "HandSightLibrary\HandSightLibrary.csproj", "{4A1B3704-7A89-401E-AD99-8FF927DFD152}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandSightLibrary.ImageProcessing", "HandSightLibraryGPU\HandSightLibrary.ImageProcessing.csproj", "{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +33,14 @@ Global
 		{4A1B3704-7A89-401E-AD99-8FF927DFD152}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4A1B3704-7A89-401E-AD99-8FF927DFD152}.Release|x64.ActiveCfg = Release|x64
 		{4A1B3704-7A89-401E-AD99-8FF927DFD152}.Release|x64.Build.0 = Release|x64
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Debug|x64.Build.0 = Debug|Any CPU
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Release|x64.ActiveCfg = Release|Any CPU
+		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

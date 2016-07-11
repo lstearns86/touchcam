@@ -9,12 +9,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Accord.Neuro.Learning;
-using AForge.Neuro;
-using Accord.Neuro;
-using Accord.Math;
 
-namespace HandSightLibrary
+
+namespace HandSightLibrary.ImageProcessing
 {
     public class Localization
     {

@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>HandSightOnBodyInteractionRealTime</RootNamespace>
     <AssemblyName>HandSightOnBodyInteractionRealTime</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>f5ab47f7</NuGetPackageImportStamp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -131,6 +132,7 @@
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
     </Compile>
     <EmbeddedResource Include="EvaluateOldData.resx">
       <DependentUpon>EvaluateOldData.cs</DependentUpon>
@@ -168,6 +170,10 @@
     <Content Include="refLib\IduleProvidercs.dll" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\HandSightLibraryGPU\HandSightLibrary.ImageProcessing.csproj">
+      <Project>{a8e01cac-2cd4-4aec-aa6c-b6cb6fb78201}</Project>
+      <Name>HandSightLibrary.ImageProcessing</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HandSightLibrary\HandSightLibrary.csproj">
       <Project>{4a1b3704-7a89-401e-ad99-8ff927dfd152}</Project>
       <Name>HandSightLibrary</Name>

@@ -14,7 +14,7 @@ using Emgu.CV.Cuda;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 
-namespace HandSightLibrary
+namespace HandSightLibrary.ImageProcessing
 {
     public class ImageTemplate
     {

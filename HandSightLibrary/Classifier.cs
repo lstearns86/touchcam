@@ -32,7 +32,7 @@ namespace HandSightLibrary
 
         private Dictionary<string, int> idForName = new Dictionary<string, int>();
         private List<string> nameForID = new List<string>();
-        private static int k = 2;
+        //private static int k = 2;
 
         private ClassifierType type;
         private KernelType kernelType;

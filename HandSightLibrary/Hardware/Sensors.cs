@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Ports;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace HandSightLibrary
@@ -36,8 +33,8 @@ namespace HandSightLibrary
             public Point3D Gyroscope2;
             public float InfraredReflectance1;
             public float InfraredReflectance2;
-            public OrientationTracker.Quaternion Orientation1;
-            public OrientationTracker.Quaternion Orientation2;
+            public Quaternion Orientation1;
+            public Quaternion Orientation2;
         }
 
         public delegate void ReadingAvailableDelegate(Reading reading);

@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using Emgu.CV;
-using Emgu.CV.Structure;
 using System.Threading;
 
-namespace HandSightLibrary
+namespace HandSightLibrary.ImageProcessing
 {
     public class OrientationTracker
     {

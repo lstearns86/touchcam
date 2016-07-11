@@ -15,7 +15,7 @@ using Emgu.CV.Structure;
 
 using LibDevice = Alea.CUDA.LibDevice;
 
-namespace HandSightLibrary
+namespace HandSightLibrary.ImageProcessing
 {
     public class LBP
     {
