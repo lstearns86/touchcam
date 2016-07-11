@@ -65,7 +65,7 @@ namespace HandSightOnBodyInteractionRealTime
 
         private void TempBridge_Load(object sender, EventArgs e)
         {
-            string dir = @"C:\Users\Testing\Desktop\palmData\first24\p1\processed";
+            string dir = @"D:\UserStudies\UIST2016\PalmData\p1\processed";
 
             List<string> files = new List<string>(Directory.GetFiles(dir, "*.png"));
             var samples = new Dictionary<string, List<ImageTemplate>>();

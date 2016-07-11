@@ -17,7 +17,7 @@ using LibDevice = Alea.CUDA.LibDevice;
 
 namespace HandSightLibrary
 {
-    public class LBP
+    public class AdaptiveLBP
     {
         const double PI = Math.PI;
         const int numNeighbors = 8, radius = 1;

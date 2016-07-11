@@ -118,6 +118,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\AdaptiveLBP.cs" />
     <Compile Include="Classifier.cs" />
     <Compile Include="Hardware\Camera.cs" />
     <Compile Include="ImageProcessing.cs" />
