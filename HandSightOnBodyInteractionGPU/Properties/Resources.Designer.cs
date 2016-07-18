@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace HandSightOnBodyInteractionRealTime.Properties {
+namespace HandSightOnBodyInteractionGPU.Properties {
     using System;
     
     

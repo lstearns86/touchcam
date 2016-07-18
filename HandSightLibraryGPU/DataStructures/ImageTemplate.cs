@@ -24,7 +24,8 @@ namespace HandSightLibrary.ImageProcessing
         public Image<Gray, byte> Image { get { return frame.Image; } set { frame.Image = value; } }
         public DeviceMemory<byte> ImageGPU { get { return frame.ImageGPU; } set { frame.ImageGPU = value; } }
         public uint Timestamp { get { return frame.Timestamp; } set { frame.Timestamp = value; } }
-        public CudaImage<Gray, byte>[] Pyramid;
+        public Image<Gray, byte>[] Pyramid;
+        public DeviceMemory<byte>[] PyramidGPU;
 
         private float[] texture, secondaryFeatures;
         private Matrix<float> textureMatrixRow, secondaryFeaturesMatrixRow;

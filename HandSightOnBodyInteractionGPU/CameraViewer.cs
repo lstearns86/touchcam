@@ -16,7 +16,7 @@ using Emgu.CV.Cuda;
 using HandSightLibrary;
 using HandSightLibrary.ImageProcessing;
 
-namespace HandSightOnBodyInteractionRealTime
+namespace HandSightOnBodyInteractionGPU
 {
     public partial class CameraViewer : Form
     {
@@ -36,7 +36,7 @@ namespace HandSightOnBodyInteractionRealTime
             if (closing) return;
 
             FPS.Camera.Update();
-            LBP.GetUniformHistogram(frame);
+            LBP.GetHistogram(frame);
             Invoke(new MethodInvoker(delegate
             {
                 Display.Image = frame.Image.Bitmap;

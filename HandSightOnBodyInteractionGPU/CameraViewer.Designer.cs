@@ -1,4 +1,4 @@
-﻿namespace HandSightOnBodyInteractionRealTime
+﻿namespace HandSightOnBodyInteractionGPU
 {
     partial class CameraViewer
     {

@@ -1,4 +1,4 @@
-﻿namespace HandSightOnBodyInteractionRealTime
+﻿namespace HandSightOnBodyInteractionGPU
 {
     partial class EvaluateOldData
     {
@@ -28,20 +28,45 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.Progress = new System.Windows.Forms.ProgressBar();
+            this.StatusLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // TempBridge
+            // Progress
+            // 
+            this.Progress.Dock = System.Windows.Forms.DockStyle.Top;
+            this.Progress.Location = new System.Drawing.Point(0, 0);
+            this.Progress.Name = "Progress";
+            this.Progress.Size = new System.Drawing.Size(284, 10);
+            this.Progress.TabIndex = 0;
+            // 
+            // StatusLabel
+            // 
+            this.StatusLabel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.StatusLabel.Location = new System.Drawing.Point(0, 10);
+            this.StatusLabel.Name = "StatusLabel";
+            this.StatusLabel.Padding = new System.Windows.Forms.Padding(3);
+            this.StatusLabel.Size = new System.Drawing.Size(284, 72);
+            this.StatusLabel.TabIndex = 1;
+            this.StatusLabel.Text = "label1";
+            // 
+            // EvaluateOldData
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(284, 262);
-            this.Name = "TempBridge";
-            this.Text = "TempBridge";
-            this.Load += new System.EventHandler(this.TempBridge_Load);
+            this.ClientSize = new System.Drawing.Size(284, 82);
+            this.Controls.Add(this.StatusLabel);
+            this.Controls.Add(this.Progress);
+            this.Name = "EvaluateOldData";
+            this.Text = "Evaluating Old Data";
+            this.Load += new System.EventHandler(this.EvaluateOldData_Load);
             this.ResumeLayout(false);
 
         }
 
         #endregion
+
+        private System.Windows.Forms.ProgressBar Progress;
+        private System.Windows.Forms.Label StatusLabel;
     }
 }

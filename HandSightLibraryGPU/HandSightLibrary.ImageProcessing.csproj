@@ -7,8 +7,8 @@
     <ProjectGuid>{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>HandSightLibraryGPU</RootNamespace>
-    <AssemblyName>HandSightLibraryGPU</AssemblyName>
+    <RootNamespace>HandSightLibrary.ImageProcessing</RootNamespace>
+    <AssemblyName>HandSightLibrary.ImageProcessing</AssemblyName>
     <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>
@@ -75,6 +75,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Algorithms\AdaptiveLBP.cs" />
+    <Compile Include="Algorithms\LaplacianOfGaussian.cs" />
     <Compile Include="Algorithms\LBP.cs" />
     <Compile Include="DataStructures\ImageTemplate.cs" />
     <Compile Include="DataStructures\VideoFrame.cs" />
