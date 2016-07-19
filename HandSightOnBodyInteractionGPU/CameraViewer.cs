@@ -36,7 +36,7 @@ namespace HandSightOnBodyInteractionGPU
             if (closing) return;
 
             FPS.Camera.Update();
-            LBP.GetHistogram(frame);
+            LBP.GetInstance(frame.Image.Size).GetHistogram(frame);
             Invoke(new MethodInvoker(delegate
             {
                 Display.Image = frame.Image.Bitmap;

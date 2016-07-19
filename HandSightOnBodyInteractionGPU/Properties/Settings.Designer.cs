@@ -34,5 +34,17 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["StartupForm"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int CountdownTimer {
+            get {
+                return ((int)(this["CountdownTimer"]));
+            }
+            set {
+                this["CountdownTimer"] = value;
+            }
+        }
     }
 }
