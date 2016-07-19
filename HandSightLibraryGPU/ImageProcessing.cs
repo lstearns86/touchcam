@@ -10,6 +10,7 @@ using Alea.CUDA.Utilities;
 using Alea.CUDA.IL;
 
 using Emgu.CV;
+using Emgu.CV.Cuda;
 using Emgu.CV.Structure;
 using Emgu.Util;
 using Emgu.CV.CvEnum;
@@ -20,10 +21,11 @@ namespace HandSightLibrary.ImageProcessing
 {
     public class ImageProcessing
     {
-        //static CudaSURF surf = new CudaSURF(50);
-        //static float[] imgScales = new float[] { 0.0f, 0.5f, 1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.0f };
+        static CudaSURF surf = new CudaSURF(100);
+        static float[] imgScales = new float[] { 1.0f, 2.0f, 3.0f, 4.0f };
+        //static float[] imgScales = new float[] { 0.0f, 0.5f, 1.0f, 1.5f, 2.0f, 2.5f, 3.0f, 3.5f, 4.5f, 5.0f };
         //static float[] imgScales = new float[] { 0.0f, 2.5f, 3.5f, 4.0f, 5.0f };
-        static float[] imgScales = new float[] { 2.0f };
+        //static float[] imgScales = new float[] { 2.0f };
         static DeviceMemory<byte>[] pyramid = null;
         static Worker worker = Worker.Default;
 
@@ -43,6 +45,9 @@ namespace HandSightLibrary.ImageProcessing
 
             template.Pyramid = new Image<Gray, byte>[imgScales.Length];
             List<float> texture = new List<float>();
+
+            //List<float> variances = new List<float>();
+
             for (int i = 0; i < imgScales.Length; i++)
             {
                 double scaleFactor = 1.0 / Math.Pow(2, imgScales[i]);
@@ -55,11 +60,28 @@ namespace HandSightLibrary.ImageProcessing
                 template.Pyramid[i] = temp;
                 pyramid[i].Scatter(temp.Bytes);
 
-                float[] textureCurrentScale = AdaptiveLBP.GetInstance(temp.Size).GetHistogram(new VideoFrame() { Image = temp, ImageGPU = pyramid[i] });
-                //float[] textureCurrentScale = LBP.GetImageHistogramOld(temp);
+                VideoFrame frame = new VideoFrame() { Image = temp, ImageGPU = pyramid[i] };
+                //float[] textureCurrentScale = AdaptiveLBP.GetInstance(temp.Size).GetHistogram(new VideoFrame() { Image = temp, ImageGPU = pyramid[i] });
+                float[] textureCurrentScale = LBP.GetInstance(temp.Size).GetHistogram(frame);
+                //float[] textureCurrentScale = Utils.ToFloat(Utils.Flatten(OldLBP.GetImageHistogramEfficient(temp)));
                 texture.AddRange(textureCurrentScale);
+
+                //variances.AddRange(LBP.GetInstance(temp.Size).GetVariances(frame));
             }
             template.Texture = texture.ToArray();
+            //template["variances"] = variances;
+
+            if (extractKeypoints)
+            {
+                GpuMat gpuImg = new GpuMat(template.Image);
+                GpuMat keypoints = surf.DetectKeyPointsRaw(gpuImg);
+                GpuMat descriptors = surf.ComputeDescriptorsRaw(gpuImg, null, keypoints);
+                template.Keypoints = keypoints;
+                VectorOfKeyPoint keypointVector = new VectorOfKeyPoint();
+                surf.DownloadKeypoints(keypoints, keypointVector);
+                template.KeypointVector = keypointVector;
+                template.Descriptors = descriptors;
+            }
         }
     }
 }

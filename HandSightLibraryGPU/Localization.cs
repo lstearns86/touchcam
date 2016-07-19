@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.CvEnum;
+using Emgu.CV.Features2D;
 using Emgu.CV.ML;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
@@ -16,10 +17,10 @@ namespace HandSightLibrary.ImageProcessing
     public class Localization
     {
         static int numNeighbors = int.MaxValue;
-        static int numKDTrees = 4;
-        static int numFlannChecks = 48;
+        //static int numKDTrees = 4;
+        //static int numFlannChecks = 48;
         //static int numClusters = 30;
-        static int maxTemplateMatches = 5;
+        static int maxTemplateMatches = int.MaxValue;
 
         static Dictionary<string, List<ImageTemplate>> samples = new Dictionary<string, List<ImageTemplate>>();
         static Classifier groupClassifier = null, groupClassifierSecondary = null;
@@ -31,6 +32,19 @@ namespace HandSightLibrary.ImageProcessing
         static Dictionary<string, Classifier> classifierByGroup = new Dictionary<string, Classifier>();
         static Dictionary<string, Classifier> secondaryClassifierByGroup = new Dictionary<string, Classifier>();
         static Dictionary<string, Classifier> sensorFusionClassifierByGroup = new Dictionary<string, Classifier>();
+
+        public static int GetNumTrainingExamples()
+        {
+            int count = 0;
+            foreach(string key in samples.Keys)
+                count += samples[key].Count;
+            return count;
+        }
+
+        public static int GetNumTrainingClasses()
+        {
+            return samples.Count;
+        }
 
         public static void Reset()
         {
@@ -295,83 +309,91 @@ namespace HandSightLibrary.ImageProcessing
                 }
                 //predictedName = predictedName.Substring(0, predictedName.Length - 2);
 
-                //ImageTemplate featureMatch = null;                
-                //int numFeatureMatches = 0;
-                //if (enableCamera && enableGeometricVerification)// && (predictedGroup == "finger" || predictedGroup == "palm"))
-                //{
-                //    if (query.Descriptors != null && query.Descriptors.Rows > 0)
-                //    {
-                //        int k = 1;
-                //        //Emgu.CV.Features2D.BFMatcher matcher = new BFMatcher(DistanceType.L2);
-                //        //matcher.Add(query.descriptors);
-                //        Emgu.CV.Flann.Index matcher = new Emgu.CV.Flann.Index(query.Descriptors, new Emgu.CV.Flann.KdTreeIndexParamses(numKDTrees));
+                ImageTemplate featureMatch = null;
+                int numFeatureMatches = 0;
+                if (enableCamera && enableGeometricVerification)// && (predictedGroup == "finger" || predictedGroup == "palm"))
+                {
+                    if (query.Descriptors != null && query.Descriptors.Size.Height > 0)
+                    {
+                        int k = 2;
+                        //Emgu.CV.Features2D.BFMatcher matcher = new BFMatcher(DistanceType.L2);
+                        //matcher.Add(query.descriptors);
+                        //Emgu.CV.Flann.Index matcher = new Emgu.CV.Flann.Index(query.Descriptors, new Emgu.CV.Flann.KdTreeIndexParamses(numKDTrees));
+                        using (Emgu.CV.Cuda.CudaBFMatcher matcher = new Emgu.CV.Cuda.CudaBFMatcher(Emgu.CV.Features2D.DistanceType.L2))
+                        {
 
-                //        int mostMatches = -1;
-                //        for (int index = 0; index < best.Length && index < maxTemplateMatches; index++)
-                //        //foreach (int bestIndex in best)
-                //        {
-                //            int bestIndex = best[index];
-                //            string testClass = trainInfo[bestIndex].Item1;
-                //            int testIndex = trainInfo[bestIndex].Item2;
+                            int mostMatches = -1;
+                            for (int index = 0; index < best.Length && index < maxTemplateMatches; index++)
+                            //foreach (int bestIndex in best)
+                            {
+                                int bestIndex = best[index];
+                                string testClass = trainInfo[bestIndex].Item1;
+                                int testIndex = trainInfo[bestIndex].Item2;
 
-                //            ImageTemplate test = samples[testClass][testIndex];
-                //            VectorOfVectorOfDMatch matches = new VectorOfVectorOfDMatch();
-                //            if (test.Descriptors.Rows == 0) continue;
-                //            //matcher.KnnMatch(test.descriptors, matches, k, null);
-                //            int numTestRows = test.Descriptors.Rows;
-                //            Matrix<int> matchIndices = new Matrix<int>(numTestRows, k);
-                //            Matrix<float> distances = new Matrix<float>(numTestRows, k);
-                //            matcher.KnnSearch(test.Descriptors, matchIndices, distances, k, numFlannChecks);
-                //            for (int i = 0; i < numTestRows; i++)
-                //            {
-                //                MDMatch[] row = new MDMatch[k];
-                //                for (int j = 0; j < k; j++)
-                //                {
-                //                    MDMatch match = new MDMatch();
-                //                    match.QueryIdx = i;
-                //                    match.TrainIdx = matchIndices[i, j];
-                //                    match.Distance = distances[i, j];
-                //                    row[j] = match;
-                //                }
-                //                matches.Push(new VectorOfDMatch(row));
-                //            }
+                                ImageTemplate test = samples[testClass][testIndex];
+                                VectorOfVectorOfDMatch matches = new VectorOfVectorOfDMatch();
+                                if (test.Descriptors.Size.Height == 0) continue;
+                                //matcher.KnnMatch(test.descriptors, matches, k, null);
+                                //int numTestRows = test.Descriptors.Size.Height;
+                                //Matrix<int> matchIndices = new Matrix<int>(numTestRows, k);
+                                //Matrix<float> distances = new Matrix<float>(numTestRows, k);
+                                //matcher.KnnSearch(test.Descriptors, matchIndices, distances, k, numFlannChecks);
+                                matcher.KnnMatch(query.Descriptors, test.Descriptors, matches, k);
+                                //for (int i = 0; i < numTestRows; i++)
+                                //{
+                                //    MDMatch[] row = new MDMatch[k];
+                                //    for (int j = 0; j < k; j++)
+                                //    {
+                                //        MDMatch match = new MDMatch();
+                                //        match.QueryIdx = i;
+                                //        match.TrainIdx = matchIndices[i, j];
+                                //        match.Distance = distances[i, j];
+                                //        row[j] = match;
+                                //    }
+                                //    matches.Push(new VectorOfDMatch(row));
+                                //}
 
-                //            Mat mask = new Mat(test.Descriptors.Rows, 1, DepthType.Cv8U, 1);
-                //            mask.SetTo(new MCvScalar(255));
-                //            //Features2DToolbox.VoteForUniqueness(matches, 0.8, mask);
-                //            //Features2DToolbox.VoteForSizeAndOrientation(query.keypointVector, test.keypointVector, matches, mask, 1.5, 20);
-                //            int count = CvInvoke.CountNonZero(mask);
-                //            Matrix<double> H = null;
-                //            if (count > 4) H = GeometricVerification.FindHomographyOpenCV(query.KeypointVector, test.KeypointVector, matches, mask, 10);
-                //            count = CvInvoke.CountNonZero(mask);
-                //            bool good = (H != null && IsGoodHomography(H) && AreGoodInliers(test.Keypoints, matches, mask));
+                                Mat mask = new Mat(query.Descriptors.Size.Height, 1, DepthType.Cv8U, 1);
+                                mask.SetTo(new MCvScalar(255));
+                                //Features2DToolbox.VoteForUniqueness(matches, 0.8, mask);
+                                //Features2DToolbox.VoteForSizeAndOrientation(test.KeypointVector, query.KeypointVector, matches, mask, 2, 45);
+                                int count = CvInvoke.CountNonZero(mask);
+                                Matrix<double> H = null;
+                                //Mat H = null;
+                                if (count > 4) H = GeometricVerification.FindHomographyOpenCV(test.KeypointVector, query.KeypointVector, matches, mask, 10);
+                                //if (count > 4) H = Features2DToolbox.GetHomographyMatrixFromMatchedFeatures(test.KeypointVector, query.KeypointVector, matches, mask, 2);
+                                //GC.GetTotalMemory(true);
+                                count = CvInvoke.CountNonZero(mask);
+                                bool good = (H != null && IsGoodHomography(H) && AreGoodInliers(query.KeypointVector, matches, mask));
+                                //bool good = true;
 
-                //            if (good && count > mostMatches)
-                //            {
-                //                predictedRegionTemp = testClass;
-                //                foundFeatureMatch = true;
-                //                mostMatches = count;
-                //                matchInfoTemp = testClass + testIndex + " (" + count + " features)";
-                //                featureMatch = test;
-                //                numFeatureMatches = count;
-                //                if (mostMatches > 16)
-                //                {
-                //                    numTemplatesCompared += index + 1;
-                //                    break;
-                //                }
-                //            }
-                //        }
-                //    }
-                //}
-                //if (numFeatureMatches > mostFeatureMatches)
-                //{
-                //    predictedRegion = predictedRegionTemp;
-                //    matchInfo = matchInfoTemp;
-                //    mostFeatureMatches = numFeatureMatches;
-                //    query["featureMatch"] = featureMatch;
-                //    query["numFeatureMatches"] = numFeatureMatches;
-                //    query["numTemplatesCompared"] = numTemplatesCompared;
-                //}
+                                if (good && count > mostMatches)
+                                {
+                                    predictedRegionTemp = testClass;
+                                    foundFeatureMatch = true;
+                                    mostMatches = count;
+                                    matchInfoTemp = testClass + testIndex + " (" + count + " features)";
+                                    featureMatch = test;
+                                    numFeatureMatches = count;
+                                    if (mostMatches > 16)
+                                    {
+                                        numTemplatesCompared += index + 1;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (numFeatureMatches > mostFeatureMatches)
+                {
+                    predictedRegion = predictedRegionTemp;
+                    matchInfo = matchInfoTemp;
+                    mostFeatureMatches = numFeatureMatches;
+                    query["featureMatch"] = featureMatch;
+                    query["numFeatureMatches"] = numFeatureMatches;
+                    query["numTemplatesCompared"] = numTemplatesCompared;
+                }
             }
 
             return predictedRegion;
@@ -400,7 +422,7 @@ namespace HandSightLibrary.ImageProcessing
             return true;
         }
 
-        static bool AreGoodInliers(List<MKeyPoint> f1, VectorOfVectorOfDMatch matches, Mat mask)
+        static bool AreGoodInliers(VectorOfKeyPoint f1, VectorOfVectorOfDMatch matches, Mat mask)
         {
             // Make sure points have sufficient spread and are not too collinear
             int count = CvInvoke.CountNonZero(mask);

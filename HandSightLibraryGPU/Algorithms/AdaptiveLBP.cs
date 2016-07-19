@@ -26,11 +26,11 @@ namespace HandSightLibrary.ImageProcessing
         private static Dictionary<Size, AdaptiveLBP> instances = new Dictionary<Size, AdaptiveLBP>();
 
         const double PI = Math.PI;
-        const int numNeighbors = 12, radius = 1, numVarBins = 16;
+        const int numNeighbors = 8, radius = 1, numVarBins = 8;
         const int numScales = 14;
 
         static int numPatterns = (int)Math.Pow(2, numNeighbors);
-        static int numUniformPatterns = numNeighbors + 2;
+        //static int numUniformPatterns = numNeighbors + 2;
         static int numSubuniformPatterns = (numNeighbors - 1) * numNeighbors + 3;
 
         Size size;
@@ -46,7 +46,7 @@ namespace HandSightLibrary.ImageProcessing
         DeviceMemory<short> subuniformBinsGPU = null;
         DeviceMemory<float> neighborCoordinateXGPU = null, neighborCoordinateYGPU = null;
         LaunchParam lp = null;
-        bool initialized = false;
+        //bool initialized = false;
 
         float[][] filters = new float[numScales][];
         int[] filterSizes = new int[numScales];
@@ -55,8 +55,9 @@ namespace HandSightLibrary.ImageProcessing
         DeviceMemory<short> pixelScaleImage = null;
         DeviceMemory<deviceptr<float>> scaledImagePointers = null;
 
-        float[] varBins = new float[] { float.NegativeInfinity, 1.6113763094439419f, 8.4662133430334876f, 19.068693504197039f, 32.931756363447185f, 50.806257223632748f, 73.925768389128791f, 103.99872371684611f, 143.55929591350352f, 196.37682253643587f, 268.634109897359f, 371.5463598630414f, 526.48493535337172f, 780.620183093791f, 1280.9687670261649f, 11866.117177664119f, float.PositiveInfinity };
+        //float[] varBins = new float[] { float.NegativeInfinity, 1.6113763094439419f, 8.4662133430334876f, 19.068693504197039f, 32.931756363447185f, 50.806257223632748f, 73.925768389128791f, 103.99872371684611f, 143.55929591350352f, 196.37682253643587f, 268.634109897359f, 371.5463598630414f, 526.48493535337172f, 780.620183093791f, 1280.9687670261649f, 11866.117177664119f, float.PositiveInfinity };
         //static float[] varBins = new float[] { float.NegativeInfinity, 8.4662133430334876f, 32.931756363447185f, 73.925768389128791f, 143.55929591350352f, 268.634109897359f, 526.48493535337172f, 1280.9687670261649f, float.PositiveInfinity };
+        static float[] varBins = new float[] { float.NegativeInfinity, 0.1530831107286976f, 0.3703053669767446f, 1.0091557115025451f, 2.6608580363204877f, 9.007633262523651f, 100f, 11681.98538285752f, float.PositiveInfinity };
         DeviceMemory<float> varBinsGPU = null;
 
         /// <summary>
@@ -181,7 +182,7 @@ namespace HandSightLibrary.ImageProcessing
                     yy = y + i;
                     if(xx >= 0 && xx < width && yy >= 0 && yy < height)
                     {
-                        sum += filter[i * filterWidth + j] * inputImg[yy * width + xx];
+                        sum += filter[(i + filterSize) * filterWidth + (j + filterSize)] * inputImg[yy * width + xx];
                     }
                 }
             outputImg[y * width + x] = sum;

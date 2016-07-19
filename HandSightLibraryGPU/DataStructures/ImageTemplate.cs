@@ -34,6 +34,12 @@ namespace HandSightLibrary.ImageProcessing
         public float[] SecondaryFeatures { get { return secondaryFeatures; } set { secondaryFeatures = value; if (secondaryFeatures == null) SecondaryFeaturesMatrixRow = null; else SecondaryFeaturesMatrixRow = Classifier.ArrayToMatrixRow(secondaryFeatures); } }
         public Matrix<float> SecondaryFeaturesMatrixRow { get { return secondaryFeaturesMatrixRow; } set { secondaryFeaturesMatrixRow = value; } }
 
+        private GpuMat keypoints, descriptors;
+        private VectorOfKeyPoint keypointVector;
+        public GpuMat Keypoints { get { return keypoints; } set { keypoints = value; } }
+        public GpuMat Descriptors { get { return descriptors; } set { descriptors = value; } }
+        public VectorOfKeyPoint KeypointVector {  get { return keypointVector; } set { keypointVector = value; } }
+
         public object this[string key]
         {
             get
@@ -56,7 +62,46 @@ namespace HandSightLibrary.ImageProcessing
         
         public ImageTemplate()
         {
+            this.frame = new VideoFrame();
             info = new Dictionary<string, object>();
+        }
+
+        public ImageTemplate Clone()
+        {
+            ImageTemplate newTemplate = new ImageTemplate();
+            if(Image != null) newTemplate.Image = Image.Clone();
+            if (ImageGPU != null)
+            {
+                newTemplate.ImageGPU = Worker.Default.Malloc<byte>(frame.Width * frame.Height);
+                newTemplate.ImageGPU.Scatter(newTemplate.Image.Bytes);
+                newTemplate.Timestamp = Timestamp;
+            }
+            if (Pyramid != null)
+            {
+                newTemplate.Pyramid = new Image<Gray, byte>[Pyramid.Length];
+                for (int i = 0; i < Pyramid.Length; i++)
+                    newTemplate.Pyramid[i] = Pyramid[i].Clone();
+
+                if (PyramidGPU != null)
+                {
+                    newTemplate.PyramidGPU = new DeviceMemory<byte>[PyramidGPU.Length];
+                    for (int i = 0; i < PyramidGPU.Length; i++)
+                    {
+                        newTemplate.PyramidGPU[i] = Worker.Default.Malloc<byte>(PyramidGPU[i].Length);
+                        newTemplate.PyramidGPU[i].Scatter(Pyramid[i].Bytes);
+                    }
+                }
+            }
+
+            if (texture != null) newTemplate.texture = (float[])texture.Clone();
+            if (secondaryFeatures != null) newTemplate.secondaryFeatures = (float[])secondaryFeatures.Clone();
+            if (textureMatrixRow != null) newTemplate.textureMatrixRow = textureMatrixRow.Clone();
+            if (secondaryFeaturesMatrixRow != null) newTemplate.secondaryFeaturesMatrixRow = secondaryFeaturesMatrixRow.Clone();
+            if (keypoints != null) newTemplate.keypoints = (GpuMat)keypoints.Clone();
+            if (descriptors != null) newTemplate.descriptors = (GpuMat)descriptors.Clone();
+            if (keypointVector != null) newTemplate.keypointVector = new VectorOfKeyPoint(keypointVector.ToArray());
+
+            return newTemplate;
         }
     }
 }
