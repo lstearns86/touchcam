@@ -103,11 +103,11 @@ namespace HandSightLibrary
         {
             return;
 
-            if (IsConnected)
-            {
-                byte command = (byte)((byte)brightness | (byte)(numSensors - 1) << 1);
-                device.Write(new byte[] { command }, 0, 1);
-            }
+            //if (IsConnected)
+            //{
+            //    byte command = (byte)((byte)brightness | (byte)(numSensors - 1) << 1);
+            //    device.Write(new byte[] { command }, 0, 1);
+            //}
         }
 
         public bool Connect()
