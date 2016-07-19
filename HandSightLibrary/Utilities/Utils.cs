@@ -281,9 +281,9 @@ namespace HandSightLibrary
         /// <summary>
         /// Knuth shuffle
         /// </summary>   
-        public static void Shuffle(int[] array)
+        public static void Shuffle(int[] array, int seed = -1)
         {
-            Random random = new Random();
+            Random random = seed < 0 ? new Random() : new Random(seed);
             int n = array.Count();
             while (n > 1)
             {
