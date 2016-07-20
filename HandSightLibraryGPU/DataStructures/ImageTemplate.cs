@@ -59,6 +59,16 @@ namespace HandSightLibrary.ImageProcessing
         {
             this.frame = frame;
         }
+
+        public ImageTemplate(Image<Gray, byte> img)
+            : this()
+        {
+            frame = new VideoFrame();
+            frame.Image = img;
+            frame.Timestamp = 0;
+            frame.ImageGPU = Worker.Default.Malloc<byte>(img.Width * img.Height);
+            frame.ImageGPU.Scatter(img.Bytes);
+        }
         
         public ImageTemplate()
         {

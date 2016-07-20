@@ -17,6 +17,7 @@ using HandSightLibrary;
 using HandSightLibrary.ImageProcessing;
 
 using Timer = System.Timers.Timer;
+using System.Collections.Concurrent;
 
 namespace HandSightOnBodyInteractionGPU
 {
@@ -26,6 +27,7 @@ namespace HandSightOnBodyInteractionGPU
         int countdown = -1;
         Timer timer = new Timer(1000);
         ImageTemplate currTemplate;
+        string processingLock = "processing lock", trainingLock = "training lock";
 
         public LocalizationTest()
         {
@@ -37,8 +39,11 @@ namespace HandSightOnBodyInteractionGPU
             TimerChooser.Value = Properties.Settings.Default.CountdownTimer;
 
             Camera.Instance.FrameAvailable += Camera_FrameAvailable;
-            Camera.Instance.Brightness = 50;
+            Camera.Instance.Brightness = 10;
+            
             Camera.Instance.Connect();
+
+            //Sensors.Instance.Connect();
         }
 
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -53,8 +58,9 @@ namespace HandSightOnBodyInteractionGPU
             }
             else if (countdown == 0)
             {
+                Monitor.Enter(trainingLock);
                 ImageTemplate template = null;
-                lock(this)
+                lock (processingLock)
                 {
                     template = CopyTemplate(currTemplate);
                 }
@@ -71,6 +77,7 @@ namespace HandSightOnBodyInteractionGPU
                     TrainingExamplesLabel.Text = Localization.GetNumTrainingExamples() + " training examples (" + Localization.GetNumTrainingClasses() + " classes)";
                 }));
                 timer.Stop();
+                Monitor.Exit(trainingLock);
             }
         }
 
@@ -118,7 +125,10 @@ namespace HandSightOnBodyInteractionGPU
 
         private void ResetButton_Click(object sender, EventArgs e)
         {
-            Localization.Reset();
+            lock (trainingLock)
+            {
+                Localization.Reset();
+            }
             TrainingExamplesLabel.Text = "0 training examples (0 classes)";
         }
 
@@ -128,26 +138,78 @@ namespace HandSightOnBodyInteractionGPU
             return newTemplate;
         }
 
+        BlockingCollection<string> locationPredictions = new BlockingCollection<string>();
+
+        private void SaveProfileButton_Click(object sender, EventArgs e)
+        {
+            PromptDialog dialog = new PromptDialog("Enter Profile Name", "Save");
+            if(dialog.ShowDialog() == DialogResult.OK)
+            {
+                // TODO: check for existing profile, ask to confirm overwrite
+                Localization.Save(dialog.Value);
+            }
+        }
+
+        private void LoadProfileButton_Click(object sender, EventArgs e)
+        {
+            // TODO: replace with selection form allowing only existing profiles
+            PromptDialog dialog = new PromptDialog("Enter Profile Name", "Load");
+            if (dialog.ShowDialog() == DialogResult.OK)
+            {
+                lock (trainingLock)
+                {
+                    Localization.Reset();
+                    Localization.Load(dialog.Value);
+                    TrainingExamplesLabel.Text = Localization.GetNumTrainingExamples() + " training examples (" + Localization.GetNumTrainingClasses() + " classes)";
+                }
+            }
+        }
+
+        int numLocationPredictions = 15;
         void Camera_FrameAvailable(VideoFrame frame)
         {
             if (closing) return;
 
-            lock (this)
-            {
-                currTemplate = new ImageTemplate(frame);
-                ImageProcessing.ProcessTemplate(currTemplate, false);
-            }
-
-            string location = Localization.GetNumTrainingExamples() > 0 ? Localization.PredictGroup(currTemplate) : "";
-
+            ImageTemplate template = new ImageTemplate(frame.Clone());
             FPS.Camera.Update();
-            LBP.GetInstance(frame.Image.Size).GetHistogram(frame);
-            Invoke(new MethodInvoker(delegate
+
+            Task.Factory.StartNew(() =>
             {
-                Display.Image = frame.Image.Bitmap;
-                PredictionLabel.Text = location;
-                Text = FPS.Camera.Average.ToString("0") + " fps";
-            }));
+                try
+                {
+                    lock (processingLock)
+                    {
+                        ImageProcessing.ProcessTemplate(template, false);
+                        currTemplate = template;
+                    }
+
+                    string location = "";
+                    if (Monitor.TryEnter(trainingLock))
+                    {
+                        if (Localization.GetNumTrainingExamples() > 0)
+                        {
+                            string predictedLocation = Localization.PredictGroup(currTemplate);
+                            locationPredictions.Add(predictedLocation);
+                            while (locationPredictions.Count > numLocationPredictions) locationPredictions.Take();
+
+                            // compute the mode of the array
+                            var groups = locationPredictions.GroupBy(v => v);
+                            int maxCount = groups.Max(g => g.Count());
+                            location = groups.First(g => g.Count() == maxCount).Key;
+                        }
+                        Monitor.Exit(trainingLock);
+                    }
+
+                    //LBP.GetInstance(frame.Image.Size).GetHistogram(frame);
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        Display.Image = frame.Image.Bitmap;
+                        PredictionLabel.Text = location;
+                        Text = FPS.Camera.Average.ToString("0") + " fps";
+                    }));
+                }
+                catch { }
+            });
         }
     }
 }

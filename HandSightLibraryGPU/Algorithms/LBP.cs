@@ -313,7 +313,11 @@ namespace HandSightLibrary.ImageProcessing
 
         public static LBP GetInstance(Size size)
         {
-            if (!instances.ContainsKey(size)) instances.Add(size, new LBP(size));
+            lock (instances)
+            {
+                if (!instances.ContainsKey(size)) instances.Add(size, new LBP(size));
+            }
+
             return instances[size];
         }
 

@@ -26,7 +26,7 @@ namespace HandSightOnBodyInteractionGPU
             InitializeComponent();
 
             Camera.Instance.FrameAvailable += Camera_FrameAvailable;
-            Camera.Instance.Brightness = 1;
+            Camera.Instance.Brightness = 5;
             Camera.Instance.Connect();
         }
 
@@ -36,7 +36,7 @@ namespace HandSightOnBodyInteractionGPU
             if (closing) return;
 
             FPS.Camera.Update();
-            LBP.GetInstance(frame.Image.Size).GetHistogram(frame);
+            //LBP.GetInstance(frame.Image.Size).GetHistogram(frame);
             Invoke(new MethodInvoker(delegate
             {
                 Display.Image = frame.Image.Bitmap;

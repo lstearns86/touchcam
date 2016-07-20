@@ -6,8 +6,10 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 
@@ -52,6 +54,48 @@ namespace HandSightLibrary.ImageProcessing
             groupClassifier = null;
             groupForRegion.Clear();
             groups.Clear();
+        }
+
+        public static void Save(string name)
+        {
+            string dir = Path.Combine("savedProfiles", name);
+            if(!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            else
+            {
+                foreach (string filename in Directory.GetFiles(dir, "*.png"))
+                    File.Delete(filename);
+            }
+
+            foreach(string region in samples.Keys)
+            {
+                int i = 0;
+                foreach(ImageTemplate template in samples[region])
+                {
+                    template.Image.Save(Path.Combine(dir, groupForRegion[region] + "_" + region + "_" + i + ".png"));
+                    i++;
+                }
+            }
+        }
+
+        public static void Load(string name)
+        {
+            string dir = Path.Combine("savedProfiles", name);
+            if (!Directory.Exists(dir))
+                return;
+
+            foreach(string filename in Directory.GetFiles(dir, "*.png"))
+            {
+                Image<Gray, byte> img = new Image<Gray, byte>(filename);
+                ImageTemplate template = new ImageTemplate(img);
+                ImageProcessing.ProcessTemplate(template);
+                Match match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @"([a-zA-Z]*)_([a-zA-Z]*)_\d+");
+                string group = match.Groups[1].Value;
+                string region = match.Groups[2].Value;
+                AddTrainingExample(template, group, region);
+            }
+
+            Train();
         }
 
         public static void AddTrainingExample(ImageTemplate template, string group, string region)

@@ -17,6 +17,7 @@ using Awaiba.FrameProcessing;
 using Emgu.CV;
 using Emgu.CV.Cuda;
 using Emgu.CV.Structure;
+using System.Threading;
 
 namespace HandSightLibrary.ImageProcessing
 {
@@ -113,6 +114,7 @@ namespace HandSightLibrary.ImageProcessing
                 provider.Exception += camera_Exception;
                 provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x05, true, 0, prescaler));
                 provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x06, true, 0, exposure));
+                ProcessingWrapper.pr[0].ReduceProcessing = true;
             }
             catch (Exception ex) { OnError(ex.Message); }
         }
@@ -272,33 +274,39 @@ namespace HandSightLibrary.ImageProcessing
         {
             if (stopping || e == null || e.PixelData == null) return;
 
-            imgGPU.Scatter(e.PixelData);
-
-            if (calibrating)
+            if (Monitor.TryEnter(this))
             {
-                // compute a running mean of each pixel
-                worker.Launch(RunningMean_Kernel, lp, e.Width, imgGPU.Ptr, meanImg.Ptr, numCalibrationSamples);
-                numCalibrationSamples++;
 
-                // compute the mean over the full mean image, using a reduction operation
-                addReduce.Reduce(meanImg.Ptr, scalarOutput.Ptr, numPixels);
-                var mean = scalarOutput.GatherScalar();
-                mean /= numPixels;
+                imgGPU.Scatter(e.PixelData);
 
-                // update the correction factor for each pixel
-                worker.Launch(UpdateCorrectionFactor_Kernel, lp, e.Width, meanImg.Ptr, correctionFactor.Ptr, mean);
+                if (calibrating)
+                {
+                    // compute a running mean of each pixel
+                    worker.Launch(RunningMean_Kernel, lp, e.Width, imgGPU.Ptr, meanImg.Ptr, numCalibrationSamples);
+                    numCalibrationSamples++;
+
+                    // compute the mean over the full mean image, using a reduction operation
+                    addReduce.Reduce(meanImg.Ptr, scalarOutput.Ptr, numPixels);
+                    var mean = scalarOutput.GatherScalar();
+                    mean /= numPixels;
+
+                    // update the correction factor for each pixel
+                    worker.Launch(UpdateCorrectionFactor_Kernel, lp, e.Width, meanImg.Ptr, correctionFactor.Ptr, mean);
+                }
+
+                if (correctBrightness)
+                {
+                    worker.Launch(ApplyCorrectionFactor_Kernel, lp, e.Width, correctionFactor.Ptr, imgGPU.Ptr);
+                    imgGPU.Gather(e.PixelData);
+                }
+
+                img.Bytes = e.PixelData; // note: have to do this last, because if you set it earlier but then modify the bytes it won't update the image
+
+                // trigger a new frame event
+                OnFrameAvailable(new VideoFrame { Image = img, ImageGPU = imgGPU, Timestamp = e.TimeStamp });
+
+                Monitor.Exit(this);
             }
-
-            if (correctBrightness)
-            {
-                worker.Launch(ApplyCorrectionFactor_Kernel, lp, e.Width, correctionFactor.Ptr, imgGPU.Ptr);
-                imgGPU.Gather(e.PixelData);
-            }
-
-            img.Bytes = e.PixelData; // note: have to do this last, because if you set it earlier but then modify the bytes it won't update the image
-
-            // trigger a new frame event
-            OnFrameAvailable(new VideoFrame { Image = img, ImageGPU = imgGPU, Timestamp = e.TimeStamp });
         }
 
         private void camera_Exception(object sender, OnExceptionEventArgs e)

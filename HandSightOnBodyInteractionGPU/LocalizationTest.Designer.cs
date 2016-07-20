@@ -41,6 +41,8 @@
             this.LocationChooser = new System.Windows.Forms.ComboBox();
             this.Display = new System.Windows.Forms.PictureBox();
             this.CountdownLabel = new System.Windows.Forms.Label();
+            this.SaveProfileButton = new System.Windows.Forms.Button();
+            this.LoadProfileButton = new System.Windows.Forms.Button();
             this.ToolPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Display)).BeginInit();
@@ -48,6 +50,8 @@
             // 
             // ToolPanel
             // 
+            this.ToolPanel.Controls.Add(this.LoadProfileButton);
+            this.ToolPanel.Controls.Add(this.SaveProfileButton);
             this.ToolPanel.Controls.Add(this.CalibrationButton);
             this.ToolPanel.Controls.Add(this.PredictionLabel);
             this.ToolPanel.Controls.Add(this.TrainingExamplesLabel);
@@ -157,10 +161,12 @@
             this.LocationChooser.FormattingEnabled = true;
             this.LocationChooser.Items.AddRange(new object[] {
             "Nothing",
+            "Finger",
             "Palm",
             "Wrist",
             "Ear",
-            "Thigh"});
+            "Thigh",
+            "Shoulder"});
             this.LocationChooser.Location = new System.Drawing.Point(12, 29);
             this.LocationChooser.Name = "LocationChooser";
             this.LocationChooser.Size = new System.Drawing.Size(181, 21);
@@ -189,6 +195,26 @@
             this.CountdownLabel.Text = "10";
             this.CountdownLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             this.CountdownLabel.Visible = false;
+            // 
+            // SaveProfileButton
+            // 
+            this.SaveProfileButton.Location = new System.Drawing.Point(12, 186);
+            this.SaveProfileButton.Name = "SaveProfileButton";
+            this.SaveProfileButton.Size = new System.Drawing.Size(86, 48);
+            this.SaveProfileButton.TabIndex = 10;
+            this.SaveProfileButton.Text = "Save Profile";
+            this.SaveProfileButton.UseVisualStyleBackColor = true;
+            this.SaveProfileButton.Click += new System.EventHandler(this.SaveProfileButton_Click);
+            // 
+            // LoadProfileButton
+            // 
+            this.LoadProfileButton.Location = new System.Drawing.Point(107, 186);
+            this.LoadProfileButton.Name = "LoadProfileButton";
+            this.LoadProfileButton.Size = new System.Drawing.Size(86, 48);
+            this.LoadProfileButton.TabIndex = 11;
+            this.LoadProfileButton.Text = "Load Profile";
+            this.LoadProfileButton.UseVisualStyleBackColor = true;
+            this.LoadProfileButton.Click += new System.EventHandler(this.LoadProfileButton_Click);
             // 
             // LocalizationTest
             // 
@@ -224,5 +250,7 @@
         private System.Windows.Forms.ComboBox LocationChooser;
         private System.Windows.Forms.PictureBox Display;
         private System.Windows.Forms.Label CountdownLabel;
+        private System.Windows.Forms.Button LoadProfileButton;
+        private System.Windows.Forms.Button SaveProfileButton;
     }
 }

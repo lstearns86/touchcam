@@ -23,5 +23,16 @@ namespace HandSightLibrary.ImageProcessing
         public uint Timestamp;
         public int Width { get { if (width < 0) width = Image.Width; return width; } }
         public int Height { get { if (height < 0) height = Image.Height; return height; } }
+
+        public VideoFrame Clone()
+        {
+            VideoFrame newFrame = new VideoFrame();
+            newFrame.width = width;
+            newFrame.height = height;
+            newFrame.Image = Image.Clone();
+            newFrame.ImageGPU = Worker.Default.Malloc<byte>(ImageGPU.Size);
+            newFrame.ImageGPU.Scatter(newFrame.Image.Bytes);
+            return newFrame;
+        }
     }
 }

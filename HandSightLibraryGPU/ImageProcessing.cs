@@ -47,8 +47,10 @@ namespace HandSightLibrary.ImageProcessing
             List<float> texture = new List<float>();
 
             //List<float> variances = new List<float>();
+            float[][] textureScales = new float[imgScales.Length][];
 
-            for (int i = 0; i < imgScales.Length; i++)
+            //for (int i = 0; i < imgScales.Length; i++)
+            Parallel.For(0, imgScales.Length, (int i) =>
             {
                 double scaleFactor = 1.0 / Math.Pow(2, imgScales[i]);
                 int height = (int)Math.Ceiling((template.Image.Height * scaleFactor) / 4.0) * 4;
@@ -64,10 +66,12 @@ namespace HandSightLibrary.ImageProcessing
                 //float[] textureCurrentScale = AdaptiveLBP.GetInstance(temp.Size).GetHistogram(new VideoFrame() { Image = temp, ImageGPU = pyramid[i] });
                 float[] textureCurrentScale = LBP.GetInstance(temp.Size).GetHistogram(frame);
                 //float[] textureCurrentScale = Utils.ToFloat(Utils.Flatten(OldLBP.GetImageHistogramEfficient(temp)));
-                texture.AddRange(textureCurrentScale);
+                //texture.AddRange(textureCurrentScale);
+                textureScales[i] = textureCurrentScale;
 
                 //variances.AddRange(LBP.GetInstance(temp.Size).GetVariances(frame));
-            }
+            });
+            foreach (float[] textureScale in textureScales) texture.AddRange(textureScale);
             template.Texture = texture.ToArray();
             //template["variances"] = variances;
 
