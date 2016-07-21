@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandSightLibrary", "HandSig
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandSightLibrary.ImageProcessing", "HandSightLibraryGPU\HandSightLibrary.ImageProcessing.csproj", "{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HandSightCustomControls", "HandSightCustomControls\HandSightCustomControls.csproj", "{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +57,18 @@ Global
 		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Release|x64.Build.0 = Release|Any CPU
 		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Release|x86.ActiveCfg = Release|x86
 		{A8E01CAC-2CD4-4AEC-AA6C-B6CB6FB78201}.Release|x86.Build.0 = Release|x86
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Debug|x64.Build.0 = Debug|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Debug|x86.Build.0 = Debug|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Release|x64.ActiveCfg = Release|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Release|x64.Build.0 = Release|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Release|x86.ActiveCfg = Release|Any CPU
+		{B2B17F25-94BD-4198-9BB6-6FC62C4BAF19}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

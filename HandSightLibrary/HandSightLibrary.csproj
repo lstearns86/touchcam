@@ -105,12 +105,6 @@
     <Compile Include="Classifier.cs" />
     <Compile Include="DataStructures\EulerAngles.cs" />
     <Compile Include="DataStructures\Quaternion.cs" />
-    <Compile Include="PromptDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="PromptDialog.Designer.cs">
-      <DependentUpon>PromptDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="Utilities\CustomExtensions.cs" />
     <Compile Include="Utilities\FPS.cs" />
     <Compile Include="Utilities\Logging.cs" />
@@ -123,11 +117,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Algorithms\" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="PromptDialog.resx">
-      <DependentUpon>PromptDialog.cs</DependentUpon>
-    </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

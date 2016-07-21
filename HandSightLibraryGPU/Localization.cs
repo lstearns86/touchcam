@@ -24,7 +24,7 @@ namespace HandSightLibrary.ImageProcessing
         //static int numClusters = 30;
         static int maxTemplateMatches = int.MaxValue;
 
-        static Dictionary<string, List<ImageTemplate>> samples = new Dictionary<string, List<ImageTemplate>>();
+        public static Dictionary<string, List<ImageTemplate>> samples = new Dictionary<string, List<ImageTemplate>>();
         static Classifier groupClassifier = null, groupClassifierSecondary = null;
         static Classifier sensorFusionClassifier = null;
         static Dictionary<string, string> groupForRegion = new Dictionary<string,string>();
@@ -105,6 +105,29 @@ namespace HandSightLibrary.ImageProcessing
             if (!groupForRegion.ContainsKey(region)) groupForRegion[region] = group;
             if (!groups.ContainsKey(group)) groups.Add(group, new HashSet<string>());
             if (!groups[group].Contains(region)) groups[group].Add(region);
+        }
+
+        public static void RemoveTrainingExample(ImageTemplate template)
+        {
+            string group = "", region = "";
+            foreach(string tempRegion in samples.Keys)
+                foreach(ImageTemplate tempTemplate in samples[tempRegion])
+                    if(template == tempTemplate)
+                    {
+                        region = tempRegion;
+                        group = groupForRegion[region];
+                    }
+            samples[region].Remove(template);
+            if(samples[region].Count == 0)
+            {
+                samples.Remove(region);
+                groupForRegion.Remove(region);
+                groups[group].Remove(region);
+            }
+            if(groups[group].Count == 0)
+            {
+                groups.Remove(group);
+            }
         }
 
         public static void Train(bool enableCamera = true, bool enableSecondary = false)

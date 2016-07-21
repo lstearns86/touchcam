@@ -18,6 +18,7 @@ using Emgu.CV;
 using Emgu.CV.Cuda;
 using Emgu.CV.Structure;
 using System.Threading;
+using System.IO;
 
 namespace HandSightLibrary.ImageProcessing
 {
@@ -100,6 +101,17 @@ namespace HandSightLibrary.ImageProcessing
                 for (int i = 0; i < temp.Length; i++) temp[i] = 1;
                 correctionFactor.Scatter(temp);
                 scalarOutput = worker.Malloc<float>(1);
+
+                if(File.Exists("correctionFactor.dat"))
+                {
+                    FileStream stream = new FileStream("correctionFactor.dat", FileMode.Open);
+                    byte[] buffer = new byte[640 * 640 * 4];
+                    stream.Read(buffer, 0, (int)Math.Min(buffer.Length, stream.Length));
+                    for (int i = 0; i < 640 * 640; i++) temp[i] = BitConverter.ToSingle(buffer, 4 * i);
+                    stream.Close();
+
+                    correctionFactor.Scatter(temp);
+                }
                 
                 // initialize CUDA parameters
                 var blockDims = new dim3(32, 32);
@@ -193,6 +205,12 @@ namespace HandSightLibrary.ImageProcessing
         public void StopCalibration()
         {
             calibrating = false;
+
+            float[] temp = new float[correctionFactor.Length];
+            correctionFactor.Gather(temp);
+            FileStream stream = new FileStream("correctionFactor.dat", FileMode.OpenOrCreate);
+            foreach (float value in temp) stream.Write(BitConverter.GetBytes(value), 0, 4);
+            stream.Close();
         }
 
         void provider_Interrupt(object sender, InterruptEventArgs e)

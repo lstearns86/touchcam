@@ -46,5 +46,29 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["CountdownTimer"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("10")]
+        public int CameraBrightness {
+            get {
+                return ((int)(this["CameraBrightness"]));
+            }
+            set {
+                this["CameraBrightness"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("15")]
+        public int PredictionSmoothing {
+            get {
+                return ((int)(this["PredictionSmoothing"]));
+            }
+            set {
+                this["PredictionSmoothing"] = value;
+            }
+        }
     }
 }
