@@ -105,6 +105,9 @@
     <Compile Include="Classifier.cs" />
     <Compile Include="DataStructures\EulerAngles.cs" />
     <Compile Include="DataStructures\Quaternion.cs" />
+    <Compile Include="DataStructures\Gesture.cs" />
+    <Compile Include="GestureRecognition.cs" />
+    <Compile Include="TouchSegmentation.cs" />
     <Compile Include="Utilities\CustomExtensions.cs" />
     <Compile Include="Utilities\FPS.cs" />
     <Compile Include="Utilities\Logging.cs" />
