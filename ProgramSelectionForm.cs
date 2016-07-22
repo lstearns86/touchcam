@@ -10,6 +10,10 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using HandSightLibrary;
 using System.IO;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
 
 
 namespace HandSightOnBodyInteractionNoGPU
@@ -63,17 +67,15 @@ namespace HandSightOnBodyInteractionNoGPU
             //UO
             
             /*
-            for (int i = 1; i < 25; i++)
+            for (int i = 1; i < 2; i++)
             {
                 runAutoSegmentation(i);
             }*/
 
-            Classifier classifier = new Classifier(Classifier.ClassifierType.SVM);
-            
-            //trainClassifier(1, 1, ref classifier);
-            
-            classifier.Load("trainedClassifierP1");
-            testClassifier(1, 1, ref classifier);
+            Classifier classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Rbf);
+            trainClassifier(1, 1, ref classifier);
+            //classifier.Load("trainedClassifierP1");
+            //testClassifier(1, 1, ref classifier);
             
             
             form.FormClosed += delegate { this.Close(); };
@@ -102,11 +104,17 @@ namespace HandSightOnBodyInteractionNoGPU
                 if (!fileName.EndsWith(groupID.ToString()))
                 {
                     var directory = @"C:\Users\Uran\Desktop\PalmData\raw\p" + pid + "\\";
-                    List<Logging.SensorReadingEvent> logs = Logging.ReadEventLog(directory + fileName + ".json");
+                    int verID = 1;
+                    string path2 = directory + fileName;
+                    string targetFile = path2 + ".json";
+                    while (File.Exists(path2 + "_" + verID + ".json"))
+                    {
+                        targetFile = path2 + "_" + verID + ".json";
+                        verID++;
+                    }
+                    List<Logging.SensorReadingEvent> logs = Logging.ReadEventLog(targetFile);
                     List<Sensors.Reading> stream = new List<Sensors.Reading>();
-
-                    Console.WriteLine("Train: "+fileName);
-
+                    //Console.WriteLine("----" +fileName+": "+ startIdx + "," + endIdx + "," + logs.Count);
                     for (int i = startIdx; i <= endIdx; i++)
                     {
                         Logging.SensorReadingEvent log = (Logging.SensorReadingEvent)logs.ElementAt(i);
@@ -117,12 +125,12 @@ namespace HandSightOnBodyInteractionNoGPU
 
                     if (classIDs[1].Equals("Gesture"))
                     {
+                        Console.WriteLine("Train: " + fileName);
                         float[] features = getFeatures(stream);
                         string classID = classIDs[2];
                         classifier.AddExample(classID, features);
                     }
-                }
-                
+                }  
             }
             indexReader.Close();
             classifier.Train();
@@ -169,7 +177,6 @@ namespace HandSightOnBodyInteractionNoGPU
                         Console.WriteLine("Testing "+fileName + ", predicted as " + predict);
                     }
                 }
-
             }
             indexReader.Close();
         }
@@ -230,6 +237,77 @@ namespace HandSightOnBodyInteractionNoGPU
             return absAvg / count;
         }
 
+        private void smoothing(ref List<float>[] stream)
+        {
+            int count = stream[0].Count;
+
+            for (int idx = 0; idx < stream.Length; idx++)
+            {
+                float[] arr = new float[count];
+                stream[idx].CopyTo(arr);
+
+                Image<Gray,float> image = new Image<Gray, float>(arr.Length,1);
+                //Matrix<float> matrix = new Matrix<float>(arr.Length, 1);
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    //matrix.Data[i, 0] = arr[i];
+                    image.Data[i, 0, 0] = arr[i];
+                }
+                //matrix.Data.CopyTo(image, 0);
+                image = image.SmoothGaussian(51, 13, 2, 0);
+                ImageConverter converter = new ImageConverter();
+                arr = (float[])converter.ConvertTo(image, typeof(float[]));
+                stream[idx] = arr.ToList();
+            }
+        }
+
+
+        private List<float>[] lowPass(List<float>[] stream) {
+            float ALPHA = 0.15f;
+            int count = stream[0].Count;
+            List<float>[] output = new List<float>[stream.Length];
+
+            for (int idx = 0; idx < stream.Length; idx++)
+            {
+                float[] arr = new float[count];
+                stream[idx].CopyTo(arr);
+                for (int i = 0; i < arr.Length; i++)
+                {
+                    output[idx][i] = output[idx][i] + ALPHA * (arr[i] - output[idx][i]);
+                }
+            }
+            return output;
+        }
+
+        private void movingAverage(int frameSize, ref List<float>[] stream)
+        {
+            int count = stream[0].Count;
+
+            for (int idx = 0; idx < stream.Length; idx++)
+            {
+                float[] arr = new float[count];
+                stream[idx].CopyTo(arr);
+                float sum = 0;
+                float[] avgPoints = new float[arr.Length - frameSize + 1];
+                for (int counter = 0; counter <= arr.Length - frameSize; counter++)
+                {
+                    int innerLoopCounter = 0;
+                    int index = counter;
+                    while (innerLoopCounter < frameSize)
+                    {
+                        sum = sum + arr[index];
+
+                        innerLoopCounter += 1;
+
+                        index += 1;
+                    }
+                    avgPoints[counter] = sum / frameSize;
+                    sum = 0;
+                }
+                stream[idx] = avgPoints.ToList();
+            }
+        }
+
         private void normalization(ref List<float>[] stream)
         {
             int count = stream[0].Count;
@@ -271,18 +349,19 @@ namespace HandSightOnBodyInteractionNoGPU
 
         private void addFeatures(ref List<float> features, List<float>[] raw)
         {
-            int frameCnt = 10;
+            int frameCnt = 50;
             int scale = 10;
             //To do. fix this
-            int len = 125; // raw[0].Count;
+            int len = raw[0].Count;
+            int stepSize = len / (frameCnt+1);
             
             for (int idx = 0; idx < raw.Length; idx++)
             {
-
-                for (int i = 0; i < len - 2*frameCnt; i += frameCnt)
+                for (int i = 0; i < len - 2*stepSize; i += stepSize)
                 {
+                    //Console.WriteLine(i + "," + (i + 2 * frameCnt) + "," + len +"," + raw[idx].Count);
                     List<float> frame = new List<float>();
-                    frame = raw[idx].GetRange(i, 2 * frameCnt);
+                    frame = raw[idx].GetRange(i, 2 * stepSize-1);
                     features.Add(frame.Max() * scale);
                     features.Add(frame.Min() * scale);
                     features.Add(getMedian(frame) * scale);
@@ -297,7 +376,7 @@ namespace HandSightOnBodyInteractionNoGPU
             List<float>[] readings = new List<float>[20];
             List<float> featureAll = new List<float>();
 
-            //To do. Apply smoothing
+            
 
             int size = stream.Count;
 
@@ -329,6 +408,11 @@ namespace HandSightOnBodyInteractionNoGPU
                 readings[(int)READING_TYPE.IR1].Add(stream.ElementAt(i).InfraredReflectance1);
                 readings[(int)READING_TYPE.IR2].Add(stream.ElementAt(i).InfraredReflectance2);
             }
+
+            //To do. Apply smoothing
+            //smoothing(ref readings);
+            //readings = lowPass(readings);
+            movingAverage(10, ref readings);
 
             //Normalization
             normalization(ref readings);
@@ -391,6 +475,7 @@ namespace HandSightOnBodyInteractionNoGPU
                             {
                                 fileName = "p" + pid + "_" + type + "_";
                                 fileName += gesture + "_" + location + i;
+                                segmentation(pid, fileName, eventWriter);
                             }
                         }
                         else
@@ -399,9 +484,10 @@ namespace HandSightOnBodyInteractionNoGPU
                             {
                                 fileName = "p" + pid + "_" + type + "_";
                                 fileName += gesture + "_" + speed + i;
+                                segmentation(pid, fileName, eventWriter);
                             }
                         }
-                        segmentation(pid, fileName, eventWriter);
+                       
                     }
                 } 
             }
@@ -418,7 +504,15 @@ namespace HandSightOnBodyInteractionNoGPU
             int end = 0; 
 
             var directory = @"C:\Users\Uran\Desktop\PalmData\raw\p"+pid+"\\";
-            List<Logging.SensorReadingEvent> logs = Logging.ReadEventLog(directory + fileName + ".json");
+            int verID = 1;
+            string path = directory + fileName;
+            string targetFile = path + ".json";
+            while (File.Exists(path+"_"+verID+".json"))
+            {
+                targetFile = path + "_" + verID + ".json";
+                verID++;
+            }
+            List<Logging.SensorReadingEvent> logs = Logging.ReadEventLog(targetFile);
             int count = logs.Count;
             int index = 0;
             List<TouchEvent> touchEvent = new List<TouchEvent>();
@@ -437,7 +531,7 @@ namespace HandSightOnBodyInteractionNoGPU
                     {
                         if (win1.Average() < thresh || win2.Average() < thresh)
                         {
-                            start = index - windowSize;
+                            start = Math.Max(0, index - windowSize);
                             hasTouchDown = true;
                         }
                         win1.Dequeue();
@@ -459,7 +553,7 @@ namespace HandSightOnBodyInteractionNoGPU
                             int segCount = touchEvent.Count;
                             if (segCount > 0)
                             {
-                                if (touchEvent.ElementAt(segCount - 1).touchUp > start)
+                                if ((touchEvent.ElementAt(segCount - 1).touchUp > start) || (start - touchEvent.ElementAt(segCount - 1).touchUp < 2*windowSize))
                                 {
                                     touchEvent.ElementAt(segCount - 1).touchUp = end;
                                 }
@@ -482,13 +576,20 @@ namespace HandSightOnBodyInteractionNoGPU
             }
 
             writer.Write(fileName + ",");
-            
-            for (int i = 0; i < touchEvent.Count; i++)
+            if (touchEvent.Count > 0)
             {
-                writer.Write(touchEvent.ElementAt(i).touchDown + "," + touchEvent.ElementAt(i).touchUp+",");
-                Console.WriteLine(fileName+","+touchEvent.ElementAt(i).touchDown + "," + touchEvent.ElementAt(i).touchUp + "\n");
+                for (int i = 0; i < touchEvent.Count; i++)
+                {
+                    writer.Write(touchEvent.ElementAt(i).touchDown + "," + touchEvent.ElementAt(i).touchUp + ",");
+                    Console.WriteLine(fileName + "," + touchEvent.ElementAt(i).touchDown + "," + touchEvent.ElementAt(i).touchUp + "\n");
+                }
+            }
+            else
+            {
+                writer.Write("Error");
             }
             writer.Write(Environment.NewLine);
+           
         }
     }
 }
