@@ -33,6 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Emgu.CV.World">
+      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windesktop_x64-cuda 3.1.0.2282\bin\Emgu.CV.World.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -51,6 +54,12 @@
     </Compile>
     <Compile Include="Form1.Designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GestureRecognitionTest.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GestureRecognitionTest.Designer.cs">
+      <DependentUpon>GestureRecognitionTest.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="ProgramSelectionForm.cs">
@@ -84,6 +93,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HandSightLibrary\HandSightLibrary.csproj">
+      <Project>{4a1b3704-7a89-401e-ad99-8ff927dfd152}</Project>
+      <Name>HandSightLibrary</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
