@@ -81,7 +81,10 @@ namespace HandSightLibrary.ImageProcessing
             set
             {
                 prescaler = value;
-                provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x05, true, 0, prescaler));
+                if (provider.IsConnected)
+                {
+                    provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x05, true, 0, prescaler));
+                }
             }
         }
 
@@ -121,12 +124,15 @@ namespace HandSightLibrary.ImageProcessing
                 // set up the camera parameters and events
                 provider = new IduleProviderCsCam(0);
                 provider.Initialize();
-                provider.ImageTransaction += provider_ImageTransaction;
-                provider.Interrupt += provider_Interrupt;
-                provider.Exception += camera_Exception;
-                provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x05, true, 0, prescaler));
-                provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x06, true, 0, exposure));
-                ProcessingWrapper.pr[0].ReduceProcessing = true;
+                if (provider.IsConnected)
+                {
+                    provider.ImageTransaction += provider_ImageTransaction;
+                    provider.Interrupt += provider_Interrupt;
+                    provider.Exception += camera_Exception;
+                    provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x05, true, 0, prescaler));
+                    provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x06, true, 0, exposure));
+                    ProcessingWrapper.pr[0].ReduceProcessing = true;
+                }
             }
             catch (Exception ex) { OnError(ex.Message); }
         }

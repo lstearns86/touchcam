@@ -13,7 +13,7 @@ namespace HandSightLibrary
         float GYRO_UNIT = 0.07000f; // deg / s
         float IR_UNIT = 1.0f / 1024.0f; // % max intensity
 
-        string PORT_ID = "COM7"; // TODO: provide an interface to select the port, and save to user preference
+        string PORT_ID = "COM3"; // TODO: provide an interface to select the port, and save to user preference
         int BAUD_RATE = 250000;
 
         public struct Point3D

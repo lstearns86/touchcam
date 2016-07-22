@@ -188,9 +188,9 @@ namespace HandSightOnBodyInteractionGPU
                             watch.Restart();
 
                             List<Tuple<string, float>> groupProbabilities;
-                            string predictedGroup = Localization.PredictGroup(query, out groupProbabilities);
+                            string predictedGroup = Localization.PredictCoarseLocation(query, out groupProbabilities);
                             string predictedRegion = "";
-                            predictedRegion = Localization.PredictRegion(query, true, true, false, predictedGroup);
+                            predictedRegion = Localization.PredictFineLocation(query, true, true, false, predictedGroup);
 
 
                             bool groupCorrect = predictedGroup == groupForRegion[className];

@@ -27,8 +27,8 @@ namespace HandSightLibrary.ImageProcessing
         public static Dictionary<string, List<ImageTemplate>> samples = new Dictionary<string, List<ImageTemplate>>();
         static Classifier groupClassifier = null, groupClassifierSecondary = null;
         static Classifier sensorFusionClassifier = null;
-        static Dictionary<string, string> groupForRegion = new Dictionary<string,string>();
-        static Dictionary<string, HashSet<string>> groups = new Dictionary<string, HashSet<string>>();
+        public static Dictionary<string, string> coarseLocations = new Dictionary<string,string>();
+        public static Dictionary<string, HashSet<string>> groups = new Dictionary<string, HashSet<string>>();
         static Dictionary<string, List<Tuple<string, int>>> trainInfoByGroup = new Dictionary<string, List<Tuple<string, int>>>();
         static Dictionary<string, Classifier> bfClassifierByGroup = new Dictionary<string, Classifier>();
         static Dictionary<string, Classifier> classifierByGroup = new Dictionary<string, Classifier>();
@@ -52,7 +52,7 @@ namespace HandSightLibrary.ImageProcessing
         {
             samples.Clear();
             groupClassifier = null;
-            groupForRegion.Clear();
+            coarseLocations.Clear();
             groups.Clear();
         }
 
@@ -72,7 +72,7 @@ namespace HandSightLibrary.ImageProcessing
                 int i = 0;
                 foreach(ImageTemplate template in samples[region])
                 {
-                    template.Image.Save(Path.Combine(dir, groupForRegion[region] + "_" + region + "_" + i + ".png"));
+                    template.Image.Save(Path.Combine(dir, coarseLocations[region] + "_" + region + "_" + i + ".png"));
                     i++;
                 }
             }
@@ -102,7 +102,7 @@ namespace HandSightLibrary.ImageProcessing
         {
             if (!samples.ContainsKey(region)) samples.Add(region, new List<ImageTemplate>());
             samples[region].Add(template);
-            if (!groupForRegion.ContainsKey(region)) groupForRegion[region] = group;
+            if (!coarseLocations.ContainsKey(region)) coarseLocations[region] = group;
             if (!groups.ContainsKey(group)) groups.Add(group, new HashSet<string>());
             if (!groups[group].Contains(region)) groups[group].Add(region);
         }
@@ -115,13 +115,13 @@ namespace HandSightLibrary.ImageProcessing
                     if(template == tempTemplate)
                     {
                         region = tempRegion;
-                        group = groupForRegion[region];
+                        group = coarseLocations[region];
                     }
             samples[region].Remove(template);
             if(samples[region].Count == 0)
             {
                 samples.Remove(region);
-                groupForRegion.Remove(region);
+                coarseLocations.Remove(region);
                 groups[group].Remove(region);
             }
             if(groups[group].Count == 0)
@@ -137,8 +137,8 @@ namespace HandSightLibrary.ImageProcessing
             if(enableSecondary) groupClassifierSecondary = new Classifier(Classifier.ClassifierType.SVM);
             foreach (string region in samples.Keys)
             {
-                if (!groupForRegion.ContainsKey(region)) continue;
-                string group = groupForRegion[region];
+                if (!coarseLocations.ContainsKey(region)) continue;
+                string group = coarseLocations[region];
                 foreach (ImageTemplate template in samples[region])
                 {
                     numTrainingSamples++;
@@ -160,8 +160,8 @@ namespace HandSightLibrary.ImageProcessing
                 sensorFusionClassifier = new Classifier(Classifier.ClassifierType.NeuralNet);
                 foreach (string region in samples.Keys)
                 {
-                    if (!groupForRegion.ContainsKey(region)) continue;
-                    string group = groupForRegion[region];
+                    if (!coarseLocations.ContainsKey(region)) continue;
+                    string group = coarseLocations[region];
                     foreach (ImageTemplate template in samples[region])
                     {
                         Dictionary<string, float> textureProbabilities, secondaryProbabilities;
@@ -198,7 +198,7 @@ namespace HandSightLibrary.ImageProcessing
                 Classifier secondaryClassifier = new Classifier(Classifier.ClassifierType.SVM);
                 foreach (string region in groups[groupName])
                 {
-                    if (!groupForRegion.ContainsKey(region)) continue;
+                    if (!coarseLocations.ContainsKey(region)) continue;
                     for (int i = 0; i < samples[region].Count; i++)
                     {
                         ImageTemplate template = samples[region][i];
@@ -231,7 +231,7 @@ namespace HandSightLibrary.ImageProcessing
                     Classifier classifier = new Classifier(Classifier.ClassifierType.NeuralNet);
                     foreach (string region in groups[groupName])
                     {
-                        if (!groupForRegion.ContainsKey(region)) continue;
+                        if (!coarseLocations.ContainsKey(region)) continue;
                         for (int i = 0; i < samples[region].Count; i++)
                         {
                             ImageTemplate template = samples[region][i];
@@ -252,16 +252,16 @@ namespace HandSightLibrary.ImageProcessing
         }
 
         //private static float orientationWeight = 0.33f;
-        public static string PredictGroup(ImageTemplate query, bool enableCamera = true, bool enableSecondary = false)
+        public static string PredictCoarseLocation(ImageTemplate query, bool enableCamera = true, bool enableSecondary = false)
         {
             List<Tuple<string, float>> probabilities = null;
-            return PredictGroup(query, out probabilities, enableCamera, enableSecondary);
+            return PredictCoarseLocation(query, out probabilities, enableCamera, enableSecondary);
         }
-        public static string PredictGroup(ImageTemplate query, out List<Tuple<string, float>> probabilities, bool enableCamera = true, bool enableSecondary = false)
+        public static string PredictCoarseLocation(ImageTemplate query, out List<Tuple<string, float>> probabilities, bool enableCamera = true, bool enableSecondary = false)
         {
             Dictionary<string, float> probabilitiesTexture = null, probabilitiesSecondary = null;
             string predictedGroupTexture = enableCamera ? groupClassifier.Predict(query.TextureMatrixRow, out probabilitiesTexture) : "disabled";
-            string predictedGroup = predictedGroupTexture;
+            string predictedGroup = samples.Count == 1 ? samples.Keys.First() : predictedGroupTexture;
             probabilities = null;
             if (enableSecondary)
             {
@@ -300,10 +300,10 @@ namespace HandSightLibrary.ImageProcessing
         }
 
         //private static bool useFeatureMatching = true;
-        public static string PredictRegion(ImageTemplate query, bool enableCamera = true, bool enableGeometricVerification = true, bool enableSecondary = false, params string[] predictedGroup) { bool temp; return PredictRegion(query, out temp, enableCamera, enableGeometricVerification, enableSecondary, predictedGroup); }
-        public static string PredictRegion(ImageTemplate query, out bool foundFeatureMatch, bool enableCamera = true, bool enableGeometricVerification = true, bool enableSecondary = false, params string[] predictedGroup)
+        public static string PredictFineLocation(ImageTemplate query, bool enableCamera = true, bool enableGeometricVerification = true, bool enableSecondary = false, params string[] predictedGroup) { bool temp; return PredictFineLocation(query, out temp, enableCamera, enableGeometricVerification, enableSecondary, predictedGroup); }
+        public static string PredictFineLocation(ImageTemplate query, out bool foundFeatureMatch, bool enableCamera = true, bool enableGeometricVerification = true, bool enableSecondary = false, params string[] predictedGroup)
         {
-            if (predictedGroup.Length == 0) predictedGroup = new string[] { PredictGroup(query) };
+            if (predictedGroup.Length == 0) predictedGroup = new string[] { PredictCoarseLocation(query) };
 
             string predictedRegion = "no_match";
             string matchInfo = "";

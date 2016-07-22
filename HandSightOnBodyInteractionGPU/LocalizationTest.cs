@@ -25,6 +25,19 @@ namespace HandSightOnBodyInteractionGPU
 {
     public partial class LocalizationTest : Form
     {
+        Dictionary<string, string[]> locations = new Dictionary<string, string[]>
+        {
+            { "Nothing", new string[] { "Nothing" } },
+            { "Palm", new string[] { "Up", "Down", "Left", "Right", "Center" } },
+            { "Finger", new string[] { "Thumb", "Index", "Middle", "Ring", "Pinky" } },
+            { "Wrist", new string[] { "Inner", "Outer", "BackOfHand" } },
+            { "Ear", new string[] { "Upper", "Lower" } },
+            { "Clothing", new string[] { "Pants", "Shirt" } },
+            { "OtherSkin", new string[] { "Shoulder", "Thigh", "Cheek", "Neck" } },
+            { "Knuckle", new string[] { "Thumb", "Index", "Middle", "Ring", "Pinky" } },
+            { "Nail", new string[] { "Thumb", "Index", "Middle", "Ring", "Pinky" } }
+        };
+
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
@@ -70,7 +83,14 @@ namespace HandSightOnBodyInteractionGPU
             numLocationPredictions = Properties.Settings.Default.PredictionSmoothing;
             PredictionSmoothingChooser.Value = numLocationPredictions;
 
-            Text = "Connecting to Camera...";
+            Text = "Connecting to Camera and Sensors...";
+
+            CoarseLocationChooser.Items.Clear();
+            CoarseLocationChooser.Items.AddRange(locations.Keys.ToArray());
+            CoarseLocationChooser.SelectedIndex = 0;
+
+            TouchSegmentation.TouchDownEvent += () => { Invoke(new MethodInvoker(delegate { TouchStatusLabel.Text = "Touch Down"; })); };
+            TouchSegmentation.TouchUpEvent += (Queue<Sensors.Reading> readings) => { Invoke(new MethodInvoker(delegate { TouchStatusLabel.Text = "Touch Up"; })); };
 
             Task.Factory.StartNew(() =>
             {
@@ -82,10 +102,16 @@ namespace HandSightOnBodyInteractionGPU
                 };
                 Camera.Instance.Brightness = 10;
 
+                Sensors.Instance.ReadingAvailable += Instance_ReadingAvailable;
                 Camera.Instance.Connect();
-
-                //Sensors.Instance.Connect();
+                Sensors.Instance.Connect();
             });
+        }
+
+        private void Instance_ReadingAvailable(Sensors.Reading reading)
+        {
+            FPS.Sensors.Update();
+            TouchSegmentation.UpdateWithReading(reading);
         }
 
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -110,7 +136,7 @@ namespace HandSightOnBodyInteractionGPU
             }
         }
 
-        private void AddTemplate(ImageTemplate template = null, string location = null, bool alreadyExists = false)
+        private void AddTemplate(ImageTemplate template = null, string coarseLocation = null, string fineLocation = null, bool alreadyExists = false)
         {
             Monitor.Enter(trainingLock);
 
@@ -120,14 +146,19 @@ namespace HandSightOnBodyInteractionGPU
                     template = CopyTemplate(currTemplate);
                 }
 
-            if (location == null)
+            if (coarseLocation == null)
             {
-                Invoke(new MethodInvoker(delegate { location = (string)LocationChooser.SelectedItem; }));
+                Invoke(new MethodInvoker(delegate { coarseLocation = (string)CoarseLocationChooser.SelectedItem; }));
+            }
+
+            if (fineLocation == null)
+            {
+                Invoke(new MethodInvoker(delegate { fineLocation = (string)FineLocationChooser.SelectedItem; }));
             }
 
             if (!alreadyExists)
             {
-                Localization.AddTrainingExample(template, location, location);
+                Localization.AddTrainingExample(template, coarseLocation, fineLocation);
                 Localization.Train();
             }
 
@@ -135,7 +166,7 @@ namespace HandSightOnBodyInteractionGPU
             {
                 int imageIndex = TrainingSampleList.LargeImageList.Images.Count;
                 TrainingSampleList.LargeImageList.Images.Add(template.Image.Bitmap);
-                TrainingSampleList.Items.Add(new ListViewItem() { Text = location, ImageIndex = imageIndex, Tag = template });
+                TrainingSampleList.Items.Add(new ListViewItem() { Text = coarseLocation + ", " + fineLocation, ImageIndex = imageIndex, Tag = template });
 
                 TrainingExamplesLabel.Text = Localization.GetNumTrainingExamples() + " training examples (" + Localization.GetNumTrainingClasses() + " classes)";
             }));
@@ -202,7 +233,8 @@ namespace HandSightOnBodyInteractionGPU
             return newTemplate;
         }
 
-        BlockingCollection<string> locationPredictions = new BlockingCollection<string>();
+        BlockingCollection<string> coarseLocationPredictions = new BlockingCollection<string>();
+        BlockingCollection<string> fineLocationPredictions = new BlockingCollection<string>();
 
         private void SaveProfileButton_Click(object sender, EventArgs e)
         {
@@ -225,9 +257,9 @@ namespace HandSightOnBodyInteractionGPU
                     Localization.Reset();
                     Localization.Load(dialog.Value);
 
-                    foreach (string region in Localization.samples.Keys)
-                        foreach (ImageTemplate template in Localization.samples[region])
-                            AddTemplate(template, region, true);
+                    foreach (string fineLocation in Localization.samples.Keys)
+                        foreach (ImageTemplate template in Localization.samples[fineLocation])
+                            AddTemplate(template, fineLocation, Localization.coarseLocations[fineLocation], true);
 
                     TrainingExamplesLabel.Text = Localization.GetNumTrainingExamples() + " training examples (" + Localization.GetNumTrainingClasses() + " classes)";
                 }
@@ -272,6 +304,13 @@ namespace HandSightOnBodyInteractionGPU
             Properties.Settings.Default.Save();
         }
 
+        private void LocationChooser_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            FineLocationChooser.Items.Clear();
+            FineLocationChooser.Items.AddRange(locations[(string)CoarseLocationChooser.SelectedItem]);
+            FineLocationChooser.SelectedIndex = 0;
+        }
+
         int numLocationPredictions = 15;
         void Camera_FrameAvailable(VideoFrame frame)
         {
@@ -290,19 +329,28 @@ namespace HandSightOnBodyInteractionGPU
                         currTemplate = template;
                     }
 
-                    string location = "";
+                    string coarseLocation = "", fineLocation = "";
                     if (Monitor.TryEnter(trainingLock))
                     {
                         if (Localization.GetNumTrainingExamples() > 0)
                         {
-                            string predictedLocation = Localization.PredictGroup(currTemplate);
-                            locationPredictions.Add(predictedLocation);
-                            while (locationPredictions.Count > numLocationPredictions) locationPredictions.Take();
+                            string predictedCoarseLocation = Localization.PredictCoarseLocation(currTemplate);
+                            coarseLocationPredictions.Add(predictedCoarseLocation);
+                            while (coarseLocationPredictions.Count > numLocationPredictions) coarseLocationPredictions.Take();
 
                             // compute the mode of the array
-                            var groups = locationPredictions.GroupBy(v => v);
+                            var groups = coarseLocationPredictions.GroupBy(v => v);
                             int maxCount = groups.Max(g => g.Count());
-                            location = groups.First(g => g.Count() == maxCount).Key;
+                            coarseLocation = groups.First(g => g.Count() == maxCount).Key;
+
+                            string predictedFineLocation = Localization.PredictFineLocation(currTemplate, true, false, false, coarseLocation);
+                            fineLocationPredictions.Add(predictedFineLocation);
+                            while (fineLocationPredictions.Count > numLocationPredictions) fineLocationPredictions.Take();
+
+                            // compute the mode of the array
+                            groups = fineLocationPredictions.GroupBy(v => v);
+                            maxCount = groups.Max(g => g.Count());
+                            fineLocation = groups.First(g => g.Count() == maxCount).Key;
                         }
                         Monitor.Exit(trainingLock);
                     }
@@ -311,8 +359,9 @@ namespace HandSightOnBodyInteractionGPU
                     Invoke(new MethodInvoker(delegate
                     {
                         Display.Image = frame.Image.Bitmap;
-                        PredictionLabel.Text = location;
-                        Text = FPS.Camera.Average.ToString("0") + " fps";
+                        CoarsePredictionLabel.Text = coarseLocation;
+                        FinePredictionLabel.Text = fineLocation;
+                        Text = FPS.Camera.Average.ToString("0") + " fps camera / " + (Sensors.Instance.IsConnected ? FPS.Sensors.Average.ToString("0") + " fps sensors" : "Waiting for Sensors");
                     }));
                 }
                 catch { }
