@@ -30,6 +30,13 @@
         {
             this.components = new System.ComponentModel.Container();
             this.MainControlPanel = new System.Windows.Forms.Panel();
+            this.FineProbabilityLabel = new System.Windows.Forms.Label();
+            this.CoarseProbabilityLabel = new System.Windows.Forms.Label();
+            this.FinePredictionLabel = new System.Windows.Forms.Label();
+            this.label7 = new System.Windows.Forms.Label();
+            this.FineLocationChooser = new System.Windows.Forms.ComboBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.TouchStatusLabel = new System.Windows.Forms.Label();
             this.LoadProfileButton = new System.Windows.Forms.Button();
             this.SaveProfileButton = new System.Windows.Forms.Button();
             this.CoarsePredictionLabel = new System.Windows.Forms.Label();
@@ -45,6 +52,8 @@
             this.Display = new System.Windows.Forms.PictureBox();
             this.CountdownLabel = new System.Windows.Forms.Label();
             this.SecondaryControlPanel = new System.Windows.Forms.Panel();
+            this.SingleIMUCheckbox = new System.Windows.Forms.CheckBox();
+            this.CoarseOnlyCheckbox = new System.Windows.Forms.CheckBox();
             this.label5 = new System.Windows.Forms.Label();
             this.PredictionSmoothingChooser = new System.Windows.Forms.NumericUpDown();
             this.TrainingSampleList = new System.Windows.Forms.ListView();
@@ -52,11 +61,7 @@
             this.BrightnessChooser = new System.Windows.Forms.NumericUpDown();
             this.ExpandSecondarySettingsButton = new HandSightOnBodyInteraction.ExpandContractButton();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
-            this.TouchStatusLabel = new System.Windows.Forms.Label();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.FineLocationChooser = new System.Windows.Forms.ComboBox();
-            this.FinePredictionLabel = new System.Windows.Forms.Label();
+            this.InfoBox = new System.Windows.Forms.TextBox();
             this.MainControlPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Display)).BeginInit();
@@ -67,6 +72,8 @@
             // 
             // MainControlPanel
             // 
+            this.MainControlPanel.Controls.Add(this.FineProbabilityLabel);
+            this.MainControlPanel.Controls.Add(this.CoarseProbabilityLabel);
             this.MainControlPanel.Controls.Add(this.FinePredictionLabel);
             this.MainControlPanel.Controls.Add(this.label7);
             this.MainControlPanel.Controls.Add(this.FineLocationChooser);
@@ -83,8 +90,70 @@
             this.MainControlPanel.Dock = System.Windows.Forms.DockStyle.Left;
             this.MainControlPanel.Location = new System.Drawing.Point(0, 0);
             this.MainControlPanel.Name = "MainControlPanel";
-            this.MainControlPanel.Size = new System.Drawing.Size(200, 563);
+            this.MainControlPanel.Size = new System.Drawing.Size(200, 557);
             this.MainControlPanel.TabIndex = 0;
+            // 
+            // FineProbabilityLabel
+            // 
+            this.FineProbabilityLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FineProbabilityLabel.Location = new System.Drawing.Point(9, 341);
+            this.FineProbabilityLabel.Name = "FineProbabilityLabel";
+            this.FineProbabilityLabel.Size = new System.Drawing.Size(181, 22);
+            this.FineProbabilityLabel.TabIndex = 18;
+            this.FineProbabilityLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // CoarseProbabilityLabel
+            // 
+            this.CoarseProbabilityLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.CoarseProbabilityLabel.Location = new System.Drawing.Point(9, 288);
+            this.CoarseProbabilityLabel.Name = "CoarseProbabilityLabel";
+            this.CoarseProbabilityLabel.Size = new System.Drawing.Size(181, 17);
+            this.CoarseProbabilityLabel.TabIndex = 17;
+            this.CoarseProbabilityLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // FinePredictionLabel
+            // 
+            this.FinePredictionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FinePredictionLabel.Location = new System.Drawing.Point(9, 305);
+            this.FinePredictionLabel.Name = "FinePredictionLabel";
+            this.FinePredictionLabel.Size = new System.Drawing.Size(181, 36);
+            this.FinePredictionLabel.TabIndex = 16;
+            this.FinePredictionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(12, 59);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(30, 13);
+            this.label7.TabIndex = 15;
+            this.label7.Text = "Fine:";
+            // 
+            // FineLocationChooser
+            // 
+            this.FineLocationChooser.FormattingEnabled = true;
+            this.FineLocationChooser.Location = new System.Drawing.Point(64, 56);
+            this.FineLocationChooser.Name = "FineLocationChooser";
+            this.FineLocationChooser.Size = new System.Drawing.Size(129, 21);
+            this.FineLocationChooser.TabIndex = 14;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(12, 32);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(43, 13);
+            this.label6.TabIndex = 13;
+            this.label6.Text = "Coarse:";
+            // 
+            // TouchStatusLabel
+            // 
+            this.TouchStatusLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TouchStatusLabel.Location = new System.Drawing.Point(13, 134);
+            this.TouchStatusLabel.Name = "TouchStatusLabel";
+            this.TouchStatusLabel.Size = new System.Drawing.Size(181, 36);
+            this.TouchStatusLabel.TabIndex = 12;
+            this.TouchStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
             // LoadProfileButton
             // 
@@ -109,7 +178,7 @@
             // CoarsePredictionLabel
             // 
             this.CoarsePredictionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CoarsePredictionLabel.Location = new System.Drawing.Point(9, 261);
+            this.CoarsePredictionLabel.Location = new System.Drawing.Point(9, 252);
             this.CoarsePredictionLabel.Name = "CoarsePredictionLabel";
             this.CoarsePredictionLabel.Size = new System.Drawing.Size(181, 36);
             this.CoarsePredictionLabel.TabIndex = 8;
@@ -208,7 +277,7 @@
             this.Display.Dock = System.Windows.Forms.DockStyle.Fill;
             this.Display.Location = new System.Drawing.Point(200, 0);
             this.Display.Name = "Display";
-            this.Display.Size = new System.Drawing.Size(554, 563);
+            this.Display.Size = new System.Drawing.Size(554, 557);
             this.Display.SizeMode = System.Windows.Forms.PictureBoxSizeMode.Zoom;
             this.Display.TabIndex = 1;
             this.Display.TabStop = false;
@@ -221,7 +290,7 @@
             this.CountdownLabel.ForeColor = System.Drawing.Color.White;
             this.CountdownLabel.Location = new System.Drawing.Point(200, 0);
             this.CountdownLabel.Name = "CountdownLabel";
-            this.CountdownLabel.Size = new System.Drawing.Size(554, 563);
+            this.CountdownLabel.Size = new System.Drawing.Size(554, 557);
             this.CountdownLabel.TabIndex = 2;
             this.CountdownLabel.Text = "10";
             this.CountdownLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
@@ -229,6 +298,8 @@
             // 
             // SecondaryControlPanel
             // 
+            this.SecondaryControlPanel.Controls.Add(this.SingleIMUCheckbox);
+            this.SecondaryControlPanel.Controls.Add(this.CoarseOnlyCheckbox);
             this.SecondaryControlPanel.Controls.Add(this.label5);
             this.SecondaryControlPanel.Controls.Add(this.PredictionSmoothingChooser);
             this.SecondaryControlPanel.Controls.Add(this.TrainingSampleList);
@@ -241,9 +312,31 @@
             this.SecondaryControlPanel.Dock = System.Windows.Forms.DockStyle.Right;
             this.SecondaryControlPanel.Location = new System.Drawing.Point(767, 0);
             this.SecondaryControlPanel.Name = "SecondaryControlPanel";
-            this.SecondaryControlPanel.Size = new System.Drawing.Size(185, 563);
+            this.SecondaryControlPanel.Size = new System.Drawing.Size(185, 557);
             this.SecondaryControlPanel.TabIndex = 3;
             this.SecondaryControlPanel.Visible = false;
+            // 
+            // SingleIMUCheckbox
+            // 
+            this.SingleIMUCheckbox.AutoSize = true;
+            this.SingleIMUCheckbox.Location = new System.Drawing.Point(98, 93);
+            this.SingleIMUCheckbox.Name = "SingleIMUCheckbox";
+            this.SingleIMUCheckbox.Size = new System.Drawing.Size(78, 17);
+            this.SingleIMUCheckbox.TabIndex = 16;
+            this.SingleIMUCheckbox.Text = "Single IMU";
+            this.SingleIMUCheckbox.UseVisualStyleBackColor = true;
+            this.SingleIMUCheckbox.CheckedChanged += new System.EventHandler(this.SingleIMUCheckbox_CheckedChanged);
+            // 
+            // CoarseOnlyCheckbox
+            // 
+            this.CoarseOnlyCheckbox.AutoSize = true;
+            this.CoarseOnlyCheckbox.Location = new System.Drawing.Point(6, 93);
+            this.CoarseOnlyCheckbox.Name = "CoarseOnlyCheckbox";
+            this.CoarseOnlyCheckbox.Size = new System.Drawing.Size(83, 17);
+            this.CoarseOnlyCheckbox.TabIndex = 15;
+            this.CoarseOnlyCheckbox.Text = "Coarse Only";
+            this.CoarseOnlyCheckbox.UseVisualStyleBackColor = true;
+            this.CoarseOnlyCheckbox.CheckedChanged += new System.EventHandler(this.CoarseOnlyCheckbox_CheckedChanged);
             // 
             // label5
             // 
@@ -279,10 +372,10 @@
             // 
             // TrainingSampleList
             // 
-            this.TrainingSampleList.Location = new System.Drawing.Point(0, 99);
+            this.TrainingSampleList.Location = new System.Drawing.Point(0, 116);
             this.TrainingSampleList.MultiSelect = false;
             this.TrainingSampleList.Name = "TrainingSampleList";
-            this.TrainingSampleList.Size = new System.Drawing.Size(185, 422);
+            this.TrainingSampleList.Size = new System.Drawing.Size(185, 405);
             this.TrainingSampleList.TabIndex = 12;
             this.TrainingSampleList.UseCompatibleStateImageBehavior = false;
             this.TrainingSampleList.KeyDown += new System.Windows.Forms.KeyEventHandler(this.TrainingSampleList_KeyDown);
@@ -323,7 +416,7 @@
             this.ExpandSecondarySettingsButton.Location = new System.Drawing.Point(754, 0);
             this.ExpandSecondarySettingsButton.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
             this.ExpandSecondarySettingsButton.Name = "ExpandSecondarySettingsButton";
-            this.ExpandSecondarySettingsButton.Size = new System.Drawing.Size(13, 563);
+            this.ExpandSecondarySettingsButton.Size = new System.Drawing.Size(13, 557);
             this.ExpandSecondarySettingsButton.TabIndex = 4;
             this.ExpandSecondarySettingsButton.ButtonClicked += new HandSightOnBodyInteraction.ExpandContractButton.ButtonClickedDelegate(this.ExpandSecondarySettingsButton_ButtonClicked);
             // 
@@ -333,60 +426,28 @@
             this.imageList1.ImageSize = new System.Drawing.Size(16, 16);
             this.imageList1.TransparentColor = System.Drawing.Color.Transparent;
             // 
-            // TouchStatusLabel
+            // InfoBox
             // 
-            this.TouchStatusLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TouchStatusLabel.Location = new System.Drawing.Point(13, 134);
-            this.TouchStatusLabel.Name = "TouchStatusLabel";
-            this.TouchStatusLabel.Size = new System.Drawing.Size(181, 36);
-            this.TouchStatusLabel.TabIndex = 12;
-            this.TouchStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(12, 32);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(43, 13);
-            this.label6.TabIndex = 13;
-            this.label6.Text = "Coarse:";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(12, 59);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(30, 13);
-            this.label7.TabIndex = 15;
-            this.label7.Text = "Fine:";
-            // 
-            // FineLocationChooser
-            // 
-            this.FineLocationChooser.FormattingEnabled = true;
-            this.FineLocationChooser.Location = new System.Drawing.Point(64, 56);
-            this.FineLocationChooser.Name = "FineLocationChooser";
-            this.FineLocationChooser.Size = new System.Drawing.Size(129, 21);
-            this.FineLocationChooser.TabIndex = 14;
-            // 
-            // FinePredictionLabel
-            // 
-            this.FinePredictionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FinePredictionLabel.Location = new System.Drawing.Point(9, 309);
-            this.FinePredictionLabel.Name = "FinePredictionLabel";
-            this.FinePredictionLabel.Size = new System.Drawing.Size(181, 36);
-            this.FinePredictionLabel.TabIndex = 16;
-            this.FinePredictionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            this.InfoBox.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.InfoBox.Location = new System.Drawing.Point(0, 557);
+            this.InfoBox.Multiline = true;
+            this.InfoBox.Name = "InfoBox";
+            this.InfoBox.ReadOnly = true;
+            this.InfoBox.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
+            this.InfoBox.Size = new System.Drawing.Size(952, 75);
+            this.InfoBox.TabIndex = 5;
             // 
             // LocalizationTest
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(952, 563);
+            this.ClientSize = new System.Drawing.Size(952, 632);
             this.Controls.Add(this.CountdownLabel);
             this.Controls.Add(this.Display);
             this.Controls.Add(this.ExpandSecondarySettingsButton);
             this.Controls.Add(this.SecondaryControlPanel);
             this.Controls.Add(this.MainControlPanel);
+            this.Controls.Add(this.InfoBox);
             this.Name = "LocalizationTest";
             this.Text = "Localization Test";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LocalizationTest_FormClosing);
@@ -399,6 +460,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.PredictionSmoothingChooser)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.BrightnessChooser)).EndInit();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -432,5 +494,10 @@
         private System.Windows.Forms.ComboBox FineLocationChooser;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.Label FinePredictionLabel;
+        private System.Windows.Forms.CheckBox CoarseOnlyCheckbox;
+        private System.Windows.Forms.Label FineProbabilityLabel;
+        private System.Windows.Forms.Label CoarseProbabilityLabel;
+        private System.Windows.Forms.CheckBox SingleIMUCheckbox;
+        private System.Windows.Forms.TextBox InfoBox;
     }
 }

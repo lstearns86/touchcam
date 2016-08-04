@@ -49,6 +49,12 @@
     <Compile Include="ExpandContractButton.designer.cs">
       <DependentUpon>ExpandContractButton.cs</DependentUpon>
     </Compile>
+    <Compile Include="SelectFromListDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SelectFromListDialog.Designer.cs">
+      <DependentUpon>SelectFromListDialog.cs</DependentUpon>
+    </Compile>
     <Compile Include="PromptDialog.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -60,6 +66,9 @@
   <ItemGroup>
     <EmbeddedResource Include="ExpandContractButton.resx">
       <DependentUpon>ExpandContractButton.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SelectFromListDialog.resx">
+      <DependentUpon>SelectFromListDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="PromptDialog.resx">
       <DependentUpon>PromptDialog.cs</DependentUpon>

@@ -101,13 +101,15 @@ namespace HandSightLibrary
 
         private void WriteCommand()
         {
-            return;
-
-            //if (IsConnected)
-            //{
-            //    byte command = (byte)((byte)brightness | (byte)(numSensors - 1) << 1);
-            //    device.Write(new byte[] { command }, 0, 1);
-            //}
+            if (IsConnected)
+            {
+                int bVal = (int)(brightness * 127);
+                if (bVal < 0) bVal = 0;
+                else if (bVal > 127) bVal = 127;
+                byte command = (byte)(bVal + (numSensors == 2 ? 128 : 0));
+                //byte command = (byte)((byte)brightness | (byte)(numSensors - 1) << 1);
+                device.Write(new byte[] { command }, 0, 1);
+            }
         }
 
         public bool Connect()
@@ -210,7 +212,7 @@ namespace HandSightLibrary
                             reading.InfraredReflectance1 = ir1;
                             reading.InfraredReflectance2 = ir2;
 
-                            //if (numSensors == 2)
+                            if (numSensors == 2)
                             {
                                 ax = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
                                 ay = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
@@ -221,9 +223,7 @@ namespace HandSightLibrary
                                 gx = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
                                 gy = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
                                 gz = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
-                                //ir1 = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * IR_UNIT;
-                                //ir2 = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * IR_UNIT;
-
+                                
                                 reading.Accelerometer2 = new Point3D(ax, ay, az);
                                 reading.Magnetometer2 = new Point3D(mx, my, mz);
                                 reading.Gyroscope2 = new Point3D(gx, gy, gz);

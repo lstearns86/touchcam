@@ -169,14 +169,14 @@ namespace HandSightOnBodyInteractionGPU
                     SetProgressMax(n);
                     for (int queryIndex = 0; queryIndex < n; queryIndex++)
                     {
-                        Localization.Reset();
+                        Localization.Instance.Reset();
                         foreach (string region in samples.Keys)
                             for (int i = 0; i < samples[region].Count; i++)
                             {
                                 if (i == queryIndex) continue;
-                                Localization.AddTrainingExample(samples[region][i], groupForRegion[region], region);
+                                Localization.Instance.AddTrainingExample(samples[region][i], groupForRegion[region], region);
                             }
-                        Localization.Train();
+                        Localization.Instance.Train();
 
                         foreach (string className in samples.Keys)
                         {
@@ -187,10 +187,10 @@ namespace HandSightOnBodyInteractionGPU
                             DateTime start = DateTime.Now;
                             watch.Restart();
 
-                            List<Tuple<string, float>> groupProbabilities;
-                            string predictedGroup = Localization.PredictCoarseLocation(query, out groupProbabilities);
+                            //List<Tuple<string, float>> groupProbabilities;
+                            string predictedGroup = Localization.Instance.PredictCoarseLocation(query);
                             string predictedRegion = "";
-                            predictedRegion = Localization.PredictFineLocation(query, true, true, false, predictedGroup);
+                            predictedRegion = Localization.Instance.PredictFineLocation(query, true, true, false, predictedGroup);
 
 
                             bool groupCorrect = predictedGroup == groupForRegion[className];

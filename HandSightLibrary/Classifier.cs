@@ -305,7 +305,13 @@ namespace HandSightLibrary
 
                 //response = model.Predict(data);
 
-                if (svm == null) return "null";
+                if (svm == null)
+                {
+                    if (nameForID.Count > 0)
+                        return nameForID[0];
+                    else
+                        return "null";
+                }
 
                 if (nameForID.Count == 1) response = 0;
                 else

@@ -8,6 +8,9 @@ namespace HandSightLibrary
 {
     public class TouchSegmentation
     {
+        static float frameRate = 200;
+        static Queue<float> timestamps = new Queue<float>();
+
         const int windowSize = 50;
         const float thresh = 0.95f;
 
@@ -29,6 +32,9 @@ namespace HandSightLibrary
 
         public static void UpdateWithReading(Sensors.Reading reading)
         {
+            FPS.Sensors.Update();
+            frameRate = FPS.Sensors.Average;
+
             UpdateMovingAverages(reading);
 
             if(touchDown)
@@ -54,7 +60,7 @@ namespace HandSightLibrary
         static void UpdateMovingAverages(Sensors.Reading reading)
         {
             movingAverage1 = movingAverage1 * irReadings1.Count;
-            while(irReadings1.Count >= windowSize)
+            while(irReadings1.Count > 0 && irReadings1.Count >= frameRate / 4)
             {
                 float val = irReadings1.Dequeue();
                 movingAverage1 -= val;
@@ -64,7 +70,7 @@ namespace HandSightLibrary
             movingAverage1 /= irReadings1.Count;
 
             movingAverage2 = movingAverage2 * irReadings2.Count;
-            while (irReadings2.Count >= windowSize)
+            while (irReadings2.Count > 0 && irReadings2.Count >= frameRate / 4)
             {
                 float val = irReadings2.Dequeue();
                 movingAverage2 -= val;

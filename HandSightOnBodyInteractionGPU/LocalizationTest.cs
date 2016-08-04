@@ -20,6 +20,7 @@ using Timer = System.Timers.Timer;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace HandSightOnBodyInteractionGPU
 {
@@ -31,7 +32,7 @@ namespace HandSightOnBodyInteractionGPU
             { "Palm", new string[] { "Up", "Down", "Left", "Right", "Center" } },
             { "Finger", new string[] { "Thumb", "Index", "Middle", "Ring", "Pinky" } },
             { "Wrist", new string[] { "Inner", "Outer", "BackOfHand" } },
-            { "Ear", new string[] { "Upper", "Lower" } },
+            { "Ear", new string[] { "Upper", "Lower", "Front", "Rear" } },
             { "Clothing", new string[] { "Pants", "Shirt" } },
             { "OtherSkin", new string[] { "Shoulder", "Thigh", "Cheek", "Neck" } },
             { "Knuckle", new string[] { "Thumb", "Index", "Middle", "Ring", "Pinky" } },
@@ -81,7 +82,9 @@ namespace HandSightOnBodyInteractionGPU
             TimerChooser.Value = Properties.Settings.Default.CountdownTimer;
             BrightnessChooser.Value = Properties.Settings.Default.CameraBrightness;
             numLocationPredictions = Properties.Settings.Default.PredictionSmoothing;
+            CoarseOnlyCheckbox.Checked = Properties.Settings.Default.CoarseOnly;
             PredictionSmoothingChooser.Value = numLocationPredictions;
+            SingleIMUCheckbox.Checked = Properties.Settings.Default.SingleIMU;
 
             Text = "Connecting to Camera and Sensors...";
 
@@ -102,15 +105,19 @@ namespace HandSightOnBodyInteractionGPU
                 };
                 Camera.Instance.Brightness = 10;
 
-                Sensors.Instance.ReadingAvailable += Instance_ReadingAvailable;
+                Sensors.Instance.ReadingAvailable += Sensors_ReadingAvailable;
+
                 Camera.Instance.Connect();
                 Sensors.Instance.Connect();
+
+                Sensors.Instance.Brightness = 1;
+                Sensors.Instance.NumSensors = SingleIMUCheckbox.Checked ? 1 : 2;
             });
         }
 
-        private void Instance_ReadingAvailable(Sensors.Reading reading)
+        private void Sensors_ReadingAvailable(Sensors.Reading reading)
         {
-            FPS.Sensors.Update();
+            //FPS.Sensors.Update();
             TouchSegmentation.UpdateWithReading(reading);
         }
 
@@ -140,12 +147,6 @@ namespace HandSightOnBodyInteractionGPU
         {
             Monitor.Enter(trainingLock);
 
-            if(template == null)
-                lock (processingLock)
-                {
-                    template = CopyTemplate(currTemplate);
-                }
-
             if (coarseLocation == null)
             {
                 Invoke(new MethodInvoker(delegate { coarseLocation = (string)CoarseLocationChooser.SelectedItem; }));
@@ -156,10 +157,18 @@ namespace HandSightOnBodyInteractionGPU
                 Invoke(new MethodInvoker(delegate { fineLocation = (string)FineLocationChooser.SelectedItem; }));
             }
 
+            if (template == null)
+                lock (processingLock)
+                {
+                    template = CopyTemplate(currTemplate);
+                    template["coarse"] = coarseLocation;
+                    template["fine"] = fineLocation;
+                }
+
             if (!alreadyExists)
             {
-                Localization.AddTrainingExample(template, coarseLocation, fineLocation);
-                Localization.Train();
+                Localization.Instance.AddTrainingExample(template, coarseLocation, fineLocation);
+                Localization.Instance.Train();
             }
 
             Invoke(new MethodInvoker(delegate
@@ -168,10 +177,58 @@ namespace HandSightOnBodyInteractionGPU
                 TrainingSampleList.LargeImageList.Images.Add(template.Image.Bitmap);
                 TrainingSampleList.Items.Add(new ListViewItem() { Text = coarseLocation + ", " + fineLocation, ImageIndex = imageIndex, Tag = template });
 
-                TrainingExamplesLabel.Text = Localization.GetNumTrainingExamples() + " training examples (" + Localization.GetNumTrainingClasses() + " classes)";
+                TrainingExamplesLabel.Text = Localization.Instance.GetNumTrainingExamples() + " training examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
             }));
 
             Monitor.Exit(trainingLock);
+
+            // perform cross-validation
+            if (!alreadyExists) PerformCrossValidation();
+        }
+
+        private void PerformCrossValidation()
+        {
+            Invoke(new MethodInvoker(delegate { InfoBox.Text = ""; InfoBox.Text += "Performing Cross-Validation..." + Environment.NewLine; }));
+            Task.Factory.StartNew(() =>
+            {
+                foreach (string className in Localization.Instance.samples.Keys)
+                {
+                    int correct = 0;
+                    Parallel.ForEach(Localization.Instance.samples[className], (ImageTemplate testTemplate) =>
+                    //foreach (ImageTemplate testTemplate in Localization.Instance.samples[className])
+                    {
+                        Localization localization = new Localization();
+                        foreach (string trainClassName in Localization.Instance.samples.Keys)
+                            foreach (ImageTemplate trainTemplate in Localization.Instance.samples[trainClassName])
+                                if (trainTemplate != testTemplate)
+                                    localization.AddTrainingExample(trainTemplate, (string)trainTemplate["coarse"], (string)trainTemplate["fine"]);
+                        localization.Train();
+                        bool foundFeatureMatch;
+                        Dictionary<string, float> coarseProbabilities, fineProbabilities;
+                        string coarsePrediction = localization.PredictCoarseLocation(testTemplate, out coarseProbabilities);
+                        string finePrediction = localization.PredictFineLocation(testTemplate, out foundFeatureMatch, out fineProbabilities, true, false, false, coarsePrediction);
+                        float coarseProbability = coarseProbabilities[coarsePrediction];
+                        float fineProbability = fineProbabilities[finePrediction];
+
+                        if (coarsePrediction.Equals((string)testTemplate["coarse"]) && finePrediction.Equals((string)testTemplate["fine"]))
+                            //correct++;
+                            Interlocked.Increment(ref correct);
+                        //Invoke(new MethodInvoker(delegate
+                        //{
+                        //    InfoBox.Text += ((string)testTemplate["fine"] + Localization.Instance.samples[className].IndexOf(testTemplate) + " = " + coarsePrediction + " (" + (coarseProbability * 100).ToString("0.0") + ") / " + finePrediction + " (" + (100 * fineProbability).ToString("0.0") + ")") + ", ";
+                        //}));
+                    });
+
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        InfoBox.Text += Localization.Instance.coarseLocations[className] + className + ": " + ((float)correct / Localization.Instance.samples[className].Count * 100).ToString("0.0") + "%, ";
+                    }));
+                }
+                Invoke(new MethodInvoker(delegate
+                {
+                    InfoBox.Text += Environment.NewLine + "Done" + Environment.NewLine;
+                }));
+            });
         }
 
         private void CalibrationButton_Click(object sender, EventArgs e)
@@ -192,6 +249,7 @@ namespace HandSightOnBodyInteractionGPU
                 e.Cancel = true;
 
                 // TODO: cleanup any sensors and resources
+                Sensors.Instance.Disconnect();
                 Camera.Instance.Disconnect();
 
                 Task.Factory.StartNew(() =>
@@ -205,9 +263,16 @@ namespace HandSightOnBodyInteractionGPU
         private void RecordTrainingExampleButton_Click(object sender, EventArgs e)
         {
             countdown = (int)TimerChooser.Value;
-            CountdownLabel.Text = countdown.ToString();
-            CountdownLabel.Visible = true;
-            timer.Start();
+            if (countdown > 0)
+            {
+                CountdownLabel.Text = countdown.ToString();
+                CountdownLabel.Visible = true;
+                timer.Start();
+            }
+            else
+            {
+                AddTemplate();
+            }
         }
 
         private void TimerChooser_ValueChanged(object sender, EventArgs e)
@@ -220,7 +285,7 @@ namespace HandSightOnBodyInteractionGPU
         {
             lock (trainingLock)
             {
-                Localization.Reset();
+                Localization.Instance.Reset();
                 TrainingSampleList.LargeImageList.Images.Clear();
                 TrainingSampleList.Items.Clear();
             }
@@ -233,8 +298,10 @@ namespace HandSightOnBodyInteractionGPU
             return newTemplate;
         }
 
-        BlockingCollection<string> coarseLocationPredictions = new BlockingCollection<string>();
-        BlockingCollection<string> fineLocationPredictions = new BlockingCollection<string>();
+        //BlockingCollection<string> coarseLocationPredictions = new BlockingCollection<string>();
+        //BlockingCollection<string> fineLocationPredictions = new BlockingCollection<string>();
+        BlockingCollection<Dictionary<string, float>> coarseLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
+        BlockingCollection<Dictionary<string, float>> fineLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
 
         private void SaveProfileButton_Click(object sender, EventArgs e)
         {
@@ -242,26 +309,37 @@ namespace HandSightOnBodyInteractionGPU
             if(dialog.ShowDialog() == DialogResult.OK)
             {
                 // TODO: check for existing profile, ask to confirm overwrite
-                Localization.Save(dialog.Value);
+                Localization.Instance.Save(dialog.Value);
             }
         }
 
         private void LoadProfileButton_Click(object sender, EventArgs e)
         {
             // TODO: replace with selection form allowing only existing profiles
-            PromptDialog dialog = new PromptDialog("Enter Profile Name", "Load");
+            //PromptDialog dialog = new PromptDialog("Enter Profile Name", "Load");
+            List<string> profiles = new List<string>();
+            foreach (string dir in Directory.GetDirectories("savedProfiles"))
+                profiles.Add((new DirectoryInfo(dir)).Name);
+            if (profiles.Count == 0)
+            {
+                MessageBox.Show("Error: no saved profiles!");
+                return;
+            }
+            SelectFromListDialog dialog = new SelectFromListDialog("Select Saved Profile", "Load", profiles);
             if (dialog.ShowDialog() == DialogResult.OK)
             {
                 lock (trainingLock)
                 {
-                    Localization.Reset();
-                    Localization.Load(dialog.Value);
+                    Localization.Instance.Reset();
+                    Localization.Instance.Load(dialog.SelectedItem);
 
-                    foreach (string fineLocation in Localization.samples.Keys)
-                        foreach (ImageTemplate template in Localization.samples[fineLocation])
-                            AddTemplate(template, fineLocation, Localization.coarseLocations[fineLocation], true);
+                    foreach (string fineLocation in Localization.Instance.samples.Keys)
+                        foreach (ImageTemplate template in Localization.Instance.samples[fineLocation])
+                            AddTemplate(template, fineLocation, Localization.Instance.coarseLocations[fineLocation], true);
 
-                    TrainingExamplesLabel.Text = Localization.GetNumTrainingExamples() + " training examples (" + Localization.GetNumTrainingClasses() + " classes)";
+                    TrainingExamplesLabel.Text = Localization.Instance.GetNumTrainingExamples() + " training examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
+
+                    PerformCrossValidation();
                 }
             }
         }
@@ -291,8 +369,8 @@ namespace HandSightOnBodyInteractionGPU
                     TrainingSampleList.Items.RemoveAt(index);
                     TrainingSampleList.LargeImageList.Images.RemoveAt(index);
                     for (int i = index; i < TrainingSampleList.Items.Count; i++) TrainingSampleList.Items[i].ImageIndex = i;
-                    Localization.RemoveTrainingExample(template);
-                    Localization.Train();
+                    Localization.Instance.RemoveTrainingExample(template);
+                    Localization.Instance.Train();
                 }
             }
         }
@@ -309,6 +387,20 @@ namespace HandSightOnBodyInteractionGPU
             FineLocationChooser.Items.Clear();
             FineLocationChooser.Items.AddRange(locations[(string)CoarseLocationChooser.SelectedItem]);
             FineLocationChooser.SelectedIndex = 0;
+        }
+
+        private void SingleIMUCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            bool singleIMU = SingleIMUCheckbox.Checked;
+            Properties.Settings.Default.SingleIMU = singleIMU;
+            Properties.Settings.Default.Save();
+            Sensors.Instance.NumSensors = singleIMU ? 1 : 2;
+        }
+
+        private void CoarseOnlyCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.CoarseOnly = CoarseOnlyCheckbox.Checked;
+            Properties.Settings.Default.Save();
         }
 
         int numLocationPredictions = 15;
@@ -330,38 +422,109 @@ namespace HandSightOnBodyInteractionGPU
                     }
 
                     string coarseLocation = "", fineLocation = "";
+                    float coarseProbability = 0, fineProbability = 0;
+                    bool hasUpdate = false;
                     if (Monitor.TryEnter(trainingLock))
                     {
-                        if (Localization.GetNumTrainingExamples() > 0)
+                        try
                         {
-                            string predictedCoarseLocation = Localization.PredictCoarseLocation(currTemplate);
-                            coarseLocationPredictions.Add(predictedCoarseLocation);
-                            while (coarseLocationPredictions.Count > numLocationPredictions) coarseLocationPredictions.Take();
+                            if (Localization.Instance.GetNumTrainingExamples() > 0)
+                            {
+                                Dictionary<string, float> coarseProbabilities = new Dictionary<string, float>();
+                                string predictedCoarseLocation = Localization.Instance.PredictCoarseLocation(currTemplate, out coarseProbabilities);
+                                //coarseLocationPredictions.Add(predictedCoarseLocation);
+                                //while (coarseLocationPredictions.Count > numLocationPredictions) coarseLocationPredictions.Take();
+                                coarseLocationProbabilities.Add(coarseProbabilities);
+                                while (coarseLocationProbabilities.Count > numLocationPredictions) coarseLocationProbabilities.Take();
 
-                            // compute the mode of the array
-                            var groups = coarseLocationPredictions.GroupBy(v => v);
-                            int maxCount = groups.Max(g => g.Count());
-                            coarseLocation = groups.First(g => g.Count() == maxCount).Key;
+                                //// compute the mode of the array
+                                //var groups = coarseLocationPredictions.GroupBy(v => v);
+                                //int maxCount = groups.Max(g => g.Count());
+                                //coarseLocation = groups.First(g => g.Count() == maxCount).Key;
 
-                            string predictedFineLocation = Localization.PredictFineLocation(currTemplate, true, false, false, coarseLocation);
-                            fineLocationPredictions.Add(predictedFineLocation);
-                            while (fineLocationPredictions.Count > numLocationPredictions) fineLocationPredictions.Take();
+                                // sum up the probabilities
+                                Dictionary<string, float> totalProbabilities = new Dictionary<string, float>();
+                                foreach (Dictionary<string, float> probabilities in coarseLocationProbabilities)
+                                {
+                                    foreach (string key in probabilities.Keys)
+                                    {
+                                        if (!totalProbabilities.ContainsKey(key)) totalProbabilities[key] = 0;
+                                        totalProbabilities[key] += probabilities[key] / numLocationPredictions;
+                                    }
+                                }
 
-                            // compute the mode of the array
-                            groups = fineLocationPredictions.GroupBy(v => v);
-                            maxCount = groups.Max(g => g.Count());
-                            fineLocation = groups.First(g => g.Count() == maxCount).Key;
+                                float maxProb = 0;
+                                foreach (string key in totalProbabilities.Keys)
+                                    if (totalProbabilities[key] > maxProb)
+                                    {
+                                        maxProb = totalProbabilities[key];
+                                        coarseLocation = key;
+                                        coarseProbability = maxProb;
+                                    }
+
+                                if (!Properties.Settings.Default.CoarseOnly)
+                                {
+                                    bool foundFeatureMatch = false;
+                                    Dictionary<string, float> fineProbabilities = new Dictionary<string, float>();
+                                    string predictedFineLocation = Localization.Instance.PredictFineLocation(currTemplate, out foundFeatureMatch, out fineProbabilities, true, false, false, coarseLocation);
+                                    //fineLocationPredictions.Add(predictedFineLocation);
+                                    //while (fineLocationPredictions.Count > numLocationPredictions) fineLocationPredictions.Take();
+                                    fineLocationProbabilities.Add(fineProbabilities);
+                                    while (fineLocationProbabilities.Count > numLocationPredictions) fineLocationProbabilities.Take();
+
+                                    // compute the mode of the array
+                                    //var groups = fineLocationPredictions.GroupBy(v => v);
+                                    //int maxCount = groups.Max(g => g.Count());
+                                    //fineLocation = groups.First(g => g.Count() == maxCount).Key;
+
+                                    // sum up the probabilities
+                                    totalProbabilities = new Dictionary<string, float>();
+                                    foreach (Dictionary<string, float> probabilities in fineLocationProbabilities)
+                                    {
+                                        foreach (string key in probabilities.Keys)
+                                        {
+                                            if (!totalProbabilities.ContainsKey(key)) totalProbabilities[key] = 0;
+                                            totalProbabilities[key] += probabilities[key] / numLocationPredictions;
+                                        }
+                                    }
+
+                                    maxProb = 0;
+                                    foreach (string key in totalProbabilities.Keys)
+                                        if (totalProbabilities[key] > maxProb)
+                                        {
+                                            maxProb = totalProbabilities[key];
+                                            fineLocation = key;
+                                            fineProbability = maxProb;
+                                        }
+                                }
+
+                                FPS.Instance("processing").Update();
+                                hasUpdate = true;
+                            }
                         }
-                        Monitor.Exit(trainingLock);
+                        finally
+                        {
+                            Monitor.Exit(trainingLock);
+                        }
                     }
 
                     //LBP.GetInstance(frame.Image.Size).GetHistogram(frame);
                     Invoke(new MethodInvoker(delegate
                     {
                         Display.Image = frame.Image.Bitmap;
-                        CoarsePredictionLabel.Text = coarseLocation;
-                        FinePredictionLabel.Text = fineLocation;
-                        Text = FPS.Camera.Average.ToString("0") + " fps camera / " + (Sensors.Instance.IsConnected ? FPS.Sensors.Average.ToString("0") + " fps sensors" : "Waiting for Sensors");
+                        if (hasUpdate)
+                        {
+                            CoarsePredictionLabel.Text = coarseLocation;
+                            CoarseProbabilityLabel.Text = " (response = " + (coarseProbability * 100).ToString("0.0") + ")";
+                            //Debug.WriteLine(coarseLocation);
+                        }
+                        if (hasUpdate)
+                        {
+                            FinePredictionLabel.Text = fineLocation;
+                            FineProbabilityLabel.Text = " (response = " + (fineProbability * 100).ToString("0.0") + ")";
+                            //Debug.WriteLine(fineLocation);
+                        }
+                        Text = FPS.Camera.Average.ToString("0") + " fps camera / " + (Sensors.Instance.IsConnected ? FPS.Sensors.Average.ToString("0") + " fps sensors / " + FPS.Instance("processing").Average.ToString("0") + " fps processing" : "Waiting for Sensors");
                     }));
                 }
                 catch { }

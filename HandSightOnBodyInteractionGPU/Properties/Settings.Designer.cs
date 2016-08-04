@@ -70,5 +70,29 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["PredictionSmoothing"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool CoarseOnly {
+            get {
+                return ((bool)(this["CoarseOnly"]));
+            }
+            set {
+                this["CoarseOnly"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SingleIMU {
+            get {
+                return ((bool)(this["SingleIMU"]));
+            }
+            set {
+                this["SingleIMU"] = value;
+            }
+        }
     }
 }
