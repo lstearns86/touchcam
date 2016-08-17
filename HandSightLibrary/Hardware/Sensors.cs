@@ -8,21 +8,21 @@ namespace HandSightLibrary
 {
     public class Sensors
     {
-        float ACCEL_UNIT = 0.732f / 1000.0f * 9.80665F; // m/s^2
+        //float ACCEL_UNIT = 0.732f / 1000.0f * 9.80665F; // m/s^2
+        //float MAG_UNIT = 0.48f / 1000.0f; // gauss
+        //float GYRO_UNIT = 0.07000f; // deg / s
+        //float IR_UNIT = 1.0f / 1024.0f; // % max intensity
+        float ACCEL_UNIT = 0.244f / 1000.0f * 9.80665F; // m/s^2
         float MAG_UNIT = 0.48f / 1000.0f; // gauss
-        float GYRO_UNIT = 0.07000f; // deg / s
+        float GYRO_UNIT = 0.01750f; // deg / s
         float IR_UNIT = 1.0f / 1024.0f; // % max intensity
 
         string PORT_ID = "COM3"; // TODO: provide an interface to select the port, and save to user preference
         int BAUD_RATE = 250000;
 
-        public struct Point3D
-        {
-            public Point3D(float x, float y, float z) { this.X = x; this.Y = y; this.Z = z; }
-            public float X;
-            public float Y;
-            public float Z;
-        }
+        Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
+        Point3D minMag2 = new Point3D(), maxMag2 = new Point3D();
+        
         public class Reading
         {
             public Point3D Accelerometer1;
@@ -35,6 +35,22 @@ namespace HandSightLibrary
             public float InfraredReflectance2;
             public Quaternion Orientation1;
             public Quaternion Orientation2;
+
+            public Reading Clone()
+            {
+                Reading reading = new Reading();
+                reading.Accelerometer1 = Accelerometer1 == null ? null : new Point3D(Accelerometer1.X, Accelerometer1.Y, Accelerometer1.Z);
+                reading.Magnetometer1 = Magnetometer1 == null ? null : new Point3D(Magnetometer1.X, Magnetometer1.Y, Magnetometer1.Z);
+                reading.Gyroscope1 = Gyroscope1 == null ? null : new Point3D(Gyroscope1.X, Gyroscope1.Y, Gyroscope1.Z);
+                reading.Accelerometer2 = Accelerometer2 == null ? null : new Point3D(Accelerometer2.X, Accelerometer2.Y, Accelerometer2.Z);
+                reading.Magnetometer2 = Magnetometer2 == null ? null : new Point3D(Magnetometer2.X, Magnetometer2.Y, Magnetometer2.Z);
+                reading.Gyroscope2 = Gyroscope2 == null ? null : new Point3D(Gyroscope2.X, Gyroscope2.Y, Gyroscope2.Z);
+                reading.InfraredReflectance1 = InfraredReflectance1;
+                reading.InfraredReflectance2 = InfraredReflectance2;
+                reading.Orientation1 = Orientation1 == null ? null : Orientation1.Clone();
+                reading.Orientation2 = Orientation2 == null ? null : Orientation2.Clone();
+                return reading;
+            }
         }
 
         public delegate void ReadingAvailableDelegate(Reading reading);
@@ -112,6 +128,109 @@ namespace HandSightLibrary
             }
         }
 
+        int skippedReadings = 0;
+        private Point3D CorrectMagnetometer1Bias(float x, float y, float z)
+        {
+            if (skippedReadings < 10)
+            {
+                skippedReadings++;
+                return new Point3D(x, y, z);
+            }
+            else
+            {
+                if (x < minMag1.X) minMag1.X = x;
+                if (x > maxMag1.X) maxMag1.X = x;
+                if (y < minMag1.Y) minMag1.Y = y;
+                if (y > maxMag1.Y) maxMag1.Y = y;
+                if (z < minMag1.Z) minMag1.Z = z;
+                if (z > maxMag1.Z) maxMag1.Z = z;
+
+                // Remove hard and soft iron errors by correcting the bias and scale so that the readings are roughly spherical centered at 0.
+                // Based upon an explanation and example code from http://www.camelsoftware.com/2016/03/13/imu-maths-calculate-orientation-pt3/
+                Point3D vmaxMag1 = new Point3D();
+                vmaxMag1.X = maxMag1.X - ((minMag1.X + maxMag1.X) / 2.0f);
+                vmaxMag1.Y = maxMag1.Y - ((minMag1.Y + maxMag1.Y) / 2.0f);
+                vmaxMag1.Z = maxMag1.Z - ((minMag1.Z + maxMag1.Z) / 2.0f);
+
+                Point3D vminMag1 = new Point3D();
+                vminMag1.X = minMag1.X - ((minMag1.X + maxMag1.X) / 2.0f);
+                vminMag1.Y = minMag1.Y - ((minMag1.Y + maxMag1.Y) / 2.0f);
+                vminMag1.Z = minMag1.Z - ((minMag1.Z + maxMag1.Z) / 2.0f);
+
+                Point3D avgs = new Point3D();
+                avgs.X = (vmaxMag1.X + (vminMag1.X * -1)) / 2.0f;
+                avgs.Y = (vmaxMag1.Y + (vminMag1.Y * -1)) / 2.0f;
+                avgs.Z = (vmaxMag1.Z + (vminMag1.Z * -1)) / 2.0f;
+
+                float avgRad = (avgs.X + avgs.Y + avgs.Z) / 3.0f;
+
+                float xScale = avgRad / avgs.X;
+                float yScale = avgRad / avgs.Y;
+                float zScale = avgRad / avgs.Z;
+
+                float x2 = x - (minMag1.X + maxMag1.X) / 2.0f;
+                float y2 = y - (minMag1.Y + maxMag1.Y) / 2.0f;
+                float z2 = z - (minMag1.Z + maxMag1.Z) / 2.0f;
+
+                x2 *= xScale;
+                y2 *= yScale;
+                z2 *= zScale;
+
+                return new Point3D(x2, y2, z2);
+            }
+        }
+
+        private Point3D CorrectMagnetometer2Bias(float x, float y, float z)
+        {
+            if (skippedReadings < 10)
+            {
+                //skippedReadings++;
+                return new Point3D(x, y, z);
+            }
+            else
+            {
+                if (x < minMag2.X) minMag2.X = x;
+                if (x > maxMag2.X) maxMag2.X = x;
+                if (y < minMag2.Y) minMag2.Y = y;
+                if (y > maxMag2.Y) maxMag2.Y = y;
+                if (z < minMag2.Z) minMag2.Z = z;
+                if (z > maxMag2.Z) maxMag2.Z = z;
+
+                // Remove hard and soft iron errors by correcting the bias and scale so that the readings are roughly spherical centered at 0.
+                // Based upon an explanation and example code from http://www.camelsoftware.com/2016/03/13/imu-maths-calculate-orientation-pt3/
+                Point3D vmaxMag2 = new Point3D();
+                vmaxMag2.X = maxMag2.X - ((minMag2.X + maxMag2.X) / 2.0f);
+                vmaxMag2.Y = maxMag2.Y - ((minMag2.Y + maxMag2.Y) / 2.0f);
+                vmaxMag2.Z = maxMag2.Z - ((minMag2.Z + maxMag2.Z) / 2.0f);
+
+                Point3D vminMag2 = new Point3D();
+                vminMag2.X = minMag2.X - ((minMag2.X + maxMag2.X) / 2.0f);
+                vminMag2.Y = minMag2.Y - ((minMag2.Y + maxMag2.Y) / 2.0f);
+                vminMag2.Z = minMag2.Z - ((minMag2.Z + maxMag2.Z) / 2.0f);
+
+                Point3D avgs = new Point3D();
+                avgs.X = (vmaxMag2.X + (vminMag2.X * -1)) / 2.0f;
+                avgs.Y = (vmaxMag2.Y + (vminMag2.Y * -1)) / 2.0f;
+                avgs.Z = (vmaxMag2.Z + (vminMag2.Z * -1)) / 2.0f;
+
+                float avgRad = (avgs.X + avgs.Y + avgs.Z) / 3.0f;
+
+                float xScale = avgRad / avgs.X;
+                float yScale = avgRad / avgs.Y;
+                float zScale = avgRad / avgs.Z;
+
+                float x2 = x - (minMag2.X + maxMag2.X) / 2.0f;
+                float y2 = y - (minMag2.Y + maxMag2.Y) / 2.0f;
+                float z2 = z - (minMag2.Z + maxMag2.Z) / 2.0f;
+
+                x2 *= xScale;
+                y2 *= yScale;
+                z2 *= zScale;
+
+                return new Point3D(x2, y2, z2);
+            }
+        }
+
         public bool Connect()
         {
             if (IsConnected) return true;
@@ -183,49 +302,58 @@ namespace HandSightLibrary
                             {
                                 b = (byte)device.ReadByte();
                                 buffer[i] = b;
-                                if (b == '\n' && buffer[i - 1] == '\r' && buffer[i-2] == '\n' && buffer[i-3] == '\r') completeLine = true;
+                                if (b == '\n' && buffer[(i + buffer.Length - 1) % buffer.Length] == '\r' && buffer[(i + buffer.Length - 2) % buffer.Length] == '\n' && buffer[(i + buffer.Length - 3) % buffer.Length] == '\r') completeLine = true;
                                 i++;
                                 if (i >= buffer.Length) i = 0;
                             }
-                            catch (Exception) { }
+                            catch (Exception)
+                            {
+
+                            }
                         }
 
-                        if(i > 44)
+                        if(i > 22)
                         {
                             int bufferIndex = 0;
-                            float ir1 = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * IR_UNIT;
-                            float ir2 = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * IR_UNIT;
-                            float ax = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
-                            float ay = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
-                            float az = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
-                            float mx = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * MAG_UNIT;
-                            float my = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * MAG_UNIT;
-                            float mz = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * MAG_UNIT;
-                            float gx = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
-                            float gy = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
-                            float gz = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
+                            float ir1 = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * IR_UNIT;
+                            float ir2 = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * IR_UNIT;
+                            float ax = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * ACCEL_UNIT;
+                            float ay = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * ACCEL_UNIT;
+                            float az = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * ACCEL_UNIT;
+                            float mx = BitConverter.ToInt16(buffer, bufferIndex++ * 2);
+                            float my = BitConverter.ToInt16(buffer, bufferIndex++ * 2);
+                            float mz = BitConverter.ToInt16(buffer, bufferIndex++ * 2);
+                            float gx = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
+                            float gy = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
+                            float gz = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
 
                             Reading reading = new Reading();
                             reading.Accelerometer1 = new Point3D(ax, ay, az);
-                            reading.Magnetometer1 = new Point3D(mx, my, mz);
+                            reading.Magnetometer1 = CorrectMagnetometer1Bias(mx, my, mz);
+                            reading.Magnetometer1.X *= MAG_UNIT;
+                            reading.Magnetometer1.Y *= MAG_UNIT;
+                            reading.Magnetometer1.Z *= MAG_UNIT;
                             reading.Gyroscope1 = new Point3D(gx, gy, gz);
                             reading.InfraredReflectance1 = ir1;
                             reading.InfraredReflectance2 = ir2;
 
                             if (numSensors == 2)
                             {
-                                ax = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
-                                ay = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
-                                az = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * ACCEL_UNIT;
-                                mx = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * MAG_UNIT;
-                                my = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * MAG_UNIT;
-                                mz = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * MAG_UNIT;
-                                gx = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
-                                gy = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
-                                gz = BitConverter.ToSingle(buffer, bufferIndex++ * 4) * GYRO_UNIT;
+                                ax = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * ACCEL_UNIT;
+                                ay = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * ACCEL_UNIT;
+                                az = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * ACCEL_UNIT;
+                                mx = BitConverter.ToInt16(buffer, bufferIndex++ * 2);
+                                my = BitConverter.ToInt16(buffer, bufferIndex++ * 2);
+                                mz = BitConverter.ToInt16(buffer, bufferIndex++ * 2);
+                                gx = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
+                                gy = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
+                                gz = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
                                 
                                 reading.Accelerometer2 = new Point3D(ax, ay, az);
-                                reading.Magnetometer2 = new Point3D(mx, my, mz);
+                                reading.Magnetometer2 = CorrectMagnetometer2Bias(mx, my, mz);
+                                reading.Magnetometer2.X *= MAG_UNIT;
+                                reading.Magnetometer2.Y *= MAG_UNIT;
+                                reading.Magnetometer2.Z *= MAG_UNIT;
                                 reading.Gyroscope2 = new Point3D(gx, gy, gz);
                             }
 

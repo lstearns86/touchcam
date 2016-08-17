@@ -102,11 +102,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Algorithms\Filter.cs" />
+    <Compile Include="Algorithms\IIRFilter.cs" />
+    <Compile Include="Algorithms\KalmanFilter.cs" />
     <Compile Include="Classifier.cs" />
     <Compile Include="DataStructures\EulerAngles.cs" />
+    <Compile Include="DataStructures\MyQuaternion.cs" />
+    <Compile Include="DataStructures\Point3D.cs" />
     <Compile Include="DataStructures\Quaternion.cs" />
     <Compile Include="DataStructures\Gesture.cs" />
     <Compile Include="GestureRecognition.cs" />
+    <Compile Include="OrientationTracker.cs" />
     <Compile Include="TouchSegmentation.cs" />
     <Compile Include="Utilities\CustomExtensions.cs" />
     <Compile Include="Utilities\FPS.cs" />
@@ -118,9 +124,7 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Algorithms\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

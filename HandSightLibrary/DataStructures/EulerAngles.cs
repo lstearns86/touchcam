@@ -2,13 +2,13 @@
 {
     public class EulerAngles
     {
-        public float Yaw, Pitch, Roll;
+        public double Yaw, Pitch, Roll;
         public EulerAngles() : this(0, 0, 0) { }
-        public EulerAngles(float yaw, float pitch, float roll)
+        public EulerAngles(double yaw, double pitch, double roll)
         {
-            this.Yaw = yaw;
-            this.Pitch = pitch;
-            this.Roll = roll;
+            Yaw = yaw;
+            Pitch = pitch;
+            Roll = roll;
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace HandSightOnBodyInteractionGPU
 {
-    partial class LocalizationTest
+    partial class OnBodyInputDemo
     {
         /// <summary>
         /// Required designer variable.
@@ -30,6 +30,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.MainControlPanel = new System.Windows.Forms.Panel();
+            this.OrientationLabel = new System.Windows.Forms.Label();
             this.FineProbabilityLabel = new System.Windows.Forms.Label();
             this.CoarseProbabilityLabel = new System.Windows.Forms.Label();
             this.FinePredictionLabel = new System.Windows.Forms.Label();
@@ -62,6 +63,10 @@
             this.ExpandSecondarySettingsButton = new HandSightOnBodyInteraction.ExpandContractButton();
             this.imageList1 = new System.Windows.Forms.ImageList(this.components);
             this.InfoBox = new System.Windows.Forms.TextBox();
+            this.GesturePredictionLabel = new System.Windows.Forms.Label();
+            this.label8 = new System.Windows.Forms.Label();
+            this.GestureChooser = new System.Windows.Forms.ComboBox();
+            this.RecordGestureButton = new System.Windows.Forms.Button();
             this.MainControlPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.Display)).BeginInit();
@@ -72,6 +77,11 @@
             // 
             // MainControlPanel
             // 
+            this.MainControlPanel.Controls.Add(this.label8);
+            this.MainControlPanel.Controls.Add(this.GestureChooser);
+            this.MainControlPanel.Controls.Add(this.RecordGestureButton);
+            this.MainControlPanel.Controls.Add(this.GesturePredictionLabel);
+            this.MainControlPanel.Controls.Add(this.OrientationLabel);
             this.MainControlPanel.Controls.Add(this.FineProbabilityLabel);
             this.MainControlPanel.Controls.Add(this.CoarseProbabilityLabel);
             this.MainControlPanel.Controls.Add(this.FinePredictionLabel);
@@ -93,10 +103,19 @@
             this.MainControlPanel.Size = new System.Drawing.Size(200, 557);
             this.MainControlPanel.TabIndex = 0;
             // 
+            // OrientationLabel
+            // 
+            this.OrientationLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.OrientationLabel.Location = new System.Drawing.Point(8, 231);
+            this.OrientationLabel.Name = "OrientationLabel";
+            this.OrientationLabel.Size = new System.Drawing.Size(181, 36);
+            this.OrientationLabel.TabIndex = 19;
+            this.OrientationLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
             // FineProbabilityLabel
             // 
             this.FineProbabilityLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FineProbabilityLabel.Location = new System.Drawing.Point(9, 341);
+            this.FineProbabilityLabel.Location = new System.Drawing.Point(9, 368);
             this.FineProbabilityLabel.Name = "FineProbabilityLabel";
             this.FineProbabilityLabel.Size = new System.Drawing.Size(181, 22);
             this.FineProbabilityLabel.TabIndex = 18;
@@ -105,7 +124,7 @@
             // CoarseProbabilityLabel
             // 
             this.CoarseProbabilityLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CoarseProbabilityLabel.Location = new System.Drawing.Point(9, 288);
+            this.CoarseProbabilityLabel.Location = new System.Drawing.Point(10, 328);
             this.CoarseProbabilityLabel.Name = "CoarseProbabilityLabel";
             this.CoarseProbabilityLabel.Size = new System.Drawing.Size(181, 17);
             this.CoarseProbabilityLabel.TabIndex = 17;
@@ -114,7 +133,7 @@
             // FinePredictionLabel
             // 
             this.FinePredictionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.FinePredictionLabel.Location = new System.Drawing.Point(9, 305);
+            this.FinePredictionLabel.Location = new System.Drawing.Point(9, 332);
             this.FinePredictionLabel.Name = "FinePredictionLabel";
             this.FinePredictionLabel.Size = new System.Drawing.Size(181, 36);
             this.FinePredictionLabel.TabIndex = 16;
@@ -149,7 +168,7 @@
             // TouchStatusLabel
             // 
             this.TouchStatusLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.TouchStatusLabel.Location = new System.Drawing.Point(13, 134);
+            this.TouchStatusLabel.Location = new System.Drawing.Point(8, 195);
             this.TouchStatusLabel.Name = "TouchStatusLabel";
             this.TouchStatusLabel.Size = new System.Drawing.Size(181, 36);
             this.TouchStatusLabel.TabIndex = 12;
@@ -178,7 +197,7 @@
             // CoarsePredictionLabel
             // 
             this.CoarsePredictionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.CoarsePredictionLabel.Location = new System.Drawing.Point(9, 252);
+            this.CoarsePredictionLabel.Location = new System.Drawing.Point(9, 279);
             this.CoarsePredictionLabel.Name = "CoarsePredictionLabel";
             this.CoarsePredictionLabel.Size = new System.Drawing.Size(181, 36);
             this.CoarsePredictionLabel.TabIndex = 8;
@@ -437,7 +456,53 @@
             this.InfoBox.Size = new System.Drawing.Size(952, 75);
             this.InfoBox.TabIndex = 5;
             // 
-            // LocalizationTest
+            // GesturePredictionLabel
+            // 
+            this.GesturePredictionLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.GesturePredictionLabel.Location = new System.Drawing.Point(11, 411);
+            this.GesturePredictionLabel.Name = "GesturePredictionLabel";
+            this.GesturePredictionLabel.Size = new System.Drawing.Size(181, 36);
+            this.GesturePredictionLabel.TabIndex = 20;
+            this.GesturePredictionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(12, 140);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(47, 13);
+            this.label8.TabIndex = 23;
+            this.label8.Text = "Gesture:";
+            // 
+            // GestureChooser
+            // 
+            this.GestureChooser.FormattingEnabled = true;
+            this.GestureChooser.Items.AddRange(new object[] {
+            "Tap",
+            "Double Tap",
+            "Swipe Left",
+            "Swipe Right",
+            "Swipe Up",
+            "Swipe Down",
+            "Circle",
+            "Triangle",
+            "Square"});
+            this.GestureChooser.Location = new System.Drawing.Point(64, 137);
+            this.GestureChooser.Name = "GestureChooser";
+            this.GestureChooser.Size = new System.Drawing.Size(129, 21);
+            this.GestureChooser.TabIndex = 22;
+            // 
+            // RecordGestureButton
+            // 
+            this.RecordGestureButton.Location = new System.Drawing.Point(13, 164);
+            this.RecordGestureButton.Name = "RecordGestureButton";
+            this.RecordGestureButton.Size = new System.Drawing.Size(181, 48);
+            this.RecordGestureButton.TabIndex = 21;
+            this.RecordGestureButton.Text = "Record Gesture";
+            this.RecordGestureButton.UseVisualStyleBackColor = true;
+            this.RecordGestureButton.Click += new System.EventHandler(this.RecordGestureButton_Click);
+            // 
+            // OnBodyInputDemo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -448,7 +513,7 @@
             this.Controls.Add(this.SecondaryControlPanel);
             this.Controls.Add(this.MainControlPanel);
             this.Controls.Add(this.InfoBox);
-            this.Name = "LocalizationTest";
+            this.Name = "OnBodyInputDemo";
             this.Text = "Localization Test";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LocalizationTest_FormClosing);
             this.MainControlPanel.ResumeLayout(false);
@@ -499,5 +564,10 @@
         private System.Windows.Forms.Label CoarseProbabilityLabel;
         private System.Windows.Forms.CheckBox SingleIMUCheckbox;
         private System.Windows.Forms.TextBox InfoBox;
+        private System.Windows.Forms.Label OrientationLabel;
+        private System.Windows.Forms.Label GesturePredictionLabel;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox GestureChooser;
+        private System.Windows.Forms.Button RecordGestureButton;
     }
 }

@@ -112,93 +112,100 @@ namespace HandSightLibrary
         {
             if (type == ClassifierType.SVM)
             {
-                float[,] mat = trainData.Data;
-                double[][] inputs = new double[trainData.Rows][];
-                for (int i = 0; i < trainData.Rows; i++)
+                if (trainData != null)
                 {
-                    int numFeatures = Math.Max(trainData.Cols, 2);
-                    inputs[i] = new double[numFeatures];
-                    for (int j = 0; j < numFeatures; j++)
-                        inputs[i][j] = mat[i, Math.Min(trainData.Cols - 1, j)];
-                }
-                int[] outputs = new int[trainLabels.Rows];
-                for (int i = 0; i < trainLabels.Rows; i++)
-                    outputs[i] = trainLabels[i, 0];
-
-                int numClasses = nameForID.Count;
-
-                if (numClasses <= 1) return true;
-
-                IKernel kernel;
-                switch (kernelType)
-                {
-                    case KernelType.Linear:
-                        kernel = new Linear();
-                        break;
-                    case KernelType.Poly:
-                        kernel = new Polynomial(3);
-                        break;
-                    case KernelType.Rbf:
-                        kernel = Gaussian.Estimate(inputs, inputs.Length / 4);
-                        break;
-                    case KernelType.Chi2:
-                        kernel = new ChiSquare();
-                        break;
-                    default:
-                        kernel = inputs[0].Length > 20 ? (IKernel)(new ChiSquare()) : (IKernel)(Gaussian.Estimate(inputs, inputs.Length / 4));
-                        break;
-                }
-                svm = new MulticlassSupportVectorMachine(inputs: inputs[0].Length, kernel: kernel, classes: numClasses);
-                var teacher = new MulticlassSupportVectorLearning(svm, inputs, outputs)
-                {
-                    Algorithm = (machine, classInputs, classOutputs, i, j) => new SequentialMinimalOptimization(machine, classInputs, classOutputs)
+                    float[,] mat = trainData.Data;
+                    double[][] inputs = new double[trainData.Rows][];
+                    for (int i = 0; i < trainData.Rows; i++)
                     {
-                        Tolerance = 1e-6,
-                        UseComplexityHeuristic = true
-                        //Tolerance = 0.001,
-                        //Complexity = 1,
-                        //CacheSize = 200
+                        int numFeatures = Math.Max(trainData.Cols, 2);
+                        inputs[i] = new double[numFeatures];
+                        for (int j = 0; j < numFeatures; j++)
+                            inputs[i][j] = mat[i, Math.Min(trainData.Cols - 1, j)];
                     }
-                };
-                try
-                {
-                    double error = teacher.Run();
+                    int[] outputs = new int[trainLabels.Rows];
+                    for (int i = 0; i < trainLabels.Rows; i++)
+                        outputs[i] = trainLabels[i, 0];
+
+                    int numClasses = nameForID.Count;
+
+                    if (numClasses <= 1) return true;
+
+                    IKernel kernel;
+                    switch (kernelType)
+                    {
+                        case KernelType.Linear:
+                            kernel = new Linear();
+                            break;
+                        case KernelType.Poly:
+                            kernel = new Polynomial(3);
+                            break;
+                        case KernelType.Rbf:
+                            if (inputs.Length < 20)
+                                kernel = new Gaussian(0.1);
+                            else
+                                kernel = Gaussian.Estimate(inputs, inputs.Length / 4);
+                            break;
+                        case KernelType.Chi2:
+                            kernel = new ChiSquare();
+                            break;
+                        default:
+                            kernel = inputs[0].Length > 20 ? (IKernel)(new ChiSquare()) : (IKernel)(Gaussian.Estimate(inputs, inputs.Length / 4));
+                            break;
+                    }
+                    svm = new MulticlassSupportVectorMachine(inputs: inputs[0].Length, kernel: kernel, classes: numClasses);
+                    var teacher = new MulticlassSupportVectorLearning(svm, inputs, outputs)
+                    {
+                        Algorithm = (machine, classInputs, classOutputs, i, j) => new SequentialMinimalOptimization(machine, classInputs, classOutputs)
+                        {
+                            Tolerance = 1e-6,
+                            UseComplexityHeuristic = true
+                            //Tolerance = 0.001,
+                            //Complexity = 1,
+                            //CacheSize = 200
+                        }
+                    };
+                    try
+                    {
+                        double error = teacher.Run();
+                    }
+                    catch (Exception ex) { Debug.WriteLine("Error training SVM: " + ex.Message); }
+
+                    teacher = new MulticlassSupportVectorLearning(svm, inputs, outputs)
+                    {
+                        Algorithm = (machine, classInputs, classOutputs, i, j) => new ProbabilisticOutputCalibration(machine, classInputs, classOutputs)
+                    };
+                    try
+                    {
+                        double error = teacher.Run();
+                    }
+                    catch (Exception ex) { Debug.WriteLine("Error calibrating SVM: " + ex.Message); }
+
+                    return true;
+
+                    //model = new SVM();
+                    ////model = new Boost();
+                    ////model = new KNearest();
+                    ////model.DefaultK = k;
+
+                    //model.SetKernel(SVM.SvmKernelType.Chi2);
+                    //model.Type = SVM.SvmType.NuSvc;
+                    ////model.C = 312.5;
+                    //model.Gamma = 0.0001; //0.50625;
+                    //model.Nu = 0.01;
+                    ////model.Degree = 3;
+                    ////model.Coef0 = 10;
+                    //model.TermCriteria = new MCvTermCriteria(10000, 1e-6);
+
+                    //TrainData data = new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainLabels);
+                    //new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainLabels, null, sampleImportance);
+                    ////bool trained = model.TrainAuto(data, 10);
+                    //bool trained = model.Train(data);
+                    //if (!trained) throw new Exception();
+
+                    //return trained;
                 }
-                catch (Exception ex) { Debug.WriteLine("Error training SVM: " + ex.Message); }
-
-                teacher = new MulticlassSupportVectorLearning(svm, inputs, outputs)
-                {
-                    Algorithm = (machine, classInputs, classOutputs, i, j) => new ProbabilisticOutputCalibration(machine, classInputs, classOutputs)
-                };
-                try
-                {
-                    double error = teacher.Run();
-                }
-                catch (Exception ex) { Debug.WriteLine("Error calibrating SVM: " + ex.Message); }
-
-                return true;
-
-                //model = new SVM();
-                ////model = new Boost();
-                ////model = new KNearest();
-                ////model.DefaultK = k;
-
-                //model.SetKernel(SVM.SvmKernelType.Chi2);
-                //model.Type = SVM.SvmType.NuSvc;
-                ////model.C = 312.5;
-                //model.Gamma = 0.0001; //0.50625;
-                //model.Nu = 0.01;
-                ////model.Degree = 3;
-                ////model.Coef0 = 10;
-                //model.TermCriteria = new MCvTermCriteria(10000, 1e-6);
-
-                //TrainData data = new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainLabels);
-                //new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainLabels, null, sampleImportance);
-                ////bool trained = model.TrainAuto(data, 10);
-                //bool trained = model.Train(data);
-                //if (!trained) throw new Exception();
-
-                //return trained;
+                return false;
             }
             else if (type == ClassifierType.NeuralNet)
             {

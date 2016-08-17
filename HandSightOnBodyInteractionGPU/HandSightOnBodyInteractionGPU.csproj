@@ -88,6 +88,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Speech" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -104,11 +105,17 @@
     <Compile Include="CameraViewer.Designer.cs">
       <DependentUpon>CameraViewer.cs</DependentUpon>
     </Compile>
-    <Compile Include="LocalizationTest.cs">
+    <Compile Include="IMUTest.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LocalizationTest.Designer.cs">
-      <DependentUpon>LocalizationTest.cs</DependentUpon>
+    <Compile Include="IMUTest.Designer.cs">
+      <DependentUpon>IMUTest.cs</DependentUpon>
+    </Compile>
+    <Compile Include="OnBodyInputDemo.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="OnBodyInputDemo.Designer.cs">
+      <DependentUpon>OnBodyInputDemo.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="ProgramSelectionForm.cs">
@@ -127,8 +134,11 @@
     <EmbeddedResource Include="CameraViewer.resx">
       <DependentUpon>CameraViewer.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LocalizationTest.resx">
-      <DependentUpon>LocalizationTest.cs</DependentUpon>
+    <EmbeddedResource Include="IMUTest.resx">
+      <DependentUpon>IMUTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="OnBodyInputDemo.resx">
+      <DependentUpon>OnBodyInputDemo.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ProgramSelectionForm.resx">
       <DependentUpon>ProgramSelectionForm.cs</DependentUpon>

@@ -103,7 +103,6 @@
     <Compile Include="Hardware\Camera.cs" />
     <Compile Include="ImageProcessing.cs" />
     <Compile Include="Localization.cs" />
-    <Compile Include="OrientationTracker.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

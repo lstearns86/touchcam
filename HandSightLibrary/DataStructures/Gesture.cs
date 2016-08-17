@@ -6,17 +6,28 @@ using System.Threading.Tasks;
 
 namespace HandSightLibrary
 {
-    class Gesture
+    public class Gesture
     {
-        List<Sensors.Reading> sensorReadings;
+        string className;
+        string location;
+
+        List<Sensors.Reading> sensorReadings, correctedSensorReadings;
         float[] features;
 
-        public List<Sensors.Reading> SensorReadings { get { return sensorReadings; } set { sensorReadings = value; } }
+        public string ClassName { get { return className; } set { className = value; } }
+        public string Location { get { return location; } set { location = value; } }
+
+        public List<Sensors.Reading> SensorReadings { get { return sensorReadings; } }
+        public List<Sensors.Reading> CorrectedSensorReadings { get { return correctedSensorReadings; }  }
         public float[] Features { get { return features; } set { features = value; } }
 
-        public Gesture()
+        public Gesture(Sensors.Reading[] readings, string gestureName = "unknown", string gestureLocation = "unknown")
         {
-
+            sensorReadings = new List<Sensors.Reading>(readings);
+            correctedSensorReadings = new List<HandSightLibrary.Sensors.Reading>();
+            features = null;
+            this.className = gestureName;
+            this.location = gestureLocation;
         }
     }
 }

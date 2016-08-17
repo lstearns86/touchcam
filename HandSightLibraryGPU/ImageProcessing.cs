@@ -87,5 +87,42 @@ namespace HandSightLibrary.ImageProcessing
                 template.Descriptors = descriptors;
             }
         }
+
+        //static Image<Gray, float> mean = new Image<Gray, float>(640, 640), std = new Image<Gray, float>(640, 640), temp = new Image<Gray, float>(640, 640);
+        //static CudaCannyEdgeDetector canny = new CudaCannyEdgeDetector(50, 100, 3);
+        //static GpuMat edges = new GpuMat(110, 110, DepthType.Cv8U, 1);
+        static Image<Gray, byte> edges = new Image<Gray, byte>(110, 110);
+        public static float ImageFocus(ImageTemplate template)
+        {
+            //MCvScalar mean = new MCvScalar(), std = new MCvScalar();
+            //CvInvoke.MeanStdDev(template.Image, ref mean, ref std);
+            //return (float)((std.V0 * std.V0) / mean.V0);
+
+            //temp = template.Image.Convert<Gray, float>();
+            //CvInvoke.Blur(temp, mean, new Size(3, 3), new Point(-1, -1));
+
+            //Rectangle originalROI = template.Image.ROI;
+            //template.Image.ROI = new Rectangle(0, 0, 639, 640);
+            //temp.ROI = new Rectangle(1, 0, 639, 640);
+            //template.Image.CopyTo(temp);
+
+            //template.Image.ROI = originalROI;
+            //temp.ROI = originalROI;
+
+            //CvInvoke.Subtract(template.Image, temp, temp);
+            //MCvScalar sum = CvInvoke.Sum(temp);
+
+            //return (float)sum.V0;
+
+            template.Image.ROI = new Rectangle(265, 265, 110, 110);
+            //GpuMat img = new GpuMat(template.Image);
+
+            CvInvoke.Canny(template.Image, edges, 100, 50, 3);
+            //canny.Detect(img, edges);
+            //double sum = CudaInvoke.AbsSum(edges).V0;
+            double sum = CvInvoke.Sum(edges).V0;
+            template.Image.ROI = new Rectangle(0, 0, 640, 640);
+            return (float)(sum / 255.0);
+        }
     }
 }
