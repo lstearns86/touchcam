@@ -55,26 +55,36 @@ namespace HandSightLibrary
         {
             Sensors.Reading newReading = sensorReading.Clone();
 
-            // based on a formula obtained from http://www.varesano.net/blog/fabio/simple-gravity-compensation-9-dom-imus
-            Quaternion q1 = sensorReading.Orientation1;
-            Point3D g1 = new Point3D(
-                    (float)(2 * (q1.X * q1.Z - q1.W * q1.Y)),
-                    (float)(2 * (q1.W * q1.X + q1.Y * q1.Z)),
-                    (float)(q1.W * q1.W - q1.X * q1.X - q1.Y * q1.Y - q1.Z * q1.Z)
-                );
+            //// based on a formula obtained from http://www.varesano.net/blog/fabio/simple-gravity-compensation-9-dom-imus
+            //Quaternion q1 = sensorReading.Orientation1;
+            //Point3D g1 = new Point3D(
+            //        (float)(2 * (q1.X * q1.Z - q1.W * q1.Y)),
+            //        (float)(2 * (q1.W * q1.X + q1.Y * q1.Z)),
+            //        (float)(q1.W * q1.W - q1.X * q1.X - q1.Y * q1.Y - q1.Z * q1.Z)
+            //    );
 
-            newReading.Accelerometer1 -= g1 * (float)GRAVITY;            
+            //newReading.Accelerometer1 -= g1 * (float)GRAVITY;
+
+            Quaternion orientation1 = sensorReading.Orientation1;
+            Point3D rotatedAcceleration1 = orientation1.RotateVector(sensorReading.Accelerometer1);
+            rotatedAcceleration1.Z -= (float)GRAVITY;
+            newReading.Accelerometer1 = orientation1.InverseRotateVector(rotatedAcceleration1);
 
             if (useSecondSensor)
             {
-                Quaternion q2 = sensorReading.Orientation2;
-                Point3D g2 = new Point3D(
-                        (float)(2 * (q2.X * q2.Z - q2.W * q2.Y)),
-                        (float)(2 * (q2.W * q2.X + q2.Y * q2.Z)),
-                        (float)(q2.W * q2.W - q2.X * q2.X - q2.Y * q2.Y - q2.Z * q2.Z)
-                    );
+                //    Quaternion q2 = sensorReading.Orientation2;
+                //    Point3D g2 = new Point3D(
+                //            (float)(2 * (q2.X * q2.Z - q2.W * q2.Y)),
+                //            (float)(2 * (q2.W * q2.X + q2.Y * q2.Z)),
+                //            (float)(q2.W * q2.W - q2.X * q2.X - q2.Y * q2.Y - q2.Z * q2.Z)
+                //        );
 
-                newReading.Accelerometer2 -= g2 * (float)GRAVITY;
+                //    newReading.Accelerometer2 -= g2 * (float)GRAVITY;
+
+                Quaternion orientation2 = sensorReading.Orientation2;
+                Point3D rotatedAcceleration2 = orientation2.RotateVector(sensorReading.Accelerometer2);
+                rotatedAcceleration2.Z -= (float)GRAVITY;
+                newReading.Accelerometer2 = orientation2.InverseRotateVector(rotatedAcceleration2);
             }
 
             return newReading;

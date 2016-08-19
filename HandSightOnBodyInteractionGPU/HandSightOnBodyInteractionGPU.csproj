@@ -131,6 +131,18 @@
     <Compile Include="EvaluateOldData.Designer.cs">
       <DependentUpon>EvaluateOldData.cs</DependentUpon>
     </Compile>
+    <Compile Include="SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SettingsForm.Designer.cs">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TrainingForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TrainingForm.Designer.cs">
+      <DependentUpon>TrainingForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="CameraViewer.resx">
       <DependentUpon>CameraViewer.cs</DependentUpon>
     </EmbeddedResource>
@@ -156,6 +168,12 @@
     <EmbeddedResource Include="EvaluateOldData.resx">
       <DependentUpon>EvaluateOldData.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="SettingsForm.resx">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TrainingForm.resx">
+      <DependentUpon>TrainingForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
@@ -171,6 +189,15 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="defaults\gestures.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="defaults\actions.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="defaults\locations.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="FodyWeavers.xml" />
     <Content Include="hcil.ico" />
     <Content Include="lib\IduleProvider.dll" />

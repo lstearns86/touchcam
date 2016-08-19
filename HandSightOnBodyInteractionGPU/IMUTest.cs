@@ -40,7 +40,7 @@ namespace HandSightOnBodyInteractionGPU
             //OrientationTracker.Secondary.UpdateWithReading(reading, -1, true);
             if ((DateTime.Now - last).TotalMilliseconds > 30)
             {
-                //OrientationTracker.Quaternion orientation = OrientationTracker.Primary.EstimateOrientation();
+                //Quaternion orientation = OrientationTracker.Primary.EstimateOrientation();
                 EulerAngles orientation = OrientationTracker.Primary.EstimateOrientation().GetEulerAngles();
                 //OrientationTracker.EulerAngles orientation = OrientationTracker.Primary.EstimateOrientation();
                 //orientation.Roll += (float)Math.PI; if (orientation.Roll > Math.PI) orientation.Roll -= (float)(2 * Math.PI);
@@ -54,19 +54,24 @@ namespace HandSightOnBodyInteractionGPU
                 //int pitch = resolution * (int)Math.Round(orientation.Pitch / resolution);
                 //int roll = resolution * (int)Math.Round(orientation.Roll / resolution);
 
+                if(RemoveGravityCheckbox.Checked)
+                {
+                    reading = OrientationTracker.SubtractGravity(reading);
+                }
+
                 Invoke(new MethodInvoker(delegate
                 {
                     StatusBox.Text = "";
-                    //StatusBox.Text += "ax = " + reading.Accelerometer1.X + " m/s^2" + Environment.NewLine;
-                    //StatusBox.Text += "ay = " + reading.Accelerometer1.Y + " m/s^2" + Environment.NewLine;
-                    //StatusBox.Text += "az = " + reading.Accelerometer1.Z + " m/s^2" + Environment.NewLine;
-                    //StatusBox.Text += "gx = " + reading.Gyroscope1.X + " deg / s" + Environment.NewLine;
-                    //StatusBox.Text += "gy = " + reading.Gyroscope1.Y + " deg / s" + Environment.NewLine;
-                    //StatusBox.Text += "gz = " + reading.Gyroscope1.Z + " deg / s" + Environment.NewLine;
-                    //StatusBox.Text += "mx = " + reading.Magnetometer1.X + " gauss" + Environment.NewLine;
-                    //StatusBox.Text += "my = " + reading.Magnetometer1.Y + " gauss" + Environment.NewLine;
-                    //StatusBox.Text += "mz = " + reading.Magnetometer1.Z + " gauss" + Environment.NewLine;
-                    StatusBox.Text = yaw + Environment.NewLine + pitch + Environment.NewLine + roll;
+                    StatusBox.Text += "ax = " + reading.Accelerometer1.X + " m/s^2" + Environment.NewLine;
+                    StatusBox.Text += "ay = " + reading.Accelerometer1.Y + " m/s^2" + Environment.NewLine;
+                    StatusBox.Text += "az = " + reading.Accelerometer1.Z + " m/s^2" + Environment.NewLine;
+                    StatusBox.Text += "gx = " + reading.Gyroscope1.X + " deg / s" + Environment.NewLine;
+                    StatusBox.Text += "gy = " + reading.Gyroscope1.Y + " deg / s" + Environment.NewLine;
+                    StatusBox.Text += "gz = " + reading.Gyroscope1.Z + " deg / s" + Environment.NewLine;
+                    StatusBox.Text += "mx = " + reading.Magnetometer1.X + " gauss" + Environment.NewLine;
+                    StatusBox.Text += "my = " + reading.Magnetometer1.Y + " gauss" + Environment.NewLine;
+                    StatusBox.Text += "mz = " + reading.Magnetometer1.Z + " gauss" + Environment.NewLine;
+                    StatusBox.Text += yaw + Environment.NewLine + pitch + Environment.NewLine + roll;
                     //OrientationLabel.Text = orientation.W.ToString("0.0") + ", " + orientation.X.ToString("0.0") + ", " + orientation.Y.ToString("0.0") + ", " + orientation.Z.ToString("0.0");
                 }));
                 last = DateTime.Now;

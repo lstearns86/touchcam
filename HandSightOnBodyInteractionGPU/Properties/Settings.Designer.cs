@@ -94,5 +94,17 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["SingleIMU"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool IncludeGesturesInProfile {
+            get {
+                return ((bool)(this["IncludeGesturesInProfile"]));
+            }
+            set {
+                this["IncludeGesturesInProfile"] = value;
+            }
+        }
     }
 }

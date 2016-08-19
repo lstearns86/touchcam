@@ -22,9 +22,12 @@ namespace HandSightLibrary
 
         Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
         Point3D minMag2 = new Point3D(), maxMag2 = new Point3D();
-        
+
+        static Stopwatch stopwatch = new Stopwatch();
+
         public class Reading
         {
+            public float Timestamp;
             public Point3D Accelerometer1;
             public Point3D Magnetometer1;
             public Point3D Gyroscope1;
@@ -36,9 +39,15 @@ namespace HandSightLibrary
             public Quaternion Orientation1;
             public Quaternion Orientation2;
 
+            public Reading()
+            {
+                Timestamp = 1000.0f * (float)stopwatch.ElapsedTicks / (float)Stopwatch.Frequency;
+            }
+
             public Reading Clone()
             {
                 Reading reading = new Reading();
+                reading.Timestamp = Timestamp;
                 reading.Accelerometer1 = Accelerometer1 == null ? null : new Point3D(Accelerometer1.X, Accelerometer1.Y, Accelerometer1.Z);
                 reading.Magnetometer1 = Magnetometer1 == null ? null : new Point3D(Magnetometer1.X, Magnetometer1.Y, Magnetometer1.Z);
                 reading.Gyroscope1 = Gyroscope1 == null ? null : new Point3D(Gyroscope1.X, Gyroscope1.Y, Gyroscope1.Z);
@@ -74,6 +83,7 @@ namespace HandSightLibrary
         private Sensors()
         {
             Connect();
+            stopwatch.Restart();
         }
 
         ~Sensors()

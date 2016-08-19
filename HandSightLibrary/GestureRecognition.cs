@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+
+using Newtonsoft.Json;
 
 namespace HandSightLibrary
 {
@@ -11,11 +15,11 @@ namespace HandSightLibrary
         public enum READING_TYPE
         {
             //ACCEL1_X, ACCEL1_Y, ACCEL1_Z, ACCEL2_X, ACCEL2_Y, ACCEL2_Z, GYRO1_X, GYRO1_Y, GYRO1_Z, GYRO2_X, GYRO2_Y, GYRO2_Z, MAG1_X, MAG1_Y, MAG1_Z, MAG2_X, MAG2_Y, MAG2_Z, IR1, IR2
-            ACCEL1_X, ACCEL1_Y, ACCEL1_Z, GYRO1_X, GYRO1_Y, GYRO1_Z, MAG1_X, MAG1_Y, MAG1_Z, IR1, IR2
+            ACCEL1_X, ACCEL1_Y, ACCEL1_Z, GYRO1_X, GYRO1_Y, GYRO1_Z, IR1, IR2
         };
 
         static Classifier classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);
-        static Dictionary<string, List<Gesture>> samples = new Dictionary<string, List<Gesture>>();
+        public static Dictionary<string, List<Gesture>> samples = new Dictionary<string, List<Gesture>>();
 
         public static int GetNumExamples()
         {
@@ -33,17 +37,81 @@ namespace HandSightLibrary
         public static void Reset()
         {
             samples.Clear();
-            classifier = null;
+            classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);;
         }
 
-        public static void Save(string name)
+        public static void Save(string name, bool overwrite = true)
         {
-            throw new NotImplementedException();
+            string dir = Path.Combine("savedProfiles", name);
+            if (!Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+            else
+            {
+                if(overwrite)
+                    foreach (string filename in Directory.GetFiles(dir, "*.gest"))
+                        File.Delete(filename);
+            }
+
+            foreach (string region in samples.Keys)
+            {
+                
+                int i = 0;
+                foreach (Gesture template in samples[region])
+                {
+                    //using (FileStream stream = new FileStream(Path.Combine(dir, region + "_" + i + ".gest"), FileMode.Create))
+                    //{
+                    //    stream.Write(BitConverter.GetBytes(template.Features.Length), 0, 4);
+                    //    foreach (float v in template.Features)
+                    //    {
+                    //        stream.Write(BitConverter.GetBytes(v), 0, 4);
+                    //    }
+                    //    i++;
+                    //}
+                    string json = JsonConvert.SerializeObject(template);
+                    File.WriteAllText(Path.Combine(dir, region + "_" + i + ".gest"), json);
+                    i++;
+                }
+            }
         }
 
         public static void Load(string name)
         {
-            throw new NotImplementedException();
+            string dir = Path.Combine("savedProfiles", name);
+            if (!Directory.Exists(dir))
+                return;
+
+            foreach (string filename in Directory.GetFiles(dir, "*.gest"))
+            {
+                //float[] features = null;
+                //using (FileStream stream = new FileStream(filename, FileMode.Open))
+                //{
+                //    byte[] buffer = new byte[stream.Length];
+                //    try
+                //    {
+                //        stream.Read(buffer, 0, 4);
+                //        int length = BitConverter.ToInt32(buffer, 0);
+                //        features = new float[length];
+                //        stream.Read(buffer, 0, 4 * length);
+                //        for (int i = 0; i < length; i++)
+                //            features[i] = BitConverter.ToSingle(buffer, i * 4);
+                //    }
+                //    catch { }
+                //}
+
+                //Gesture template = new Gesture();
+                //Match match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @"([a-zA-Z ]*)_\d+");
+                //string className = match.Groups[1].Value;
+                //template.ClassName = className;
+                //template.Features = features;
+
+                string json = File.ReadAllText(filename);
+                Gesture template = JsonConvert.DeserializeObject<Gesture>(json);
+                string className = template.ClassName;
+
+                AddTrainingExample(template, className);
+            }
+
+            Train();
         }
 
         public static void PreprocessGesture(Gesture gesture, bool useSecondSensor = false)
@@ -64,19 +132,44 @@ namespace HandSightLibrary
 
         public static void AddTrainingExample(Gesture gesture, string gestureClass)
         {
-            classifier.AddExample(gestureClass, gesture.Features);
+            if (!samples.ContainsKey(gestureClass)) samples.Add(gestureClass, new List<Gesture>());
+            samples[gestureClass].Add(gesture);
+        }
+
+        public static void RemoveTrainingExample(Gesture gesture)
+        {
+            string className = gesture.ClassName;
+            samples[className].Remove(gesture);
+            if (samples[className].Count == 0)
+            {
+                samples.Remove(className);
+            }
         }
 
         public static void Train()
         {
-            classifier.Train();
+            if (GetNumClasses() > 1)
+            {
+                foreach(string className in samples.Keys)
+                    foreach(Gesture gesture in samples[className])
+                        classifier.AddExample(className, gesture.Features);
+                classifier.Train();
+            }
         }
 
         public static string PredictGesture(Gesture gesture)
         {
-            Dictionary<string, float> probabilities = new Dictionary<string, float>();
-            string className = classifier.Predict(gesture.Features, out probabilities);
-            return className;
+            int numClasses = GetNumClasses();
+            if (numClasses == 0)
+                return "null";
+            else if (numClasses == 1)
+                return samples.Keys.ToArray()[0];
+            else
+            {
+                Dictionary<string, float> probabilities = new Dictionary<string, float>();
+                string className = classifier.Predict(gesture.Features, out probabilities);
+                return className;
+            }
         }
 
         #region Private Functions
@@ -273,9 +366,9 @@ namespace HandSightLibrary
                 //readings[(int)READING_TYPE.GYRO2_X].Add(stream.ElementAt(i).Gyroscope2.X);
                 //readings[(int)READING_TYPE.GYRO2_Y].Add(stream.ElementAt(i).Gyroscope2.Y);
                 //readings[(int)READING_TYPE.GYRO2_Z].Add(stream.ElementAt(i).Gyroscope2.Z);
-                readings[(int)READING_TYPE.MAG1_X].Add(stream.ElementAt(i).Magnetometer1.X);
-                readings[(int)READING_TYPE.MAG1_Y].Add(stream.ElementAt(i).Magnetometer1.Y);
-                readings[(int)READING_TYPE.MAG1_Z].Add(stream.ElementAt(i).Magnetometer1.Z);
+                //readings[(int)READING_TYPE.MAG1_X].Add(stream.ElementAt(i).Magnetometer1.X);
+                //readings[(int)READING_TYPE.MAG1_Y].Add(stream.ElementAt(i).Magnetometer1.Y);
+                //readings[(int)READING_TYPE.MAG1_Z].Add(stream.ElementAt(i).Magnetometer1.Z);
                 //readings[(int)READING_TYPE.MAG2_X].Add(stream.ElementAt(i).Magnetometer2.X);
                 //readings[(int)READING_TYPE.MAG2_Y].Add(stream.ElementAt(i).Magnetometer2.Y);
                 //readings[(int)READING_TYPE.MAG2_Z].Add(stream.ElementAt(i).Magnetometer2.Z);
@@ -314,9 +407,9 @@ namespace HandSightLibrary
             //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.GYRO2_Y], readings[(int)READING_TYPE.GYRO2_Z]));
             //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.GYRO2_Z], readings[(int)READING_TYPE.GYRO2_X]));
 
-            featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG1_X], readings[(int)READING_TYPE.MAG1_Y]));
-            featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG1_Y], readings[(int)READING_TYPE.MAG1_Z]));
-            featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG1_Z], readings[(int)READING_TYPE.MAG1_X]));
+            //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG1_X], readings[(int)READING_TYPE.MAG1_Y]));
+            //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG1_Y], readings[(int)READING_TYPE.MAG1_Z]));
+            //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG1_Z], readings[(int)READING_TYPE.MAG1_X]));
 
             //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG2_X], readings[(int)READING_TYPE.MAG2_Y]));
             //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG2_Y], readings[(int)READING_TYPE.MAG2_Z]));

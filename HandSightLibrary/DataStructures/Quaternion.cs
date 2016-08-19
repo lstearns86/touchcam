@@ -66,6 +66,34 @@ namespace HandSightLibrary
             return new EulerAngles(yaw, pitch, roll);
         }
 
+        public Point3D RotateVector(Point3D vector)
+        {
+            float s = (float)W;
+            Point3D u = new Point3D((float)X, (float)Y, (float)Z);
+            Point3D v = vector;
+
+            float dotUV = Point3D.Dot(u, v);
+            float dotUU = Point3D.Dot(u, u);
+            Point3D crossUV = Point3D.Cross(u, v);
+
+            Point3D vprime = 2.0f * dotUV * u + (s * s - dotUU) * v + 2.0f * s * crossUV;
+            return vprime;
+        }
+
+        public Point3D InverseRotateVector(Point3D vector)
+        {
+            float s = (float)W;
+            Point3D u = new Point3D(-(float)X, -(float)Y, -(float)Z);
+            Point3D v = vector;
+
+            float dotUV = Point3D.Dot(u, v);
+            float dotUU = Point3D.Dot(u, u);
+            Point3D crossUV = Point3D.Cross(u, v);
+
+            Point3D vprime = 2.0f * dotUV * u + (s * s - dotUU) * v + 2.0f * s * crossUV;
+            return vprime;
+        }
+
         public Quaternion Clone()
         {
             return new Quaternion(W, X, Y, Z);
