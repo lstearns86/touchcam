@@ -111,6 +111,7 @@
     <Compile Include="IMUTest.Designer.cs">
       <DependentUpon>IMUTest.cs</DependentUpon>
     </Compile>
+    <Compile Include="GestureActionMap.cs" />
     <Compile Include="OnBodyInputDemo.cs">
       <SubType>Form</SubType>
     </Compile>

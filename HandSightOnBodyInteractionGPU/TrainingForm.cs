@@ -13,6 +13,8 @@ namespace HandSightOnBodyInteractionGPU
 {
     public partial class TrainingForm : Form
     {
+        public bool HideFromList { get { return true; } }
+
         string profileName = null;
         bool unsaved = false;
 
@@ -186,7 +188,7 @@ namespace HandSightOnBodyInteractionGPU
             }
 
             LocationCountLabel.Text = Localization.Instance.GetNumTrainingExamples() + " location examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
-            GestureCountLabel.Text = GestureRecognition.GetNumExamples() + " gesture examples (" + GestureRecognition.GetNumClasses() + " classes";
+            GestureCountLabel.Text = GestureRecognition.GetNumExamples() + " gesture examples (" + GestureRecognition.GetNumClasses() + " classes)";
 
             unsaved = true;
         }

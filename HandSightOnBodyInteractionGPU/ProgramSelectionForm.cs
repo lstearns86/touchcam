@@ -30,7 +30,11 @@ namespace HandSightOnBodyInteractionGPU
                 forms.AddRange(types);
             }
 
-            foreach (Type formType in forms) ProgramList.Items.Add(formType.Name);
+            foreach (Type formType in forms)
+            {
+                PropertyInfo info = formType.GetProperty("HideFromList");
+                if(info == null) ProgramList.Items.Add(formType.Name);
+            }
             ProgramList.SelectedItem = Properties.Settings.Default.StartupForm;
             ProgramList.Focus();
         }

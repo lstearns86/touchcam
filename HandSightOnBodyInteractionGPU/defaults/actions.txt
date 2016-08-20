@@ -1,1 +1,20 @@
-﻿Tap+Palm+*=Hello World
+﻿# If gesture duration > threshold (e.g. 1 second), then provide voiceover feedback as finger moves. Don't trigger an action on lifting.
+
+# Syntax:
+# "Context~Gesture~Coarse~Fine=!Context" will set the context and read out the context name
+# "Context~Gesture~Coarse~Fine=Text" will read out the specified text
+# You can use regular expressions for each parameter (e.g. *Tap will match both Tap and Double Tap)
+# Matching is case insensitive
+
+*~Tap~Palm~*=Hello World
+*~Tap~Wrist~Outer=Hello Wrist
+
+#*~Hover~Palm~Up=!Messages
+#Messages+Tap~Palm~*=13 new messages
+#Messages+Swipe Left~Palm~*=3 new text messages
+#Messages+Swipe Up~Palm~*=5 new tweets
+#Messages+Swipe Right~Palm~*=5 new Facebook messages
+#*~Hover~Palm~Left=!Weather
+#*~Hover~Palm~Right=!Emails
+#*~Tap~Wrist~Outer=10:25 am
+#*~Double Tap~Wrist~Inner=118 bpm

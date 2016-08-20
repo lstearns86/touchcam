@@ -8,6 +8,8 @@ namespace HandSightOnBodyInteractionGPU
 {
     public partial class SettingsForm : Form
     {
+        public bool HideFromList { get { return true; } }
+
         public SettingsForm()
         {
             InitializeComponent();

@@ -96,6 +96,8 @@ namespace HandSightOnBodyInteractionGPU
             
             Text = "Connecting to Camera and Sensors...";
 
+            GestureActionMap.Load(File.ReadAllText("defaults/actions.txt"));
+
             //trainingForm.TrainingDataUpdated += () => { UpdateTrainingLabel(); };
             trainingForm.RecordLocation += (string coarseLocation, string fineLocation) =>
             {
@@ -165,11 +167,15 @@ namespace HandSightOnBodyInteractionGPU
 
                                 recordingGesture = false;
 
+                                DateTime start = DateTime.Now;
                                 gesture.ClassName = gestureToTrain;
                                 GestureRecognition.AddTrainingExample(gesture, gestureToTrain);
                                 GestureRecognition.Train();
+                                Debug.WriteLine("Training: " + (DateTime.Now - start).TotalMilliseconds + " ms");
 
+                                start = DateTime.Now;
                                 trainingForm.UpdateLists();
+                                Debug.WriteLine("Updating List: " + (DateTime.Now - start).TotalMilliseconds + " ms");
 
                                 Monitor.Exit(trainingLock);
                             }
@@ -234,6 +240,8 @@ namespace HandSightOnBodyInteractionGPU
                                 fineProbability = maxProb;
                             }
 
+                        string actionResult = GestureActionMap.PerformAction(gesture.ClassName, coarseLocation, fineLocation);
+
                         Invoke(new MethodInvoker(delegate
                         {
                             CoarsePredictionLabel.Text = "= " + coarseLocation;
@@ -241,8 +249,12 @@ namespace HandSightOnBodyInteractionGPU
                             FinePredictionLabel.Text = "= " + fineLocation;
                             FineProbabilityLabel.Text = " (response = " + (fineProbability * 100).ToString("0.0") + ")";
                             GesturePredictionLabel.Text = gesture.ClassName;
-                            speech.SpeakAsyncCancelAll();
-                            speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
+                            if (actionResult != null && actionResult.Length > 0)
+                            {
+                                speech.SpeakAsyncCancelAll();
+                                //speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
+                                speech.SpeakAsync(actionResult);
+                            }
                         }));
                     }
                 });
@@ -304,6 +316,11 @@ namespace HandSightOnBodyInteractionGPU
             if(touchDown) gestureSensorReadings.Add(reading);
         }
 
+        private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            (new SettingsForm()).Show();
+        }
+
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
             if(countdown > 0)
@@ -316,13 +333,13 @@ namespace HandSightOnBodyInteractionGPU
             }
             else if (countdown == 0)
             {
-                AddTemplate();
-
                 Invoke(new MethodInvoker(delegate
                 {
                     CountdownLabel.Visible = false;
                 }));
                 timer.Stop();
+
+                AddTemplate();
             }
         }
 

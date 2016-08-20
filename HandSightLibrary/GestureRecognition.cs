@@ -37,7 +37,7 @@ namespace HandSightLibrary
         public static void Reset()
         {
             samples.Clear();
-            classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);;
+            classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);
         }
 
         public static void Save(string name, bool overwrite = true)
@@ -150,6 +150,7 @@ namespace HandSightLibrary
         {
             if (GetNumClasses() > 1)
             {
+                classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);
                 foreach(string className in samples.Keys)
                     foreach(Gesture gesture in samples[className])
                         classifier.AddExample(className, gesture.Features);
