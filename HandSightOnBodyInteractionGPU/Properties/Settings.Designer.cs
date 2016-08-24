@@ -106,5 +106,161 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["IncludeGesturesInProfile"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableSoundEffects {
+            get {
+                return ((bool)(this["EnableSoundEffects"]));
+            }
+            set {
+                this["EnableSoundEffects"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableSpeechOutput {
+            get {
+                return ((bool)(this["EnableSpeechOutput"]));
+            }
+            set {
+                this["EnableSpeechOutput"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool EnableApplicationDemos {
+            get {
+                return ((bool)(this["EnableApplicationDemos"]));
+            }
+            set {
+                this["EnableApplicationDemos"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool FixedApplicationResponses {
+            get {
+                return ((bool)(this["FixedApplicationResponses"]));
+            }
+            set {
+                this["FixedApplicationResponses"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string GestureMode {
+            get {
+                return ((string)(this["GestureMode"]));
+            }
+            set {
+                this["GestureMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Point MainLocation {
+            get {
+                return ((global::System.Drawing.Point)(this["MainLocation"]));
+            }
+            set {
+                this["MainLocation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Point TrainingLocation {
+            get {
+                return ((global::System.Drawing.Point)(this["TrainingLocation"]));
+            }
+            set {
+                this["TrainingLocation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Point SettingsLocation {
+            get {
+                return ((global::System.Drawing.Point)(this["SettingsLocation"]));
+            }
+            set {
+                this["SettingsLocation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("973, 687")]
+        public global::System.Drawing.Size TrainingSize {
+            get {
+                return ((global::System.Drawing.Size)(this["TrainingSize"]));
+            }
+            set {
+                this["TrainingSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("968, 717")]
+        public global::System.Drawing.Size MainSize {
+            get {
+                return ((global::System.Drawing.Size)(this["MainSize"]));
+            }
+            set {
+                this["MainSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("1000")]
+        public int HoverTimeThreshold {
+            get {
+                return ((int)(this["HoverTimeThreshold"]));
+            }
+            set {
+                this["HoverTimeThreshold"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TrainingVisible {
+            get {
+                return ((bool)(this["TrainingVisible"]));
+            }
+            set {
+                this["TrainingVisible"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool SettingsVisible {
+            get {
+                return ((bool)(this["SettingsVisible"]));
+            }
+            set {
+                this["SettingsVisible"] = value;
+            }
+        }
     }
 }

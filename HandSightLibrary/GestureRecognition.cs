@@ -105,6 +105,7 @@ namespace HandSightLibrary
                 //template.Features = features;
 
                 string json = File.ReadAllText(filename);
+                json = json.Replace(",\"Visualization\":\"System.Drawing.Bitmap\"", "");
                 Gesture template = JsonConvert.DeserializeObject<Gesture>(json);
                 string className = template.ClassName;
 

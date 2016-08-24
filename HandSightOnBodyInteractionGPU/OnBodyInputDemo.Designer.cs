@@ -188,14 +188,14 @@
             // trainingToolStripMenuItem
             // 
             this.trainingToolStripMenuItem.Name = "trainingToolStripMenuItem";
-            this.trainingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.trainingToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.trainingToolStripMenuItem.Text = "Training";
             this.trainingToolStripMenuItem.Click += new System.EventHandler(this.trainingToolStripMenuItem_Click);
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
             // 
@@ -211,8 +211,11 @@
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "OnBodyInputDemo";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Localization Test";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.LocalizationTest_FormClosing);
+            this.Move += new System.EventHandler(this.OnBodyInputDemo_Move);
+            this.Resize += new System.EventHandler(this.OnBodyInputDemo_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.Display)).EndInit();
             this.panel1.ResumeLayout(false);
             this.menuStrip1.ResumeLayout(false);

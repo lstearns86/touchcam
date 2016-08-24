@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO.Ports;
 using System.Linq;
+using System.Timers;
 using System.Threading.Tasks;
 
 namespace HandSightLibrary
@@ -20,8 +21,12 @@ namespace HandSightLibrary
         string PORT_ID = "COM3"; // TODO: provide an interface to select the port, and save to user preference
         int BAUD_RATE = 250000;
 
-        Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
-        Point3D minMag2 = new Point3D(), maxMag2 = new Point3D();
+        //Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
+        //Point3D minMag2 = new Point3D(), maxMag2 = new Point3D();
+        Point3D minMag1 = new Point3D(float.MaxValue, float.MaxValue, float.MaxValue);
+        Point3D maxMag1 = new Point3D(float.MinValue, float.MinValue, float.MinValue);
+        Point3D minMag2 = new Point3D(float.MaxValue, float.MaxValue, float.MaxValue);
+        Point3D maxMag2 = new Point3D(float.MinValue, float.MinValue, float.MinValue);
 
         static Stopwatch stopwatch = new Stopwatch();
 
@@ -84,6 +89,29 @@ namespace HandSightLibrary
         {
             Connect();
             stopwatch.Restart();
+            minMag1 = new Point3D(Properties.Settings.Default.MinMag1X, Properties.Settings.Default.MinMag1Y, Properties.Settings.Default.MinMag1Z);
+            maxMag1 = new Point3D(Properties.Settings.Default.MaxMag1X, Properties.Settings.Default.MaxMag1Y, Properties.Settings.Default.MaxMag1Z);
+            minMag2 = new Point3D(Properties.Settings.Default.MinMag2X, Properties.Settings.Default.MinMag2Y, Properties.Settings.Default.MinMag2Z);
+            maxMag2 = new Point3D(Properties.Settings.Default.MaxMag2X, Properties.Settings.Default.MaxMag2Y, Properties.Settings.Default.MaxMag2Z);
+
+            Timer timer = new Timer(10000);
+            timer.Elapsed += (object sender, System.Timers.ElapsedEventArgs e) =>
+            {
+                Properties.Settings.Default.MinMag1X = minMag1.X;
+                Properties.Settings.Default.MinMag1Y = minMag1.Y;
+                Properties.Settings.Default.MinMag1Z = minMag1.Z;
+                Properties.Settings.Default.MaxMag1X = maxMag1.X;
+                Properties.Settings.Default.MaxMag1Y = maxMag1.Y;
+                Properties.Settings.Default.MaxMag1Z = maxMag1.Z;
+                Properties.Settings.Default.MinMag2X = minMag2.X;
+                Properties.Settings.Default.MinMag2Y = minMag2.Y;
+                Properties.Settings.Default.MinMag2Z = minMag2.Z;
+                Properties.Settings.Default.MaxMag2X = maxMag2.X;
+                Properties.Settings.Default.MaxMag2Y = maxMag2.Y;
+                Properties.Settings.Default.MaxMag2Z = maxMag2.Z;
+                Properties.Settings.Default.Save();
+            };
+            timer.Start();
         }
 
         ~Sensors()
@@ -123,6 +151,14 @@ namespace HandSightLibrary
                     WriteCommand();
                 }
             }
+        }
+
+        public void ResetCalibration()
+        {
+            minMag1 = new Point3D(float.MaxValue, float.MaxValue, float.MaxValue);
+            maxMag1 = new Point3D(float.MinValue, float.MinValue, float.MinValue);
+            minMag2 = new Point3D(float.MaxValue, float.MaxValue, float.MaxValue);
+            maxMag2 = new Point3D(float.MinValue, float.MinValue, float.MinValue);
         }
 
         private void WriteCommand()

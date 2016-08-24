@@ -1,0 +1,42 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="HandSightLibrary.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="MinMag1X" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">100000</Value>
+    </Setting>
+    <Setting Name="MinMag1Y" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">100000</Value>
+    </Setting>
+    <Setting Name="MinMag1Z" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">100000</Value>
+    </Setting>
+    <Setting Name="MaxMag1X" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">-100000</Value>
+    </Setting>
+    <Setting Name="MaxMag1Y" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">-100000</Value>
+    </Setting>
+    <Setting Name="MaxMag1Z" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">-100000</Value>
+    </Setting>
+    <Setting Name="MinMag2X" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">100000</Value>
+    </Setting>
+    <Setting Name="MinMag2Y" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">100000</Value>
+    </Setting>
+    <Setting Name="MinMag2Z" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">100000</Value>
+    </Setting>
+    <Setting Name="MaxMag2X" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">-100000</Value>
+    </Setting>
+    <Setting Name="MaxMag2Y" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">-100000</Value>
+    </Setting>
+    <Setting Name="MaxMag2Z" Type="System.Single" Scope="User">
+      <Value Profile="(Default)">-100000</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

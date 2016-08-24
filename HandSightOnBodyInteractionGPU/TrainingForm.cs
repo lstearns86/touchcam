@@ -56,9 +56,17 @@ namespace HandSightOnBodyInteractionGPU
             //ListView_SetIconSpacing(listView.Handle, 5, 5);
         }
 
+        private bool training = false;
+        public bool Training { get { return training; } }
+
         public TrainingForm()
         {
             InitializeComponent();
+
+            Location = Properties.Settings.Default.TrainingLocation;
+            Size = Properties.Settings.Default.TrainingSize;
+
+            TimerChooser.Value = Properties.Settings.Default.CountdownTimer;
 
             LocationView.LargeImageList = new ImageList();
             LocationView.LargeImageList.ImageSize = new Size(120, 120);
@@ -128,10 +136,6 @@ namespace HandSightOnBodyInteractionGPU
 
             // group and display gesture examples
             imageIndex = 0;
-            Pen irPen = new Pen(Brushes.Black, 9);
-            Pen xPen = new Pen(Brushes.Red, 5);
-            Pen yPen = new Pen(Brushes.Green, 5);
-            Pen zPen = new Pen(Brushes.Blue, 5);
             foreach (string gestureName in GestureRecognition.samples.Keys)
             {
                 ListViewGroup group = GestureView.Groups.Add(gestureName, gestureName);
@@ -141,44 +145,7 @@ namespace HandSightOnBodyInteractionGPU
                     float duration = template.CorrectedSensorReadings[template.CorrectedSensorReadings.Count - 1].Timestamp - template.CorrectedSensorReadings[0].Timestamp;
                     duration /= 1000.0f;
 
-                    Bitmap img = new Bitmap(640, 640);
-                    Graphics g = Graphics.FromImage(img);
-                    //g.DrawLine(Pens.Black, 0, 320, 640, 320);
-                    Sensors.Reading prevReading = null;
-                    float prevX = 0;
-                    foreach(Sensors.Reading reading in template.CorrectedSensorReadings)
-                    {
-                        float x = img.Width * (float)(reading.Timestamp - template.CorrectedSensorReadings[0].Timestamp) / (duration * 1000);
-                        if (prevReading != null)
-                        {
-                            // draw IR1
-                            float y = img.Height * (1 - reading.InfraredReflectance1);
-                            float prevY = img.Height * (1 - prevReading.InfraredReflectance1);
-                            g.DrawLine(irPen, prevX, prevY, x, y);
-
-                            // draw IR2
-                            y = img.Height * (1 - reading.InfraredReflectance2);
-                            prevY = img.Height * (1 - prevReading.InfraredReflectance2);
-                            g.DrawLine(irPen, prevX, prevY, x, y);
-
-                            // draw Accelerometer1.X
-                            y = img.Height / 2 + img.Height / 2 * (-reading.Accelerometer1.X / 20);
-                            prevY = img.Height / 2 + img.Height / 2 * (-prevReading.Accelerometer1.X / 20);
-                            g.DrawLine(xPen, prevX, prevY, x, y);
-
-                            // draw Accelerometer1.Y
-                            y = img.Height / 2 + img.Height / 2 * (-reading.Accelerometer1.Y / 20);
-                            prevY = img.Height / 2 + img.Height / 2 * (-prevReading.Accelerometer1.Y / 20);
-                            g.DrawLine(yPen, prevX, prevY, x, y);
-
-                            // draw Accelerometer1.Z
-                            y = img.Height / 2 + img.Height / 2 * (-reading.Accelerometer1.Z / 20);
-                            prevY = img.Height / 2 + img.Height / 2 * (-prevReading.Accelerometer1.Z / 20);
-                            g.DrawLine(zPen, prevX, prevY, x, y);
-                        }
-                        prevReading = reading;
-                        prevX = x;
-                    }
+                    Bitmap img = template.Visualization;
 
                     GestureView.LargeImageList.Images.Add(img);
                     ListViewItem item = new ListViewItem() { Text = gestureName + " " + (templateIndex++) + " (" + duration.ToString("0.0") + "s)", ImageIndex = (imageIndex++), Tag = template };
@@ -197,6 +164,8 @@ namespace HandSightOnBodyInteractionGPU
         {
             e.Cancel = true;
             Hide();
+            Properties.Settings.Default.TrainingVisible = false;
+            Properties.Settings.Default.Save();
         }
 
         private void LocationView_KeyDown(object sender, KeyEventArgs e)
@@ -209,7 +178,7 @@ namespace HandSightOnBodyInteractionGPU
 
         private void RemoveButton_Click(object sender, EventArgs e)
         {
-            if (TrainingDataViewer.TabIndex == 1) // location tab is showing
+            if (TrainingDataViewer.SelectedIndex == 0) // location tab is showing
             {
                 foreach(ListViewItem removeItem in LocationView.SelectedItems)
                 {
@@ -227,7 +196,9 @@ namespace HandSightOnBodyInteractionGPU
                     LocationView.Items.Remove(removeItem);
                 }
 
+                training = true;
                 Localization.Instance.Train();
+                training = false;
                 OnTrainingDataUpdated();
             }
             else // gesture tab is showing
@@ -249,7 +220,9 @@ namespace HandSightOnBodyInteractionGPU
                     GestureView.Items.Remove(removeItem);
                 }
 
+                training = true;
                 GestureRecognition.Train();
+                training = false;
                 OnTrainingDataUpdated();
             }
         }
@@ -322,6 +295,7 @@ namespace HandSightOnBodyInteractionGPU
             List<string> profiles = new List<string>();
             foreach (string dir in Directory.GetDirectories("savedProfiles"))
                 profiles.Add((new DirectoryInfo(dir)).Name);
+            if(profiles.Contains("default")) profiles.Remove("default");
             if (profiles.Count == 0)
             {
                 MessageBox.Show("Error: no saved profiles!");
@@ -332,6 +306,7 @@ namespace HandSightOnBodyInteractionGPU
             {
                 profileName = dialog.SelectedItem;
 
+                training = true;
                 Localization.Instance.Reset();
                 Localization.Instance.Load(dialog.SelectedItem);
 
@@ -340,6 +315,7 @@ namespace HandSightOnBodyInteractionGPU
                     GestureRecognition.Reset();
                     GestureRecognition.Load(dialog.SelectedItem);
                 }
+                training = false;
 
                 UpdateLists();
 
@@ -373,9 +349,23 @@ namespace HandSightOnBodyInteractionGPU
 
         private void ResetButton_Click(object sender, EventArgs e)
         {
+            training = true;
             Localization.Instance.Reset();
             GestureRecognition.Reset();
+            training = false;
             UpdateLists();
+        }
+
+        private void TrainingForm_Move(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.TrainingLocation = Location;
+            Properties.Settings.Default.Save();
+        }
+
+        private void TrainingForm_Resize(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.TrainingSize = Size;
+            Properties.Settings.Default.Save();
         }
     }
 }

@@ -30,6 +30,10 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TrainingForm));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.GestureCountLabel = new System.Windows.Forms.Label();
+            this.label2 = new System.Windows.Forms.Label();
+            this.TimerChooser = new System.Windows.Forms.NumericUpDown();
+            this.label3 = new System.Windows.Forms.Label();
             this.IncludeGesturesInProfileCheckbox = new System.Windows.Forms.CheckBox();
             this.LoadDefaultGesturesButton = new System.Windows.Forms.Button();
             this.SaveDefaultGesturesButton = new System.Windows.Forms.Button();
@@ -48,19 +52,15 @@
             this.CoarseLocationChooser = new System.Windows.Forms.ComboBox();
             this.TrainingDataViewer = new System.Windows.Forms.TabControl();
             this.LocationTab = new System.Windows.Forms.TabPage();
-            this.GestureTab = new System.Windows.Forms.TabPage();
-            this.RemoveButton = new System.Windows.Forms.Button();
-            this.label2 = new System.Windows.Forms.Label();
-            this.TimerChooser = new System.Windows.Forms.NumericUpDown();
-            this.label3 = new System.Windows.Forms.Label();
-            this.GestureCountLabel = new System.Windows.Forms.Label();
             this.LocationView = new System.Windows.Forms.ListView();
+            this.GestureTab = new System.Windows.Forms.TabPage();
             this.GestureView = new System.Windows.Forms.ListView();
+            this.RemoveButton = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             this.TrainingDataViewer.SuspendLayout();
             this.LocationTab.SuspendLayout();
             this.GestureTab.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             this.SuspendLayout();
             // 
             // panel1
@@ -90,6 +90,46 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(202, 648);
             this.panel1.TabIndex = 0;
+            // 
+            // GestureCountLabel
+            // 
+            this.GestureCountLabel.Location = new System.Drawing.Point(12, 349);
+            this.GestureCountLabel.Name = "GestureCountLabel";
+            this.GestureCountLabel.Size = new System.Drawing.Size(180, 22);
+            this.GestureCountLabel.TabIndex = 46;
+            this.GestureCountLabel.Text = "0 training examples (0 classes)";
+            this.GestureCountLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(12, 14);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(36, 13);
+            this.label2.TabIndex = 43;
+            this.label2.Text = "Timer:";
+            // 
+            // TimerChooser
+            // 
+            this.TimerChooser.Location = new System.Drawing.Point(54, 12);
+            this.TimerChooser.Maximum = new decimal(new int[] {
+            15,
+            0,
+            0,
+            0});
+            this.TimerChooser.Name = "TimerChooser";
+            this.TimerChooser.Size = new System.Drawing.Size(75, 20);
+            this.TimerChooser.TabIndex = 44;
+            this.TimerChooser.ValueChanged += new System.EventHandler(this.TimerChooser_ValueChanged);
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(135, 14);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(47, 13);
+            this.label3.TabIndex = 45;
+            this.label3.Text = "seconds";
             // 
             // IncludeGesturesInProfileCheckbox
             // 
@@ -277,6 +317,16 @@
             this.LocationTab.Text = "Locations";
             this.LocationTab.UseVisualStyleBackColor = true;
             // 
+            // LocationView
+            // 
+            this.LocationView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.LocationView.Location = new System.Drawing.Point(3, 3);
+            this.LocationView.Name = "LocationView";
+            this.LocationView.Size = new System.Drawing.Size(741, 581);
+            this.LocationView.TabIndex = 0;
+            this.LocationView.UseCompatibleStateImageBehavior = false;
+            this.LocationView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LocationView_KeyDown);
+            // 
             // GestureTab
             // 
             this.GestureTab.Controls.Add(this.GestureView);
@@ -287,6 +337,16 @@
             this.GestureTab.TabIndex = 1;
             this.GestureTab.Text = "Gestures";
             this.GestureTab.UseVisualStyleBackColor = true;
+            // 
+            // GestureView
+            // 
+            this.GestureView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.GestureView.Location = new System.Drawing.Point(3, 3);
+            this.GestureView.Name = "GestureView";
+            this.GestureView.Size = new System.Drawing.Size(741, 581);
+            this.GestureView.TabIndex = 0;
+            this.GestureView.UseCompatibleStateImageBehavior = false;
+            this.GestureView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GestureView_KeyDown);
             // 
             // RemoveButton
             // 
@@ -299,66 +359,6 @@
             this.RemoveButton.UseVisualStyleBackColor = true;
             this.RemoveButton.Click += new System.EventHandler(this.RemoveButton_Click);
             // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 14);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(36, 13);
-            this.label2.TabIndex = 43;
-            this.label2.Text = "Timer:";
-            // 
-            // TimerChooser
-            // 
-            this.TimerChooser.Location = new System.Drawing.Point(54, 12);
-            this.TimerChooser.Maximum = new decimal(new int[] {
-            15,
-            0,
-            0,
-            0});
-            this.TimerChooser.Name = "TimerChooser";
-            this.TimerChooser.Size = new System.Drawing.Size(75, 20);
-            this.TimerChooser.TabIndex = 44;
-            this.TimerChooser.ValueChanged += new System.EventHandler(this.TimerChooser_ValueChanged);
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(135, 14);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(47, 13);
-            this.label3.TabIndex = 45;
-            this.label3.Text = "seconds";
-            // 
-            // GestureCountLabel
-            // 
-            this.GestureCountLabel.Location = new System.Drawing.Point(12, 349);
-            this.GestureCountLabel.Name = "GestureCountLabel";
-            this.GestureCountLabel.Size = new System.Drawing.Size(180, 22);
-            this.GestureCountLabel.TabIndex = 46;
-            this.GestureCountLabel.Text = "0 training examples (0 classes)";
-            this.GestureCountLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
-            // 
-            // LocationView
-            // 
-            this.LocationView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.LocationView.Location = new System.Drawing.Point(3, 3);
-            this.LocationView.Name = "LocationView";
-            this.LocationView.Size = new System.Drawing.Size(741, 581);
-            this.LocationView.TabIndex = 0;
-            this.LocationView.UseCompatibleStateImageBehavior = false;
-            this.LocationView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LocationView_KeyDown);
-            // 
-            // GestureView
-            // 
-            this.GestureView.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.GestureView.Location = new System.Drawing.Point(3, 3);
-            this.GestureView.Name = "GestureView";
-            this.GestureView.Size = new System.Drawing.Size(741, 581);
-            this.GestureView.TabIndex = 0;
-            this.GestureView.UseCompatibleStateImageBehavior = false;
-            this.GestureView.KeyDown += new System.Windows.Forms.KeyEventHandler(this.GestureView_KeyDown);
-            // 
             // TrainingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -369,14 +369,17 @@
             this.Controls.Add(this.panel1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "TrainingForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Training";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TrainingForm_FormClosing);
+            this.Move += new System.EventHandler(this.TrainingForm_Move);
+            this.Resize += new System.EventHandler(this.TrainingForm_Resize);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).EndInit();
             this.TrainingDataViewer.ResumeLayout(false);
             this.LocationTab.ResumeLayout(false);
             this.GestureTab.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).EndInit();
             this.ResumeLayout(false);
 
         }

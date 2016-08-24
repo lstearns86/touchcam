@@ -41,14 +41,14 @@ namespace HandSightLibrary
         const double RADIANS_PER_DEGREE = (double)Math.PI / 180.0f;
         const double DEGREES_PER_RADIAN = 180.0f / (double)Math.PI;
 
-        KalmanFilter filter = new KalmanFilter();
+        //KalmanFilter filter = new KalmanFilter();
 
         public void Reset()
         {
             orientationEstimate = new Quaternion();
             sampleFreq = 360;
             beta = betaDef;
-            filter = new KalmanFilter();
+            //filter = new KalmanFilter();
         }
 
         public static Sensors.Reading SubtractGravity(Sensors.Reading sensorReading, bool useSecondSensor = false)
@@ -111,6 +111,10 @@ namespace HandSightLibrary
         double lastReadingTimestamp = 0;
         public void UpdateWithReading(Sensors.Reading sensorReading, double timestamp = -1, bool secondary = false)
         {
+            if (double.IsNaN(orientationEstimate.W) || double.IsNaN(orientationEstimate.X) || double.IsNaN(orientationEstimate.Y) || double.IsNaN(orientationEstimate.Z))
+            {
+                Reset();
+            }
             if (!stopwatch.IsRunning) stopwatch.Restart();
             if (timestamp < 0) timestamp = (double)stopwatch.ElapsedTicks / (double)Stopwatch.Frequency * 1000.0;
             SensorInfo info = new SensorInfo() { Reading = sensorReading, Timestamp = timestamp };

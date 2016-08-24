@@ -22,10 +22,10 @@ namespace HandSightOnBodyInteractionGPU
             {
                 string[] parts = data.Split('=');
                 string[] inputs = parts[0].Split('~');
-                Context = "^" + inputs[0].Replace("*", ".*") + "$";
-                Gesture = "^" + inputs[1].Replace("*", ".*") + "$";
-                CoarseLocation = "^" + inputs[2].Replace("*", ".*") + "$";
-                FineLocation = "^" + inputs[3].Replace("*", ".*") + "$";
+                Context = "^" + inputs[0] + "$";
+                Gesture = "^" + inputs[1] + "$";
+                CoarseLocation = "^" + inputs[2] + "$";
+                FineLocation = "^" + inputs[3] + "$";
                 if (parts[1].StartsWith("!"))
                 {
                     SetsNewContext = true;
@@ -49,13 +49,18 @@ namespace HandSightOnBodyInteractionGPU
             }
         }
 
-        private static List<GestureAction> actions = new List<GestureAction>();
+        private static DateTime start = DateTime.Now;
+
+        private static Dictionary<string, List<GestureAction>> actions = new Dictionary<string, List<GestureAction>>();
         private static string context = "none";
+
+        public static string[] Modes { get { if (actions == null) return null; else return actions.Keys.ToArray(); } }
 
         public static void Load(string actionData)
         {
             actions.Clear();
             string[] lines = Regex.Split(actionData, "\r\n|\r|\n");
+            string mode = "default";
             for(int i = 0; i < lines.Length; i++)
             {
                 string line = lines[i];
@@ -64,22 +69,111 @@ namespace HandSightOnBodyInteractionGPU
 
                 if(line.Length > 0)
                 {
-                    actions.Add(new GestureAction(line));
+                    if(line.StartsWith(":") && line.EndsWith(":"))
+                    {
+                        mode = line.Trim(':');
+                        actions.Add(mode, new List<GestureAction>());
+                    }
+                    else
+                    {
+                        actions[mode].Add(new GestureAction(line));
+                    }
                 }
             }
         }
 
-        public static string PerformAction(string gesture, string coarseLocation, string fineLocation)
+        public static string PerformAction(string gesture, string coarseLocation, string fineLocation, string mode = null, bool fixedResponses = true)
         {
-            foreach(GestureAction action in actions)
+            if (mode == null || !Modes.Contains(mode)) mode = Modes[0];
+
+            foreach(GestureAction action in actions[mode])
             {
                 if(action.IsMatch(context, gesture, coarseLocation, fineLocation))
                 {
                     if (action.SetsNewContext) context = action.Text;
-                    return action.Text;
+                    return ParseMacros(action.Text, fixedResponses);
                 }
             }
             return "";
+        }
+
+        private static string ParseMacros(string text, bool fixedResponses = true)
+        {
+            // TODO: provide dynamic responses if enabled
+            if(text.Contains("{{TIME}}"))
+            {
+                string replacement = fixedResponses ? "10:25 AM" : DateTime.Now.ToShortTimeString();
+                text = text.Replace("{{TIME}}", replacement);
+            }
+            if (text.Contains("{{TIMER}}"))
+            {
+                TimeSpan remaining = TimeSpan.FromMinutes(60) - (DateTime.Now - start);
+                int minutes = (int)remaining.TotalMinutes;
+                int seconds = (int)(remaining.TotalSeconds - 60 * minutes);
+                string replacement = fixedResponses ? "7 minutes and 45 seconds remaining" : ((remaining.TotalMinutes > 0 ? minutes + " minutes and " : "") + seconds + " seconds remaining");
+                text = text.Replace("{{TIMER}}", replacement);
+            }
+            if (text.Contains("{{ALARM}}"))
+            {
+                text = text.Replace("{{ALARM}}", "Alarm set for 8 AM");
+            }
+            if (text.Contains("{{MESSAGECOUNT}}"))
+            {
+                text = text.Replace("{{MESSAGECOUNT}}", "15 new messages");
+            }
+            if (text.Contains("{{WEATHER}}"))
+            {
+                text = text.Replace("{{WEATHER}}", "It's sunny and 79 degrees.");
+            }
+            if (text.Contains("{{MESSAGES}}"))
+            {
+                text = text.Replace("{{MESSAGES}}", "2 new text messages");
+            }
+            if (text.Contains("{{EMAILS}}"))
+            {
+                text = text.Replace("{{EMAILS}}", "6 new emails");
+            }
+            if (text.Contains("{{FACEBOOK}}"))
+            {
+                text = text.Replace("{{FACEBOOK}}", "7 new facebook messages");
+            }
+            if (text.Contains("{{STEPS}}"))
+            {
+                text = text.Replace("{{STEPS}}", "497 calories burnt");
+            }
+            if (text.Contains("{{CALORIES}}"))
+            {
+                text = text.Replace("{{CALORIES}}", "2366 steps");
+            }
+            if (text.Contains("{{DISTANCE}}"))
+            {
+                text = text.Replace("{{DISTANCE}}", "1.8 miles traveled");
+            }
+            if (text.Contains("{{HEARTRATE}}"))
+            {
+                text = text.Replace("{{HEARTRATE}}", "118 bpm");
+            }
+            if (text.Contains("{{VOLUMEUP}}"))
+            {
+                text = text.Replace("{{VOLUMEUP}}", "Volume up");
+            }
+            if (text.Contains("{{VOLUMEDOWN}}"))
+            {
+                text = text.Replace("{{VOLUMEDOWN}}", "Volume down");
+            }
+            if (text.Contains("{{ANSWERCALL}}"))
+            {
+                text = text.Replace("{{ANSWERCALL}}", "Call answered. Hello?");
+            }
+            if (text.Contains("{{REJECTCALL}}"))
+            {
+                text = text.Replace("{{REJECTCALL}}", "Call Rejected");
+            }
+            if (text.Contains("{{VOICEINPUT}}"))
+            {
+                text = text.Replace("{{VOICEINPUT}}", "How can I help you today?");
+            }
+            return text;
         }
     }
 }

@@ -23,6 +23,7 @@ using System.Runtime.InteropServices;
 using System.IO;
 
 using System.Speech.Synthesis;
+using System.Media;
 
 namespace HandSightOnBodyInteractionGPU
 {
@@ -68,7 +69,7 @@ namespace HandSightOnBodyInteractionGPU
         int countdown = -1;
         Timer timer = new Timer(1000);
         ImageTemplate currTemplate;
-        string processingLock = "processing lock", trainingLock = "training lock";
+        string preprocessingLock = "processing lock", recognitionLock = "training lock";
         string coarseLocationToTrain = "", fineLocationToTrain = "", gestureToTrain = "";
 
         //BlockingCollection<string> coarseLocationPredictions = new BlockingCollection<string>();
@@ -77,18 +78,39 @@ namespace HandSightOnBodyInteractionGPU
         BlockingCollection<Dictionary<string, float>> fineLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
         BlockingCollection<Dictionary<string, float>> gestureCoarseLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
         BlockingCollection<Dictionary<string, float>> gestureFineLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
+        BlockingCollection<string> coarseLocationPredictions = new BlockingCollection<string>();
+        BlockingCollection<string> gestureCoarseLocationPredictions = new BlockingCollection<string>();
         BlockingCollection<Sensors.Reading> sensorReadingHistory = new BlockingCollection<Sensors.Reading>();
         BlockingCollection<Sensors.Reading> gestureSensorReadings = new BlockingCollection<Sensors.Reading>();
         BlockingCollection<float> gestureFocusWeights = new BlockingCollection<float>();
         bool touchDown = false, recentTouchUp = false;
         int touchUpDelay = 20, sensorReadingPreBuffer = 50;
+        bool hovering = false;
+        DateTime touchStart = DateTime.Now;
+        string hoverCoarseLocation = null, hoverFineLocation = null;
 
         SpeechSynthesizer speech = new SpeechSynthesizer();
+        SoundPlayer captureSound, tickSound, beepSound;
+
         TrainingForm trainingForm = new TrainingForm();
 
         public OnBodyInputDemo()
         {
             InitializeComponent();
+
+            Location = Properties.Settings.Default.MainLocation;
+            Size = Properties.Settings.Default.MainSize;
+
+            if (Properties.Settings.Default.TrainingVisible) trainingToolStripMenuItem.PerformClick();
+            if (Properties.Settings.Default.SettingsVisible) settingsToolStripMenuItem.PerformClick();
+
+            captureSound = new SoundPlayer("sounds\\camera_capture.wav");
+            tickSound = new SoundPlayer("sounds\\tick.wav");
+            beepSound = new SoundPlayer("sounds\\camera_beep.wav");
+
+            captureSound.LoadAsync();
+            tickSound.LoadAsync();
+            beepSound.LoadAsync();
 
             timer.Elapsed += Timer_Elapsed;
             CountdownLabel.Parent = Display;
@@ -107,17 +129,20 @@ namespace HandSightOnBodyInteractionGPU
                 countdown = Properties.Settings.Default.CountdownTimer;
                 if (countdown > 0)
                 {
+                    tickSound.Play();
                     CountdownLabel.Text = countdown.ToString();
                     CountdownLabel.Visible = true;
                     timer.Start();
                 }
                 else
                 {
+                    if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
                     AddTemplate();
                 }
             };
             trainingForm.RecordGesture += (string gesture) =>
             {
+                if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
                 gestureToTrain = gesture;
                 recordingGesture = true;
             };
@@ -125,6 +150,10 @@ namespace HandSightOnBodyInteractionGPU
             TouchSegmentation.TouchDownEvent += () => 
             {
                 touchDown = true;
+                hovering = false;
+                hoverCoarseLocation = null;
+                hoverFineLocation = null;
+                touchStart = DateTime.Now;
                 Sensors.Instance.Brightness = 1;
 
                 // reset the location predictions
@@ -134,6 +163,8 @@ namespace HandSightOnBodyInteractionGPU
                     while (fineLocationProbabilities.Count > 0) { fineLocationProbabilities.Take(); }
                     while (gestureCoarseLocationProbabilities.Count > 0) { gestureCoarseLocationProbabilities.Take(); }
                     while (gestureFineLocationProbabilities.Count > 0) { gestureFineLocationProbabilities.Take(); }
+                    while (coarseLocationPredictions.Count > 0) { coarseLocationPredictions.Take(); }
+                    while (gestureCoarseLocationPredictions.Count > 0) { gestureCoarseLocationPredictions.Take(); }
                     while (gestureFocusWeights.Count > 0) { gestureFocusWeights.Take(); }
                     while (gestureSensorReadings.Count > 0) { gestureSensorReadings.Take(); }
                     foreach (Sensors.Reading reading in sensorReadingHistory) gestureSensorReadings.Add(reading);
@@ -146,6 +177,7 @@ namespace HandSightOnBodyInteractionGPU
                 touchDown = false;
                 recentTouchUp = true;
                 Invoke(new MethodInvoker(delegate { TouchStatusLabel.Text = "Touch Up"; }));
+                
                 Task.Factory.StartNew(() =>
                 {
                     Thread.Sleep(touchUpDelay);
@@ -153,6 +185,8 @@ namespace HandSightOnBodyInteractionGPU
                     if(!touchDown)
                     {
                         Sensors.Instance.Brightness = 0;
+
+                        if (hovering || trainingForm.Training) return;
 
                         // process the gesture
 
@@ -163,9 +197,11 @@ namespace HandSightOnBodyInteractionGPU
 
                             if (recordingGesture)
                             {
-                                Monitor.Enter(trainingLock);
+                                //Monitor.Enter(recognitionLock);
 
                                 recordingGesture = false;
+
+                                if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
 
                                 DateTime start = DateTime.Now;
                                 gesture.ClassName = gestureToTrain;
@@ -177,7 +213,7 @@ namespace HandSightOnBodyInteractionGPU
                                 trainingForm.UpdateLists();
                                 Debug.WriteLine("Updating List: " + (DateTime.Now - start).TotalMilliseconds + " ms");
 
-                                Monitor.Exit(trainingLock);
+                                //Monitor.Exit(recognitionLock);
                             }
                             else
                             {
@@ -185,9 +221,12 @@ namespace HandSightOnBodyInteractionGPU
                             }
                         }
 
+                        Monitor.Enter(recognitionLock);
+
                         // predict the most likely location over the coarse of the gesture, weighted by voting and image focus
                         Dictionary<string, float>[] tempCoarseProbabilities = gestureCoarseLocationProbabilities.ToArray();
                         Dictionary<string, float>[] tempFineProbabilities = gestureFineLocationProbabilities.ToArray();
+                        string[] tempCoarsePredictions = gestureCoarseLocationPredictions.ToArray();
                         float[] tempFocusWeights = gestureFocusWeights.ToArray();
 
                         // sum up the probabilities
@@ -220,12 +259,15 @@ namespace HandSightOnBodyInteractionGPU
                         //foreach (Dictionary<string, float> probabilities in gestureFineLocationProbabilities)
                         for (int i = 0; i < tempFineProbabilities.Length; i++)
                         {
-                            Dictionary<string, float> probabilities = tempFineProbabilities[i];
-                            float weight = Math.Max(tempFocusWeights.Length > i ? tempFocusWeights[i] : 0.01f, 0.01f);
-                            foreach (string key in probabilities.Keys)
+                            if (i < tempCoarsePredictions.Length && tempCoarsePredictions[i] == coarseLocation)
                             {
-                                if (!totalProbabilities.ContainsKey(key)) totalProbabilities[key] = 0;
-                                totalProbabilities[key] += weight * probabilities[key] / numLocationPredictions;
+                                Dictionary<string, float> probabilities = tempFineProbabilities[i];
+                                float weight = Math.Max(tempFocusWeights.Length > i ? tempFocusWeights[i] : 0.01f, 0.01f);
+                                foreach (string key in probabilities.Keys)
+                                {
+                                    if (!totalProbabilities.ContainsKey(key)) totalProbabilities[key] = 0;
+                                    totalProbabilities[key] += weight * probabilities[key] / numLocationPredictions;
+                                }
                             }
                         }
 
@@ -240,7 +282,12 @@ namespace HandSightOnBodyInteractionGPU
                                 fineProbability = maxProb;
                             }
 
-                        string actionResult = GestureActionMap.PerformAction(gesture.ClassName, coarseLocation, fineLocation);
+                        Monitor.Exit(recognitionLock);
+
+                        if (fineLocation == "")
+                            Debug.WriteLine("Error");
+
+                        string actionResult = GestureActionMap.PerformAction(gesture.ClassName, coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses);
 
                         Invoke(new MethodInvoker(delegate
                         {
@@ -249,11 +296,19 @@ namespace HandSightOnBodyInteractionGPU
                             FinePredictionLabel.Text = "= " + fineLocation;
                             FineProbabilityLabel.Text = " (response = " + (fineProbability * 100).ToString("0.0") + ")";
                             GesturePredictionLabel.Text = gesture.ClassName;
-                            if (actionResult != null && actionResult.Length > 0)
+                            if (Properties.Settings.Default.EnableSpeechOutput)
                             {
-                                speech.SpeakAsyncCancelAll();
-                                //speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
-                                speech.SpeakAsync(actionResult);
+                                if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
+                                {
+                                    speech.SpeakAsyncCancelAll();
+                                    //speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
+                                    speech.SpeakAsync(actionResult);
+                                }
+                                else if(!Properties.Settings.Default.EnableApplicationDemos)
+                                {
+                                    speech.SpeakAsyncCancelAll();
+                                    speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
+                                }
                             }
                         }));
                     }
@@ -280,6 +335,19 @@ namespace HandSightOnBodyInteractionGPU
         }
 
         DateTime last = DateTime.Now;
+
+        private void OnBodyInputDemo_Move(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.MainLocation = Location;
+            Properties.Settings.Default.Save();
+        }
+
+        private void OnBodyInputDemo_Resize(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.MainSize = Size;
+            Properties.Settings.Default.Save();
+        }
+
         private void Sensors_ReadingAvailable(Sensors.Reading reading)
         {
             OrientationTracker.Primary.UpdateWithReading(reading);
@@ -319,27 +387,37 @@ namespace HandSightOnBodyInteractionGPU
         private void settingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             (new SettingsForm()).Show();
+            Properties.Settings.Default.SettingsVisible = true;
+            Properties.Settings.Default.Save();
         }
 
         private void Timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
         {
-            if(countdown > 0)
+            if(countdown > 1)
             {
                 countdown--;
+                if(Properties.Settings.Default.EnableSoundEffects) tickSound.Play();
                 Invoke(new MethodInvoker(delegate
                 {
                     CountdownLabel.Text = countdown.ToString();
                 }));
             }
-            else if (countdown == 0)
+            else if (countdown <= 1)
             {
+                countdown = 0;
+                Invoke(new MethodInvoker(delegate
+                {
+                    CountdownLabel.Text = countdown.ToString();
+                }));
+                timer.Stop();
+
+                if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
+                AddTemplate();
+
                 Invoke(new MethodInvoker(delegate
                 {
                     CountdownLabel.Visible = false;
                 }));
-                timer.Stop();
-
-                AddTemplate();
             }
         }
 
@@ -434,6 +512,8 @@ namespace HandSightOnBodyInteractionGPU
         private void trainingToolStripMenuItem_Click(object sender, EventArgs e)
         {
             trainingForm.Show();
+            Properties.Settings.Default.TrainingVisible = true;
+            Properties.Settings.Default.Save();
         }
 
         int numLocationPredictions = 15;
@@ -450,13 +530,13 @@ namespace HandSightOnBodyInteractionGPU
                 {
                     float focus = 0;
                     //lock (processingLock)
-                    if (Monitor.TryEnter(processingLock))
+                    if (Monitor.TryEnter(preprocessingLock))
                     {
                         ImageProcessing.ProcessTemplate(template, false);
                         focus = ImageProcessing.ImageFocus(template);
                         currTemplate = template;
                         FPS.Instance("processing").Update();
-                        Monitor.Exit(processingLock);
+                        Monitor.Exit(preprocessingLock);
                     }
                     else
                     {
@@ -466,7 +546,7 @@ namespace HandSightOnBodyInteractionGPU
                     string coarseLocation = "", fineLocation = "";
                     float coarseProbability = 0, fineProbability = 0;
                     bool hasUpdate = false;
-                    if (touchDown && Monitor.TryEnter(trainingLock))
+                    if (touchDown && !trainingForm.Training && Monitor.TryEnter(recognitionLock))
                     {
                         try
                         {
@@ -505,6 +585,10 @@ namespace HandSightOnBodyInteractionGPU
                                         coarseProbability = maxProb;
                                     }
 
+                                coarseLocationPredictions.Add(coarseLocation);
+                                gestureCoarseLocationPredictions.Add(coarseLocation);
+                                while (coarseLocationPredictions.Count > numLocationPredictions) coarseLocationPredictions.Take();
+
                                 if (!Properties.Settings.Default.CoarseOnly)
                                 {
                                     bool foundFeatureMatch = false;
@@ -523,12 +607,19 @@ namespace HandSightOnBodyInteractionGPU
 
                                     // sum up the probabilities
                                     totalProbabilities = new Dictionary<string, float>();
-                                    foreach (Dictionary<string, float> probabilities in fineLocationProbabilities)
+                                    //foreach (Dictionary<string, float> probabilities in fineLocationProbabilities)
+                                    for(int fineIndex = 0; fineIndex < fineLocationProbabilities.Count; fineIndex++)
                                     {
-                                        foreach (string key in probabilities.Keys)
+                                        Dictionary<string, float> probabilities = fineLocationProbabilities.ToArray()[fineIndex];
+
+                                        // make sure that the fine prediction matches the classes for the coarse prediction
+                                        if (coarseLocationPredictions.ToArray()[fineIndex] == coarseLocation)
                                         {
-                                            if (!totalProbabilities.ContainsKey(key)) totalProbabilities[key] = 0;
-                                            totalProbabilities[key] += probabilities[key] / numLocationPredictions;
+                                            foreach (string key in probabilities.Keys)
+                                            {
+                                                if (!totalProbabilities.ContainsKey(key)) totalProbabilities[key] = 0;
+                                                totalProbabilities[key] += probabilities[key] / numLocationPredictions;
+                                            }
                                         }
                                     }
 
@@ -550,7 +641,7 @@ namespace HandSightOnBodyInteractionGPU
                         }
                         finally
                         {
-                            Monitor.Exit(trainingLock);
+                            Monitor.Exit(recognitionLock);
                         }
                     }
 
@@ -576,6 +667,31 @@ namespace HandSightOnBodyInteractionGPU
                         //}
                         //focus = (int)(focus / 100) * 100;
                         Text = FPS.Camera.Average.ToString("0") + " fps camera / " + (Sensors.Instance.IsConnected ? FPS.Sensors.Average.ToString("0") + " fps sensors / " + FPS.Instance("processing").Average.ToString("0") + " fps processing" : "Waiting for Sensors") /*+ " / focus = " + focus.ToString("0")*/;
+
+                        if(touchDown && (DateTime.Now - touchStart).TotalMilliseconds > Properties.Settings.Default.HoverTimeThreshold && Properties.Settings.Default.EnableSpeechOutput)
+                        {
+                            hovering = true;
+                            if(hoverCoarseLocation == null || coarseLocation == hoverCoarseLocation) // make sure we have the same coarse location, to help prevent jumping around
+                            {
+                                hoverCoarseLocation = coarseLocation;
+                                if(hoverFineLocation == null || fineLocation != hoverFineLocation) // make sure we haven't reported the fine location already
+                                {
+                                    hoverFineLocation = fineLocation;
+                                    Debug.WriteLine(hoverCoarseLocation + " " + hoverFineLocation);
+                                    string actionResult = GestureActionMap.PerformAction("Hover", coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses);
+                                    if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
+                                    {
+                                        speech.SpeakAsyncCancelAll();
+                                        speech.SpeakAsync(actionResult);
+                                    }
+                                    else if (!Properties.Settings.Default.EnableApplicationDemos)
+                                    {
+                                        speech.SpeakAsyncCancelAll();
+                                        speech.SpeakAsync("Hover " + coarseLocation + " " + fineLocation);
+                                    }
+                                }
+                            }
+                        }
                     }));
                 }
                 catch { }

@@ -338,6 +338,8 @@ namespace HandSightLibrary.ImageProcessing
                 //predictedGroup = jointProbabilities[0].Item1;
                 //probabilities = jointProbabilities;
             }
+            if (probabilities == null) probabilities = new Dictionary<string, float>();
+            if (probabilities.Keys.Count == 0) probabilities.Add(predictedGroup, 1);
             return predictedGroup;
         }
 
@@ -511,6 +513,9 @@ namespace HandSightLibrary.ImageProcessing
             //        query["numTemplatesCompared"] = numTemplatesCompared;
             //    }
             //}
+
+            if (probabilities == null) probabilities = new Dictionary<string, float>();
+            if (probabilities.Keys.Count == 0) probabilities.Add(predictedRegion, 1);
 
             return predictedRegion;
         }
