@@ -90,7 +90,7 @@ namespace HandSightOnBodyInteractionGPU
         string hoverCoarseLocation = null, hoverFineLocation = null;
 
         SpeechSynthesizer speech = new SpeechSynthesizer();
-        SoundPlayer captureSound, tickSound, beepSound;
+        SoundPlayer captureSound, tickSound, beepSound, phoneSound;
 
         TrainingForm trainingForm = new TrainingForm();
 
@@ -101,12 +101,11 @@ namespace HandSightOnBodyInteractionGPU
             Location = Properties.Settings.Default.MainLocation;
             Size = Properties.Settings.Default.MainSize;
 
-            if (Properties.Settings.Default.TrainingVisible) trainingToolStripMenuItem.PerformClick();
-            if (Properties.Settings.Default.SettingsVisible) settingsToolStripMenuItem.PerformClick();
-
             captureSound = new SoundPlayer("sounds\\camera_capture.wav");
             tickSound = new SoundPlayer("sounds\\tick.wav");
             beepSound = new SoundPlayer("sounds\\camera_beep.wav");
+            phoneSound = new SoundPlayer("sounds\\phone.wav");
+            speech.Rate = 2;
 
             captureSound.LoadAsync();
             tickSound.LoadAsync();
@@ -331,6 +330,12 @@ namespace HandSightOnBodyInteractionGPU
                 Sensors.Instance.Connect();
 
                 Sensors.Instance.NumSensors = Properties.Settings.Default.SingleIMU ? 1 : 2;
+
+                Invoke(new MethodInvoker(delegate
+                {
+                    if (Properties.Settings.Default.TrainingVisible) trainingToolStripMenuItem.PerformClick();
+                    if (Properties.Settings.Default.SettingsVisible) settingsToolStripMenuItem.PerformClick();
+                }));
             });
         }
 
@@ -340,6 +345,12 @@ namespace HandSightOnBodyInteractionGPU
         {
             Properties.Settings.Default.MainLocation = Location;
             Properties.Settings.Default.Save();
+        }
+
+        private void triggerPhoneCallToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            GestureActionMap.Context = "Phone";
+            phoneSound.Play();
         }
 
         private void OnBodyInputDemo_Resize(object sender, EventArgs e)

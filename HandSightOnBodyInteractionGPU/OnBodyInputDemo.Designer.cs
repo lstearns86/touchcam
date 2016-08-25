@@ -45,6 +45,7 @@
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.trainingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.triggerPhoneCallToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             ((System.ComponentModel.ISupportInitialize)(this.Display)).BeginInit();
             this.panel1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -168,7 +169,8 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.viewToolStripMenuItem});
+            this.viewToolStripMenuItem,
+            this.triggerPhoneCallToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -198,6 +200,13 @@
             this.settingsToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // 
+            // triggerPhoneCallToolStripMenuItem
+            // 
+            this.triggerPhoneCallToolStripMenuItem.Name = "triggerPhoneCallToolStripMenuItem";
+            this.triggerPhoneCallToolStripMenuItem.Size = new System.Drawing.Size(116, 20);
+            this.triggerPhoneCallToolStripMenuItem.Text = "Trigger Phone Call";
+            this.triggerPhoneCallToolStripMenuItem.Click += new System.EventHandler(this.triggerPhoneCallToolStripMenuItem_Click);
             // 
             // OnBodyInputDemo
             // 
@@ -241,5 +250,6 @@
         private System.Windows.Forms.ToolStripMenuItem viewToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem trainingToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem triggerPhoneCallToolStripMenuItem;
     }
 }

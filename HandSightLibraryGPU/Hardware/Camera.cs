@@ -81,7 +81,7 @@ namespace HandSightLibrary.ImageProcessing
             set
             {
                 prescaler = value;
-                if (provider.IsConnected)
+                if (provider != null && provider.IsConnected)
                 {
                     provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x05, true, 0, prescaler));
                 }
@@ -142,7 +142,7 @@ namespace HandSightLibrary.ImageProcessing
         /// </summary>
         ~Camera()
         {
-            if (provider.IsConnected && provider.IsCapturing)
+            if (provider != null && provider.IsConnected && provider.IsCapturing)
             {
                 provider.StopCapture();
                 provider.Dispose();
@@ -153,7 +153,7 @@ namespace HandSightLibrary.ImageProcessing
         {
             get
             {
-                return provider.IsConnected;
+                return provider != null && provider.IsConnected;
             }
         }
 
@@ -161,7 +161,7 @@ namespace HandSightLibrary.ImageProcessing
         {
             get
             {
-                return provider.IsCapturing;
+                return provider != null && provider.IsCapturing;
             }
         }
 
