@@ -69,7 +69,7 @@ namespace HandSightOnBodyInteractionGPU
         int countdown = -1;
         Timer timer = new Timer(1000);
         ImageTemplate currTemplate;
-        string preprocessingLock = "processing lock", recognitionLock = "training lock";
+        string preprocessingLock = "processing lock", recognitionLock = "recognition lock", trainingLock = "training lock";
         string coarseLocationToTrain = "", fineLocationToTrain = "", gestureToTrain = "";
 
         //BlockingCollection<string> coarseLocationPredictions = new BlockingCollection<string>();
@@ -84,15 +84,16 @@ namespace HandSightOnBodyInteractionGPU
         BlockingCollection<Sensors.Reading> gestureSensorReadings = new BlockingCollection<Sensors.Reading>();
         BlockingCollection<float> gestureFocusWeights = new BlockingCollection<float>();
         bool touchDown = false, recentTouchUp = false;
-        int touchUpDelay = 20, sensorReadingPreBuffer = 50;
+        int touchUpDelay = 100, sensorReadingPreBuffer = 50;
         bool hovering = false;
         DateTime touchStart = DateTime.Now;
         string hoverCoarseLocation = null, hoverFineLocation = null;
-
+        
         SpeechSynthesizer speech = new SpeechSynthesizer();
         SoundPlayer captureSound, tickSound, beepSound, phoneSound;
 
         TrainingForm trainingForm = new TrainingForm();
+        bool autoTrainGesture = false, autoTrainLocation = false, prepareToAutoTrainLocation = false;
 
         public OnBodyInputDemo()
         {
@@ -114,7 +115,7 @@ namespace HandSightOnBodyInteractionGPU
             timer.Elapsed += Timer_Elapsed;
             CountdownLabel.Parent = Display;
             numLocationPredictions = Properties.Settings.Default.PredictionSmoothing;
-            
+
             Text = "Connecting to Camera and Sensors...";
 
             GestureActionMap.Load(File.ReadAllText("defaults/actions.txt"));
@@ -137,6 +138,7 @@ namespace HandSightOnBodyInteractionGPU
                 {
                     if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
                     AddTemplate();
+                    trainingForm.UpdateLocationList();
                 }
             };
             trainingForm.RecordGesture += (string gesture) =>
@@ -144,6 +146,42 @@ namespace HandSightOnBodyInteractionGPU
                 if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
                 gestureToTrain = gesture;
                 recordingGesture = true;
+            };
+            trainingForm.AutoCaptureGesture += (string gesture) =>
+            {
+                if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
+                gestureToTrain = gesture;
+                autoTrainGesture = true;
+            };
+            trainingForm.StopAutoCapturingGestures += () =>
+            {
+                autoTrainGesture = false;
+                GestureRecognition.Train();
+                trainingForm.UpdateGestureList();
+            };
+            trainingForm.AutoCaptureLocation += (string coarseLocation, string fineLocation) =>
+            {
+                coarseLocationToTrain = coarseLocation;
+                fineLocationToTrain = fineLocation;
+
+                countdown = Properties.Settings.Default.CountdownTimer;
+                if (countdown > 0)
+                {
+                    prepareToAutoTrainLocation = true;
+                    tickSound.Play();
+                    CountdownLabel.Text = countdown.ToString();
+                    CountdownLabel.Visible = true;
+                    timer.Start();
+                }
+                else
+                {
+                    if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
+                    autoTrainLocation = true;
+                }
+            };
+            trainingForm.StopAutoCapturingLocation += () =>
+            {
+                autoTrainLocation = false;
             };
 
             TouchSegmentation.TouchDownEvent += () => 
@@ -185,7 +223,13 @@ namespace HandSightOnBodyInteractionGPU
                     {
                         Sensors.Instance.Brightness = 0;
 
-                        if (hovering || trainingForm.Training) return;
+                        if (autoTrainLocation)
+                        {
+                            autoTrainLocation = false;
+                            trainingForm.StopAutoCapture();
+                        }
+
+                        if ((hovering && !recordingGesture && !autoTrainGesture) || trainingForm.Training) return;
 
                         // process the gesture
 
@@ -194,7 +238,7 @@ namespace HandSightOnBodyInteractionGPU
                         {
                             GestureRecognition.PreprocessGesture(gesture);
 
-                            if (recordingGesture)
+                            if (recordingGesture || autoTrainGesture)
                             {
                                 //Monitor.Enter(recognitionLock);
 
@@ -205,12 +249,18 @@ namespace HandSightOnBodyInteractionGPU
                                 DateTime start = DateTime.Now;
                                 gesture.ClassName = gestureToTrain;
                                 GestureRecognition.AddTrainingExample(gesture, gestureToTrain);
-                                GestureRecognition.Train();
-                                Debug.WriteLine("Training: " + (DateTime.Now - start).TotalMilliseconds + " ms");
+                                if (!autoTrainGesture)
+                                {
+                                    GestureRecognition.Train();
+                                    Debug.WriteLine("Training: " + (DateTime.Now - start).TotalMilliseconds + " ms");
+                                }
 
                                 start = DateTime.Now;
-                                trainingForm.UpdateLists();
-                                Debug.WriteLine("Updating List: " + (DateTime.Now - start).TotalMilliseconds + " ms");
+                                if (!autoTrainGesture)
+                                {
+                                    trainingForm.UpdateGestureList();
+                                    Debug.WriteLine("Updating List: " + (DateTime.Now - start).TotalMilliseconds + " ms");
+                                }
 
                                 //Monitor.Exit(recognitionLock);
                             }
@@ -422,8 +472,17 @@ namespace HandSightOnBodyInteractionGPU
                 }));
                 timer.Stop();
 
-                if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
-                AddTemplate();
+                if (prepareToAutoTrainLocation)
+                {
+                    prepareToAutoTrainLocation = false;
+                    autoTrainLocation = true;
+                }
+                else
+                {
+                    if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
+                    AddTemplate();
+                    trainingForm.UpdateLocationList();
+                }
 
                 Invoke(new MethodInvoker(delegate
                 {
@@ -441,7 +500,7 @@ namespace HandSightOnBodyInteractionGPU
             Localization.Instance.AddTrainingExample(template, coarseLocationToTrain, fineLocationToTrain);
             Localization.Instance.Train();
 
-            trainingForm.UpdateLists();
+            trainingForm.UpdateLocationList();
             
             // perform cross-validation
             //if PerformCrossValidation();
@@ -649,6 +708,38 @@ namespace HandSightOnBodyInteractionGPU
                                 FPS.Instance("matching").Update();
                                 hasUpdate = true;
                             }
+
+                            if(autoTrainLocation && (coarseLocation != coarseLocationToTrain || fineLocation != fineLocationToTrain) && Monitor.TryEnter(trainingLock))
+                            {
+                                if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
+                                AddTemplate();
+                                Monitor.Exit(trainingLock);
+                            }
+
+                            if ((DateTime.Now - touchStart).TotalMilliseconds > Properties.Settings.Default.HoverTimeThreshold && Properties.Settings.Default.EnableSpeechOutput)
+                            {
+                                hovering = true;
+                                if (hoverCoarseLocation == null || coarseLocation == hoverCoarseLocation) // make sure we have the same coarse location, to help prevent jumping around
+                                {
+                                    hoverCoarseLocation = coarseLocation;
+                                    if (hoverFineLocation == null || fineLocation != hoverFineLocation) // make sure we haven't reported the fine location already
+                                    {
+                                        hoverFineLocation = fineLocation;
+                                        Debug.WriteLine(hoverCoarseLocation + " " + hoverFineLocation);
+                                        string actionResult = GestureActionMap.PerformAction("Hover", coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses);
+                                        if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
+                                        {
+                                            speech.SpeakAsyncCancelAll();
+                                            speech.SpeakAsync(actionResult);
+                                        }
+                                        else if (!Properties.Settings.Default.EnableApplicationDemos)
+                                        {
+                                            speech.SpeakAsyncCancelAll();
+                                            speech.SpeakAsync("Hover " + coarseLocation + " " + fineLocation);
+                                        }
+                                    }
+                                }
+                            }
                         }
                         finally
                         {
@@ -678,31 +769,6 @@ namespace HandSightOnBodyInteractionGPU
                         //}
                         //focus = (int)(focus / 100) * 100;
                         Text = FPS.Camera.Average.ToString("0") + " fps camera / " + (Sensors.Instance.IsConnected ? FPS.Sensors.Average.ToString("0") + " fps sensors / " + FPS.Instance("processing").Average.ToString("0") + " fps processing" : "Waiting for Sensors") /*+ " / focus = " + focus.ToString("0")*/;
-
-                        if(touchDown && (DateTime.Now - touchStart).TotalMilliseconds > Properties.Settings.Default.HoverTimeThreshold && Properties.Settings.Default.EnableSpeechOutput)
-                        {
-                            hovering = true;
-                            if(hoverCoarseLocation == null || coarseLocation == hoverCoarseLocation) // make sure we have the same coarse location, to help prevent jumping around
-                            {
-                                hoverCoarseLocation = coarseLocation;
-                                if(hoverFineLocation == null || fineLocation != hoverFineLocation) // make sure we haven't reported the fine location already
-                                {
-                                    hoverFineLocation = fineLocation;
-                                    Debug.WriteLine(hoverCoarseLocation + " " + hoverFineLocation);
-                                    string actionResult = GestureActionMap.PerformAction("Hover", coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses);
-                                    if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
-                                    {
-                                        speech.SpeakAsyncCancelAll();
-                                        speech.SpeakAsync(actionResult);
-                                    }
-                                    else if (!Properties.Settings.Default.EnableApplicationDemos)
-                                    {
-                                        speech.SpeakAsyncCancelAll();
-                                        speech.SpeakAsync("Hover " + coarseLocation + " " + fineLocation);
-                                    }
-                                }
-                            }
-                        }
                     }));
                 }
                 catch { }

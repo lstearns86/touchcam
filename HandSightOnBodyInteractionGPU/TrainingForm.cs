@@ -29,9 +29,25 @@ namespace HandSightOnBodyInteractionGPU
         public event RecordLocationDelegate RecordLocation;
         private void OnRecordLocation(string coarseLocation, string fineLocation) { RecordLocation?.Invoke(coarseLocation, fineLocation); }
 
+        public delegate void AutoCaptureLocationDelegate(string coarseLocation, string fineLocation);
+        public event AutoCaptureLocationDelegate AutoCaptureLocation;
+        private void OnAutoCaptureLocation(string coarseLocation, string fineLocation) { AutoCaptureLocation?.Invoke(coarseLocation, fineLocation); }
+
+        public delegate void StopAutoCapturingLocationDelegate();
+        public event StopAutoCapturingLocationDelegate StopAutoCapturingLocation;
+        private void OnStopAutoCapturingLocation() { StopAutoCapturingLocation?.Invoke(); }
+
         public delegate void RecordGestureDelegate(string gesture);
         public event RecordGestureDelegate RecordGesture;
         private void OnRecordGesture(string gesture) { RecordGesture?.Invoke(gesture); }
+
+        public delegate void AutoCaptureGestureDelegate(string gesture);
+        public event AutoCaptureGestureDelegate AutoCaptureGesture;
+        private void OnAutoCaptureGesture(string gesture) { AutoCaptureGesture?.Invoke(gesture); }
+
+        public delegate void StopAutoCapturingGesturesDelegate();
+        public event StopAutoCapturingGesturesDelegate StopAutoCapturingGestures;
+        private void OnStopAutoCapturingGestures() { StopAutoCapturingGestures?.Invoke(); }
 
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
@@ -80,7 +96,8 @@ namespace HandSightOnBodyInteractionGPU
 
             locations = new Dictionary<string, string[]>();
             string[] locationLines = File.ReadAllLines("defaults/locations.txt");
-            foreach(string locationLine in locationLines)
+            CoarseLocationChooser.Items.Clear();
+            foreach (string locationLine in locationLines)
             {
                 string[] parts = locationLine.Split(':');
                 string coarseLocation = parts[0].Trim();
@@ -90,6 +107,7 @@ namespace HandSightOnBodyInteractionGPU
                 CoarseLocationChooser.Items.Add(coarseLocation);
             }
             gestures = File.ReadAllLines("defaults/gestures.txt");
+            GestureChooser.Items.Clear();
             GestureChooser.Items.AddRange(gestures);
 
             CoarseLocationChooser.SelectedIndex = 0;
@@ -106,26 +124,32 @@ namespace HandSightOnBodyInteractionGPU
             Properties.Settings.Default.Save();
         }
 
-        public void UpdateLists()
+        public void UpdateLocationList()
         {
             if (InvokeRequired) { Invoke(new MethodInvoker(UpdateLists)); return; }
+
+            int locationTopItemIndex = 0;
+            try
+            {
+                locationTopItemIndex = LocationView.TopItem.Index;
+            }
+            catch
+            { }
+            LocationView.BeginUpdate();
 
             LocationView.Items.Clear();
             LocationView.Groups.Clear();
             LocationView.LargeImageList.Images.Clear();
-            GestureView.Items.Clear();
-            GestureView.Groups.Clear();
-            GestureView.LargeImageList.Images.Clear();
-
+            
             // group and display location examples
             int imageIndex = 0;
-            foreach(string fineLocation in Localization.Instance.samples.Keys)
+            foreach (string fineLocation in Localization.Instance.samples.Keys)
             {
                 string coarseLocation = Localization.Instance.coarseLocations[fineLocation];
                 string location = coarseLocation + " " + fineLocation;
                 ListViewGroup group = LocationView.Groups.Add(location, location);
                 int templateIndex = 1;
-                foreach(ImageTemplate template in Localization.Instance.samples[fineLocation])
+                foreach (ImageTemplate template in Localization.Instance.samples[fineLocation])
                 {
                     LocationView.LargeImageList.Images.Add(template.Image.Bitmap);
                     ListViewItem item = new ListViewItem() { Text = location + " " + (templateIndex++), ImageIndex = (imageIndex++), Tag = template };
@@ -134,8 +158,37 @@ namespace HandSightOnBodyInteractionGPU
                 }
             }
 
+            LocationCountLabel.Text = Localization.Instance.GetNumTrainingExamples() + " location examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
+            
+            LocationView.EndUpdate();
+            try
+            {
+                LocationView.TopItem = LocationView.Items[locationTopItemIndex];
+            }
+            catch
+            { }
+
+            unsaved = true;
+        }
+
+        public void UpdateGestureList()
+        {
+            if (InvokeRequired) { Invoke(new MethodInvoker(UpdateLists)); return; }
+
+            int gestureTopItemIndex = 0;
+            try
+            {
+                gestureTopItemIndex = GestureView.TopItem.Index;
+            }
+            catch { }
+            GestureView.BeginUpdate();
+
+            GestureView.Items.Clear();
+            GestureView.Groups.Clear();
+            GestureView.LargeImageList.Images.Clear();
+
             // group and display gesture examples
-            imageIndex = 0;
+            int imageIndex = 0;
             foreach (string gestureName in GestureRecognition.samples.Keys)
             {
                 ListViewGroup group = GestureView.Groups.Add(gestureName, gestureName);
@@ -154,10 +207,22 @@ namespace HandSightOnBodyInteractionGPU
                 }
             }
 
-            LocationCountLabel.Text = Localization.Instance.GetNumTrainingExamples() + " location examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
             GestureCountLabel.Text = GestureRecognition.GetNumExamples() + " gesture examples (" + GestureRecognition.GetNumClasses() + " classes)";
 
+            GestureView.EndUpdate();
+            try
+            {
+                GestureView.TopItem = GestureView.Items[gestureTopItemIndex];
+            }
+            catch { }
+
             unsaved = true;
+        }
+        
+        public void UpdateLists()
+        {
+            UpdateLocationList();
+            UpdateGestureList();
         }
 
         private void TrainingForm_FormClosing(object sender, FormClosingEventArgs e)
@@ -366,6 +431,45 @@ namespace HandSightOnBodyInteractionGPU
         {
             Properties.Settings.Default.TrainingSize = Size;
             Properties.Settings.Default.Save();
+        }
+
+        bool autoGesture = false, autoLocation = false;
+        private void AutoCaptureGestureButton_Click(object sender, EventArgs e)
+        {
+            autoGesture = !autoGesture;
+            if (autoGesture)
+            {
+                OnAutoCaptureGesture((string)GestureChooser.SelectedItem);
+                AutoCaptureGestureButton.Text = "Stop";
+            }
+            else
+            {
+                OnStopAutoCapturingGestures();
+                AutoCaptureGestureButton.Text = "Auto";
+            }
+        }
+
+        private void AutoCaptureLocationButton_Click(object sender, EventArgs e)
+        {
+            autoLocation = !autoLocation;
+            if (autoLocation)
+            {
+                OnAutoCaptureLocation((string)CoarseLocationChooser.SelectedItem, (string)FineLocationChooser.SelectedItem);
+                AutoCaptureLocationButton.Text = "Stop";
+            }
+            else
+            {
+                OnStopAutoCapturingLocation();
+                AutoCaptureLocationButton.Text = "Auto";
+            }
+        }
+
+        public void StopAutoCapture()
+        {
+            autoLocation = false;
+            autoGesture = false;
+            AutoCaptureGestureButton.Text = "Auto";
+            AutoCaptureLocationButton.Text = "Auto";
         }
     }
 }

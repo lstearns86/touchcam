@@ -56,6 +56,8 @@
             this.GestureTab = new System.Windows.Forms.TabPage();
             this.GestureView = new System.Windows.Forms.ListView();
             this.RemoveButton = new System.Windows.Forms.Button();
+            this.AutoCaptureLocationButton = new System.Windows.Forms.Button();
+            this.AutoCaptureGestureButton = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             this.TrainingDataViewer.SuspendLayout();
@@ -65,6 +67,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.AutoCaptureGestureButton);
+            this.panel1.Controls.Add(this.AutoCaptureLocationButton);
             this.panel1.Controls.Add(this.GestureCountLabel);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.TimerChooser);
@@ -194,7 +198,7 @@
             // 
             this.RecordGestureButton.Location = new System.Drawing.Point(14, 298);
             this.RecordGestureButton.Name = "RecordGestureButton";
-            this.RecordGestureButton.Size = new System.Drawing.Size(181, 48);
+            this.RecordGestureButton.Size = new System.Drawing.Size(131, 48);
             this.RecordGestureButton.TabIndex = 37;
             this.RecordGestureButton.Text = "Record Gesture";
             this.RecordGestureButton.UseVisualStyleBackColor = true;
@@ -270,7 +274,7 @@
             // 
             this.RecordLocationButton.Location = new System.Drawing.Point(12, 136);
             this.RecordLocationButton.Name = "RecordLocationButton";
-            this.RecordLocationButton.Size = new System.Drawing.Size(181, 48);
+            this.RecordLocationButton.Size = new System.Drawing.Size(133, 48);
             this.RecordLocationButton.TabIndex = 29;
             this.RecordLocationButton.Text = "Record Location";
             this.RecordLocationButton.UseVisualStyleBackColor = true;
@@ -359,6 +363,26 @@
             this.RemoveButton.UseVisualStyleBackColor = true;
             this.RemoveButton.Click += new System.EventHandler(this.RemoveButton_Click);
             // 
+            // AutoCaptureLocationButton
+            // 
+            this.AutoCaptureLocationButton.Location = new System.Drawing.Point(151, 136);
+            this.AutoCaptureLocationButton.Name = "AutoCaptureLocationButton";
+            this.AutoCaptureLocationButton.Size = new System.Drawing.Size(41, 48);
+            this.AutoCaptureLocationButton.TabIndex = 47;
+            this.AutoCaptureLocationButton.Text = "Auto";
+            this.AutoCaptureLocationButton.UseVisualStyleBackColor = true;
+            this.AutoCaptureLocationButton.Click += new System.EventHandler(this.AutoCaptureLocationButton_Click);
+            // 
+            // AutoCaptureGestureButton
+            // 
+            this.AutoCaptureGestureButton.Location = new System.Drawing.Point(153, 298);
+            this.AutoCaptureGestureButton.Name = "AutoCaptureGestureButton";
+            this.AutoCaptureGestureButton.Size = new System.Drawing.Size(41, 48);
+            this.AutoCaptureGestureButton.TabIndex = 48;
+            this.AutoCaptureGestureButton.Text = "Auto";
+            this.AutoCaptureGestureButton.UseVisualStyleBackColor = true;
+            this.AutoCaptureGestureButton.Click += new System.EventHandler(this.AutoCaptureGestureButton_Click);
+            // 
             // TrainingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -413,5 +437,7 @@
         private System.Windows.Forms.Label GestureCountLabel;
         private System.Windows.Forms.ListView LocationView;
         private System.Windows.Forms.ListView GestureView;
+        private System.Windows.Forms.Button AutoCaptureGestureButton;
+        private System.Windows.Forms.Button AutoCaptureLocationButton;
     }
 }
