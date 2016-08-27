@@ -1,9 +1,3 @@
-﻿Nothing: Nothing
 Palm: Up, Down, Left, Right, Center
-Finger: Thumb, Index, Middle, Ring, Pinky
-Wrist: Inner, Outer, BackOfHand
-Ear: Upper, Lower, Front, Rear
-Clothing: Pants, Shirt
-OtherSkin: Shoulder, Thigh, Cheek, Neck
-Knuckle: Thumb, Index, Middle, Ring, Pinky
-Nail: Thumb, Index, Middle, Ring, Pinky
+Wrist: Inner, Outer
+Ear: Front
