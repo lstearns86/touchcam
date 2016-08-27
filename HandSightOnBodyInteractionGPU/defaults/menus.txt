@@ -22,10 +22,10 @@
         "expand_text":"{{ONETIME:Notifications menu opened, }}{{NOTIFICATIONS SUMMARY}}"
       },
       {
-        "name":"Health and Fitness",
-        "text":"{{HEALTH_AND_FITNESS}}",
-        "submenu":"Health and Fitness Menu",
-        "expand_text":"{{ONETIME:Daily summary menu opened, }}{{DAILY_SUMMARY_DATE}}"
+        "name":"Health and Activities",
+        "text":"{{HEALTH_AND_ACTIVITIES}}",
+        "submenu":"Health and Activities Menu",
+        "expand_text":"{{ONETIME:Health and activities menu opened, }}{{HEALTH_DISTANCE}}"
       },
       {
         "name":"Voice Input",
@@ -85,43 +85,43 @@
     "items":
     [
       {
-        "name":"NotificationsMenuSummary", 
+        "name":"Summary", 
         "text":"{{NOTIFICATIONS_SUMMARY}}"
       },
       {
-        "name":"NotificationsMenuMessage1", 
+        "name":"Message 1", 
         "text":"{{NOTIFICATIONS_MESSAGE1}}"
       },
       {
-        "name":"NotificationsMenuMessage2", 
+        "name":"Message 2", 
         "text":"{{NOTIFICATIONS_MESSAGE2}}"
       },
       {
-        "name":"NotificationsMenuMessage3", 
+        "name":"Message 3", 
         "text":"{{NOTIFICATIONS_MESSAGE3}}"
       }
     ]
   },
   {
-    "name": "Health and Fitness Menu",
+    "name": "Health and Activities Menu",
     "parent_menu": "Root Menu",
-    "parent_menu_item": "Health and Fitness",
+    "parent_menu_item": "Health and Activities",
     "items":
     [
       {
-        "name":"HealthAndFitnessMenuDistance", 
+        "name":"Distance", 
         "text":"{{HEALTH_DISTANCE}}"
       },
       {
-        "name":"HealthAndFitnessMenuSteps", 
+        "name":"Steps", 
         "text":"{{HEALTH_STEPS}}"
       },
       {
-        "name":"HealthAndFitnessMenuCalories", 
+        "name":"Calories", 
         "text":"{{HEALTH_CALORIES}}"
       },
       {
-        "name":"HealthAndFitnessMenuHeartRate", 
+        "name":"Heart Rate", 
         "text":"{{HEALTH_HEART_RATE}}"
       }
     ]
