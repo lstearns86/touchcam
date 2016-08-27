@@ -2,8 +2,4 @@
 Double Tap
 Swipe Left
 Swipe Right
-Swipe Up
 Swipe Down
-Circle
-Triangle
-Square
