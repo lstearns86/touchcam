@@ -1,3 +1,20 @@
+# macro syntax:
+#	"NAME=text" to define
+#	"{{NAME}}" to replace with defined text
+#
+# special macros:
+# {{ONETIME:text}} says text the first time the menu item is visited, but not when it is repeated
+# {{REPEAT}} repeats the last item, ignoring any {{ONETIME}} blocks
+# {{NOREPEAT}} the block of text will not be repeated
+# {{TIME}} the current time
+# {{DATE}} the current date
+# {{TIMER}} the current time remaining on the timer
+# {{STOPWATCH}} the elapsed time on the stopwatch
+# {{NEXT_MENU_ITEM}} moves to the next item in the current menu item and reads its associated text
+# {{PREV_MENU_ITEM}} moves to the previous item in the current menu and reads its associated text
+# {{EXPAND_MENU_ITEM}} expands the currently selected menu item if possible
+# {{BACK}} goes back to the previous level of the menu hierarch. If already at the top, does nothing.
+
 CLOCK={{ONETIME:Clock, the time is }}{{TIME}}.
 CLOCK_TIME={{ONETIME:The time is}}{{TIME}}.
 CLOCK_TIMER={{ONETIME:Timer, }}{{TIMER}} remaining.
