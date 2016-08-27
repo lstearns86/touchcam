@@ -1,161 +1,249 @@
-﻿# If gesture duration > threshold (e.g. 1 second), then provide voiceover feedback as finger moves. Don't trigger an action on lifting.
-
-# Syntax:
-# "Context~Gesture~Coarse~Fine=!Context" will set the context and read out the context name
-# "Context~Gesture~Coarse~Fine=Text" will read out the specified text
-# You can use regular expressions for each parameter (e.g. .*Tap will match both Tap and Double Tap)
-# Matching is case insensitive
-# The order matters when matching and setting contexts
-
-#.*~Tap~Palm~.*=Hello World
-#.*~Tap~Wrist~Outer=Hello Wrist
-
-#.*~Hover~Palm~Down=!Messages
-#Messages~Tap~Palm~.*=13 new messages
-#Messages~Swipe Left~Palm~.*=3 new text messages
-#Messages~Swipe Down~Palm~.*=5 new tweets
-#Messages~Swipe Right~Palm~.*=5 new Facebook messages
-#.*~Hover~Palm~Left=!Weather
-#.*~Hover~Palm~Right=!Emails
-
-:Palm Only: # TODO: update this list
-.*~Hover~Palm~Left=!Clock~{{ONETIME:Clock, The time is }}{{TIME}}.
-.*~Hover~Palm~Right=!DailySummary~{{ONETIME:Daily Summary for }}{{DATE}}.
-.*~Hover~Palm~Up=!Notifications~{{ONETIME:Notifications, you have }}{{MESSAGECOUNT}}.
-.*~Hover~Palm~Down=!Health~{{ONETIME:Health and Activities, }}{{DISTANCE}} traveled today
-.*~Hover~Palm~Center=!VoiceInput~Voice Input.
-Clock~Double Tap~.*~.*=!ClockMenuTime~{{ONETIME:Clock menu opened, The time is }}{{TIME}}.
-ClockMenuTime~Swipe Right~.*~.*=!ClockMenuTimer~{{TIMER}} remaining.
-ClockMenuTime~Swipe Left~.*~.*=!ClockMenuAlarm~Alarm set for {{ALARM}}.
-ClockMenuTimer~Swipe Right~.*~.*=!ClockMenuStopwatch~{{STOPWATCH}} elapsed.
-ClockMenuTimer~Swipe Left~.*~.*=!ClockMenuTime~The time is {{TIME}}.
-ClockMenuStopwatch~Swipe Right~.*~.*=!ClockMenuAlarm~Alarm set for {{ALARM}}.
-ClockMenuStopwatch~Swipe Left~.*~.*=!ClockMenuTimer~{{TIMER}} remaining.
-ClockMenuAlarm~Swipe Right~.*~.*=!ClockMenuTime~{{TIME}}.
-ClockMenuAlarm~Swipe Left~.*~.*=!ClockMenuStopwatch~{{STOPWATCH}} elapsed.
-DailySummary~Double Tap~.*~.*=!DailySummaryMenuDate~{{ONETIME:Daily summary opened, }}The date is {{DATE}}.
-DailySummaryMenuDate~Swipe Right~.*~.*=!DailySummaryMenuWeather~{{WEATHER}}.
-DailySummaryMenuDate~Swipe Left~.*~.*=!DailySummaryMenuCalendar~Your next calendar event is {{NEXTEVENT}}.
-DailySummaryMenuWeather~Swipe Right~.*~.*=!DailySummaryMenuCalendar~Your next calendar event is {{NEXTEVENT}}.
-DailySummaryMenuWeather~Swipe Left~.*~.*=!DailySummaryMenuDate~The date is {{DATE}}.
-DailySummaryMenuCalendar~Swipe Right~.*~.*=!DailySummaryMenuDate~The date is {{DATE}}.
-DailySummaryMenuCalendar~Swipe Left~.*~.*=!DailySummaryMenuWeather~{{WEATHER}}.
-Notifications~Double Tap~.*~.*=!NotificationsMenuSummary~{{ONETIME:Notification Center Opened, you have }}{{MESSAGECOUNT}}.
-NotificationsMenuSummary~Swipe Right~.*~.*=!NotificationsMenuMessage1~{{NOTIFICATION1}}.
-NotificationsMenuSummary~Swipe Left~.*~.*=!NotificationsMenuMessage3~{{NOTIFICATION3}}.
-NotificationsMenuMessage1~Swipe Right~.*~.*=!NotificationsMenuMessage2~{{NOTIFICATION2}}.
-NotificationsMenuMessage1~Swipe Left~.*~.*=!NotificationsMenuSummary~{{MESSAGECOUNT}}.
-NotificationsMenuMessage2~Swipe Right~.*~.*=!NotificationsMenuMessage3~{{NOTIFICATION3}}.
-NotificationsMenuMessage2~Swipe Left~.*~.*=!NotificationsMenuMessage1~{{NOTIFICATION1}}.
-NotificationsMenuMessage3~Swipe Right~.*~.*=!NotificationsMenuSummary~{{MESSAGECOUNT}}.
-NotificationsMenuMessage3~Swipe Left~.*~.*=!NotificationsMenuMessage2~{{NOTIFICATION2}}.
-Health~Double Tap~.*~.*=!HealthMenuDistance~{{ONETIME:Health and Activities menu opened, You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuDistance~Swipe Right~.*~.*=!HealthMenuSteps~{{ONETIME:You've traveled }}{{STEPS}} steps{{ONETIME: today}}.
-HealthMenuDistance~Swipe Left~.*~.*=!HealthMenuHeartRate~{{ONETIME:Your heart rate is }}{{HEARTRATE}}.
-HealthMenuSteps~Swipe Right~.*~.*=!HealthMenuCalories~{{ONETIME:You've burnt }}{{CALORIES}} calories{{ONETIME: today}}.
-HealthMenuSteps~Swipe Left~.*~.*=!HealthMenuDistance~{{ONETIME:You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuCalories~Swipe Right~.*~.*=!HealthMenuHeartRate~{{ONETIME:Your heart rate is }}{{HEARTRATE}}.
-HealthMenuCalories~Swipe Left~.*~.*=!HealthMenuSteps~{{ONETIME:You've traveled }}{{STEPS}} steps{{ONETIME: today}}.
-HealthMenuHeartRate~Swipe Right~.*~.*=!HealthMenuDistance~{{ONETIME:You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuHeartRate~Swipe Left~.*~.*=!HealthMenuCalories~{{ONETIME:You've burnt }}{{CALORIES}} calories{{ONETIME: today}}.
-VoiceInput~Double Tap~.*~.*=What can I help you with?
-Phone~Double Tap~.*~.*=!Clock~Phone Call Answered.
-Phone~Swipe Down~.*~.*=!Clock~Phone Call Rejected.
-#.*~Swipe Down~.*~.*=!Clock~{{ONETIME:Main Menu, The time is }}{{TIME}}.
-.*~Tap~.*~.*={{REPEAT}}
-
-:Full Body:
-Phone~Double Tap~.*~.*=!Clock~Phone Call Answered.
-Phone~Swipe .*~.*~.*=!Clock~Phone Call Rejected.
-.*~.*Tap~Wrist~Outer=!ClockMenuTime~{{ONETIME:Clock menu opened, The time is }}{{TIME}}.
-ClockMenuTime~Swipe Right~Wrist~Outer=!ClockMenuTimer~{{TIMER}} remaining.
-ClockMenuTime~Swipe Left~Wrist~Outer=!ClockMenuAlarm~Alarm set for {{ALARM}}.
-ClockMenuTimer~Swipe Right~Wrist~Outer=!ClockMenuStopwatch~{{STOPWATCH}} elapsed.
-ClockMenuTimer~Swipe Left~Wrist~Outer=!ClockMenuTime~The time is {{TIME}}.
-ClockMenuStopwatch~Swipe Right~Wrist~Outer=!ClockMenuAlarm~Alarm set for {{ALARM}}.
-ClockMenuStopwatch~Swipe Left~Wrist~Outer=!ClockMenuTimer~{{TIMER}} remaining.
-ClockMenuAlarm~Swipe Right~Wrist~Outer=!ClockMenuTime~{{TIME}}.
-ClockMenuAlarm~Swipe Left~Wrist~Outer=!ClockMenuStopwatch~{{STOPWATCH}} elapsed.
-.*~.*Tap~Palm~Left=!DailySummaryMenuDate~{{ONETIME:Daily summary opened, }}The date is {{DATE}}.
-DailySummaryMenuDate~Swipe Right~Palm~.*=!DailySummaryMenuWeather~{{WEATHER}}.
-DailySummaryMenuDate~Swipe Left~Palm~.*=!DailySummaryMenuCalendar~Your next calendar event is {{NEXTEVENT}}.
-DailySummaryMenuWeather~Swipe Right~Palm~.*=!DailySummaryMenuCalendar~Your next calendar event is {{NEXTEVENT}}.
-DailySummaryMenuWeather~Swipe Left~Palm~.*=!DailySummaryMenuDate~The date is {{DATE}}.
-DailySummaryMenuCalendar~Swipe Right~Palm~.*=!DailySummaryMenuDate~The date is {{DATE}}.
-DailySummaryMenuCalendar~Swipe Left~Palm~.*=!DailySummaryMenuWeather~{{WEATHER}}.
-.*~.*Tap~Palm~Right|Up|Down|Center=!NotificationsMenuSummary~{{ONETIME:Notification Center Opened, you have }}{{MESSAGECOUNT}}.
-NotificationsMenuSummary~Swipe Right~Palm~.*=!NotificationsMenuMessage1~{{NOTIFICATION1}}.
-NotificationsMenuSummary~Swipe Left~Palm~.*=!NotificationsMenuMessage3~{{NOTIFICATION3}}.
-NotificationsMenuMessage1~Swipe Right~Palm~.*=!NotificationsMenuMessage2~{{NOTIFICATION2}}.
-NotificationsMenuMessage1~Swipe Left~Palm~.*=!NotificationsMenuSummary~{{MESSAGECOUNT}}.
-NotificationsMenuMessage2~Swipe Right~Palm~.*=!NotificationsMenuMessage3~{{NOTIFICATION3}}.
-NotificationsMenuMessage2~Swipe Left~Palm~.*=!NotificationsMenuMessage1~{{NOTIFICATION1}}.
-NotificationsMenuMessage3~Swipe Right~Palm~.*=!NotificationsMenuSummary~{{MESSAGECOUNT}}.
-NotificationsMenuMessage3~Swipe Left~Palm~.*=!NotificationsMenuMessage2~{{NOTIFICATION2}}.
-.*~.*Tap~Wrist~Inner=!HealthMenuDistance~{{ONETIME:Health and Activities menu opened, You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuDistance~Swipe Right~Wrist~Inner=!HealthMenuSteps~{{ONETIME:You've traveled }}{{STEPS}} steps{{ONETIME: today}}.
-HealthMenuDistance~Swipe Left~Wrist~Inner=!HealthMenuHeartRate~{{ONETIME:Your heart rate is }}{{HEARTRATE}}.
-HealthMenuSteps~Swipe Right~Wrist~Inner=!HealthMenuCalories~{{ONETIME:You've burnt }}{{CALORIES}} calories{{ONETIME: today}}.
-HealthMenuSteps~Swipe Left~Wrist~Inner=!HealthMenuDistance~{{ONETIME:You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuCalories~Swipe Right~Wrist~Inner=!HealthMenuHeartRate~{{ONETIME:Your heart rate is }}{{HEARTRATE}}.
-HealthMenuCalories~Swipe Left~Wrist~Inner=!HealthMenuSteps~{{ONETIME:You've traveled }}{{STEPS}} steps{{ONETIME: today}}.
-HealthMenuHeartRate~Swipe Right~Wrist~Inner=!HealthMenuDistance~{{ONETIME:You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuHeartRate~Swipe Left~Wrist~Inner=!HealthMenuCalories~{{ONETIME:You've burnt }}{{CALORIES}} calories{{ONETIME: today}}.
-.*~.*Tap~Ear~Front=What can I help you with?
-.*~Hover~Wrist~Outer=!Clock~{{ONETIME:Clock, The time is }}{{TIME}}.
-.*~Hover~Wrist~Inner=~!Health~{{ONETIME:Health and Fitness, }}{{DISTANCE}} traveled today.
-.*~Hover~Palm~Left=!DailySummary~{{ONETIME:Daily Summary, today's date is }}{{DATE}}.
-.*~Hover~Palm~Right|Up|Down|Center=!Notifications~{{ONETIME:Notification center, You have }}{{MESSAGECOUNT}}.
-.*~Hover~Ear~Front=!VoiceInput~Voice Input.
-
-:Gestures Only:
-Clock~Swipe Right~.*~.*=!DailySummary~{{ONETIME:Daily Summary for }}{{DATE}}.
-Clock~Swipe Left~.*~.*=!VoiceInput~Voice Input.
-Clock~Double Tap~.*~.*=!ClockMenuTime~{{ONETIME:Clock menu opened, The time is }}{{TIME}}.
-ClockMenuTime~Swipe Right~.*~.*=!ClockMenuTimer~{{ONETIME:Timer }}{{TIMER}} remaining.
-ClockMenuTime~Swipe Left~.*~.*=!ClockMenuAlarm~{{ONETIME:Alarm set for }}{{ALARM}}.
-ClockMenuTimer~Swipe Right~.*~.*=!ClockMenuStopwatch~{{ONETIME:Stopwatch }}{{STOPWATCH}} elapsed.
-ClockMenuTimer~Swipe Left~.*~.*=!ClockMenuTime~{{ONETIME:The time is }}{{TIME}}.
-ClockMenuStopwatch~Swipe Right~.*~.*=!ClockMenuAlarm~{{ONETIME:Alarm set for }}{{ALARM}}.
-ClockMenuStopwatch~Swipe Left~.*~.*=!ClockMenuTimer~{{ONETIME:Timer }}{{TIMER}} remaining.
-ClockMenuAlarm~Swipe Right~.*~.*=!ClockMenuTime~{{ONETIME:The time is }}{{TIME}}.
-ClockMenuAlarm~Swipe Left~.*~.*=!ClockMenuStopwatch~{{ONETIME:Stopwatch }}{{STOPWATCH}} elapsed.
-DailySummary~Swipe Right~.*~.*=!Notifications~{{ONETIME:Notifications, You have }}{{MESSAGECOUNT}}.
-DailySummary~Swipe Left~.*~.*=!Clock~{{ONETIME:Clock, The time is }}{{TIME}}.
-DailySummary~Double Tap~.*~.*=!DailySummaryMenuDate~{{ONETIME:Daily summary opened, }}The date is {{DATE}}.
-DailySummaryMenuDate~Swipe Right~.*~.*=!DailySummaryMenuWeather~{{WEATHER}}.
-DailySummaryMenuDate~Swipe Left~.*~.*=!DailySummaryMenuCalendar~Your next calendar event is {{NEXTEVENT}}.
-DailySummaryMenuWeather~Swipe Right~.*~.*=!DailySummaryMenuCalendar~Your next calendar event is {{NEXTEVENT}}.
-DailySummaryMenuWeather~Swipe Left~.*~.*=!DailySummaryMenuDate~The date is {{DATE}}.
-DailySummaryMenuCalendar~Swipe Right~.*~.*=!DailySummaryMenuDate~The date is {{DATE}}.
-DailySummaryMenuCalendar~Swipe Left~.*~.*=!DailySummaryMenuWeather~{{WEATHER}}.
-Notifications~Swipe Right~.*~.*=!Health~{{ONETIME:Health and Activities, }}{{DISTANCE}} traveled today
-Notifications~Swipe Left~.*~.*=!DailySummary~{{ONETIME:Daily Summary for }}{{DATE}}.
-Notifications~Double Tap~.*~.*=!NotificationsMenuSummary~{{ONETIME:Notification Center Opened, you have }}{{MESSAGECOUNT}}.
-NotificationsMenuSummary~Swipe Right~.*~.*=!NotificationsMenuMessage1~{{NOTIFICATION1}}.
-NotificationsMenuSummary~Swipe Left~.*~.*=!NotificationsMenuMessage3~{{NOTIFICATION3}}.
-NotificationsMenuMessage1~Swipe Right~.*~.*=!NotificationsMenuMessage2~{{NOTIFICATION2}}.
-NotificationsMenuMessage1~Swipe Left~.*~.*=!NotificationsMenuSummary~{{MESSAGECOUNT}}.
-NotificationsMenuMessage2~Swipe Right~.*~.*=!NotificationsMenuMessage3~{{NOTIFICATION3}}.
-NotificationsMenuMessage2~Swipe Left~.*~.*=!NotificationsMenuMessage1~{{NOTIFICATION1}}.
-NotificationsMenuMessage3~Swipe Right~.*~.*=!NotificationsMenuSummary~{{MESSAGECOUNT}}.
-NotificationsMenuMessage3~Swipe Left~.*~.*=!NotificationsMenuMessage2~{{NOTIFICATION2}}.
-Health~Swipe Right~.*~.*=!VoiceInput~Voice Input.
-Health~Swipe Left~.*~.*=!Notifications~{{ONETIME:Notifications, You have }}{{MESSAGECOUNT}}.
-Health~Double Tap~.*~.*=!HealthMenuDistance~{{ONETIME:Health and Activities menu opened, You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuDistance~Swipe Right~.*~.*=!HealthMenuSteps~{{ONETIME:You've traveled }}{{STEPS}} steps{{ONETIME: today}}.
-HealthMenuDistance~Swipe Left~.*~.*=!HealthMenuHeartRate~{{ONETIME:Your heart rate is }}{{HEARTRATE}}.
-HealthMenuSteps~Swipe Right~.*~.*=!HealthMenuCalories~{{ONETIME:You've burnt }}{{CALORIES}} calories{{ONETIME: today}}.
-HealthMenuSteps~Swipe Left~.*~.*=!HealthMenuDistance~{{ONETIME:You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuCalories~Swipe Right~.*~.*=!HealthMenuHeartRate~{{ONETIME:Your heart rate is }}{{HEARTRATE}}.
-HealthMenuCalories~Swipe Left~.*~.*=!HealthMenuSteps~{{ONETIME:You've traveled }}{{STEPS}} steps{{ONETIME: today}}.
-HealthMenuHeartRate~Swipe Right~.*~.*=!HealthMenuDistance~{{ONETIME:You've traveled }}{{DISTANCE}}{{ONETIME: today}}.
-HealthMenuHeartRate~Swipe Left~.*~.*=!HealthMenuCalories~{{ONETIME:You've burnt }}{{CALORIES}} calories{{ONETIME: today}}.
-VoiceInput~Swipe Right~.*~.*=!Clock~{{ONETIME:Clock, The time is }}{{TIME}}.
-VoiceInput~Swipe Left~.*~.*=!Health~{{ONETIME:Health and Activities, }}{{DISTANCE}} traveled today.
-VoiceInput~Double Tap~.*~.*=What can I help you with?
-Phone~Double Tap~.*~.*=!Clock~Phone Call Answered.
-Phone~Swipe Down~.*~.*=!Clock~Phone Call Rejected.
-.*~Swipe Right~.*~.*=!Clock~{{ONETIME:The time is }}{{TIME}}.
-.*~Swipe Down~.*~.*=!Clock~{{ONETIME:Main Menu, The time is }}{{TIME}}.
-.*~Tap~.*~.*={{REPEAT}}
+[
+  {
+    "name": "Gestures Only",
+    "actions":
+    [
+      {
+        "context": "Phone",
+        "gesture": "Double Tap",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "text":"{{PHONE_ANSWER}}",
+        "sets_menu_item": "{{PREV_CONTEXT}}",
+        "repeats_text": false
+      },
+      {
+        "context": "Phone",
+        "gesture": "Swipe Down",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "text": "{{PHONE_REJECT}}",
+        "sets_menu_item": "{{PREV_CONTEXT}}",
+        "repeats_text": false
+      },
+      {
+        "context": "^(?!Phone$)",
+        "gesture": "Swipe Right",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "sets_menu_item": "{{NEXT_MENU_ITEM}}"
+      },
+      {
+        "context": "^(?!Phone$)",
+        "gesture": "Swipe Left",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "sets_menu_item": "{{PREV_MENU_ITEM}}"
+      },
+      {
+        "context": "^(?!Phone$)",
+        "gesture": "Double Tap",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "sets_menu_item": "{{EXPAND_MENU}}"
+      },
+      {
+        "context": "^(?!Phone$)",
+        "gesture": "Swipe Down",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "sets_menu_item": "{{COLLAPSE_MENU}}"
+      },
+      {
+        "context": "^(?!Phone$)",
+        "gesture": "Hover|Tap",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "text": "{{REPEAT}}"
+      },
+    ]
+  },
+  {
+    "name": "Palm Only",
+    "actions":
+    [
+      {
+        "context": "Phone",
+        "gesture": "Double Tap",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "text":"{{PHONE_ANSWER}}",
+        "sets_menu_item": "{{PREV_CONTEXT}}",
+        "repeats_text": false
+      },
+      {
+        "context": "Phone",
+        "gesture": "Swipe Down",
+        "coarse_location": ".*",
+        "fine_location": ".*",
+        "text": "{{PHONE_REJECT}}",
+        "sets_menu_item": "{{PREV_CONTEXT}}",
+        "repeats_text": false
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Palm",
+        "fine_location":"Left",
+        "sets_menu_item":"Clock"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Palm",
+        "fine_location":"Right",
+        "sets_menu_item":"Daily Summary"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Palm",
+        "fine_location":"Up",
+        "sets_menu_item":"Notifications"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Palm",
+        "fine_location":"Down",
+        "sets_menu_item":"Health and Activities"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Palm",
+        "fine_location":"Center",
+        "sets_menu_item":"Voice Input"
+      },
+      {
+        "context":".*",
+        "gesture":"Tap",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "text":"{{REPEAT}}"
+      }
+      {
+        "context":"^(?!Phone$)",
+        "gesture":"Double Tap",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{EXPAND_MENU}}"
+      },
+      {
+        "context":"^(?!(Phone|Root Menu)$)",
+        "gesture":"Swipe Right",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{NEXT_MENU_ITEM}}"
+      },
+      {
+        "context":"^(?!(Phone|Root Menu)$)",
+        "gesture":"Swipe Left",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{PREV_MENU_ITEM}}"
+      },
+      {
+        "context":"^(?!(Phone|Root Menu)$)",
+        "gesture":"Swipe Down",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{COLLAPSE_MENU}}"
+      }
+    ]
+  },
+  {
+    "name": "Full Body",
+    "actions":
+    [
+      {
+        "context": "Phone",
+        "gesture": "Double Tap",
+        "coarse_location": "Ear",
+        "fine_location": ".*",
+        "text":"{{PHONE_ANSWER}}",
+        "sets_menu_item": "{{PREV_CONTEXT}}",
+        "repeats_text": false
+      },
+      {
+        "context": "Phone",
+        "gesture": "Swipe Down",
+        "coarse_location": "Ear",
+        "fine_location": ".*",
+        "text": "{{PHONE_REJECT}}",
+        "sets_menu_item": "{{PREV_CONTEXT}}",
+        "repeats_text": false
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Wrist",
+        "fine_location":"Outer",
+        "sets_menu_item":"Clock"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Palm",
+        "fine_location":"Left|Down",
+        "sets_menu_item":"Daily Summary"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Palm",
+        "fine_location":"Up|Right|Center",
+        "sets_menu_item":"Notifications"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Wrist",
+        "fine_location":"Inner",
+        "sets_menu_item":"Health and Activities"
+      },
+      {
+        "context":"Root Menu",
+        "gesture":"Hover",
+        "coarse_location":"Ear",
+        "fine_location":".*",
+        "sets_menu_item":"Voice Input"
+      },
+      {
+        "context":".*",
+        "gesture":"Tap",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "text":"{{REPEAT}}"
+      }
+      {
+        "context":"^(?!Phone$)",
+        "gesture":"Double Tap",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{EXPAND_MENU}}"
+      },
+      {
+        "context":"^(?!(Phone|Root Menu)$)",
+        "gesture":"Swipe Right",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{NEXT_MENU_ITEM}}"
+      },
+      {
+        "context":"^(?!(Phone|Root Menu)$)",
+        "gesture":"Swipe Left",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{PREV_MENU_ITEM}}"
+      },
+      {
+        "context":"^(?!(Phone|Root Menu)$)",
+        "gesture":"Swipe Down",
+        "coarse_location":".*",
+        "fine_location":".*",
+        "sets_menu_item":"{{COLLAPSE_MENU}}"
+      }
+    ]
+  }
+]
