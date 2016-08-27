@@ -1,0 +1,129 @@
+[
+  {
+    "name": "Root Menu",
+    "items":
+    [
+      {
+        "name":"Clock",
+        "text":"{{CLOCK}}",
+        "submenu":"Clock Menu",
+        "expand_text":"{{ONETIME:Clock menu opened, }}{{CLOCK_TIME}}"
+      },
+      {
+        "name":"Daily Summary",
+        "text":"{{DAILY_SUMMARY}}",
+        "submenu":"Daily Summary Menu",
+        "expand_text":"{{ONETIME:Daily summary menu opened, }}{{DAILY_SUMMARY_DATE}}"
+      },
+      {
+        "name":"Notifications",
+        "text":"{{NOTIFICATIONS}}",
+        "submenu":"Notifications Menu",
+        "expand_text":"{{ONETIME:Notifications menu opened, }}{{NOTIFICATIONS SUMMARY}}"
+      },
+      {
+        "name":"Health and Fitness",
+        "text":"{{HEALTH_AND_FITNESS}}",
+        "submenu":"Health and Fitness Menu",
+        "expand_text":"{{ONETIME:Daily summary menu opened, }}{{DAILY_SUMMARY_DATE}}"
+      },
+      {
+        "name":"Voice Input",
+        "text":"{{VOICE_INPUT}}",
+        "expand_text":"{{VOICE_INPUT_SELECTED}}"
+      }
+    ]
+  },
+  {
+    "name": "Clock Menu",
+    "parent_menu": "Root Menu",
+    "parent_menu_item": "Clock",
+    "items":
+    [
+      {
+        "name":"Time",
+        "text":"{{CLOCK_TIME}}"
+      },
+      {
+        "name":"Timer", 
+        "text":"{{CLOCK_TIMER}}"        
+      },
+      {
+        "name":"Stopwatch", 
+        "text":"{{CLOCK_STOPWATCH}}"
+      },
+      {
+        "name":"Alarm", 
+        "text":"{{CLOCK_ALARM}}"
+      }
+    ]
+  },
+  {
+    "name": "Daily Summary Menu",
+    "parent_menu": "Root Menu",
+    "parent_menu_item": "Daily Summary",
+    "items":
+    [
+      {
+        "name":"Date",
+        "text":"{{DAILY_SUMMARY_DATE}}"
+      },
+      {
+        "name":"Weather", 
+        "text":"{{DAILY_SUMMARY_WEATHER}}"
+      },
+      {
+        "name":"Next Event", 
+        "text":"{{DAILY_SUMMARY_NEXT_EVENT}}", 
+      }
+    ]
+  },
+  {
+    "name": "Notifications Menu",
+    "parent_menu": "Root Menu",
+    "parent_menu_item": "Notifications",
+    "items":
+    [
+      {
+        "name":"NotificationsMenuSummary", 
+        "text":"{{NOTIFICATIONS_SUMMARY}}"
+      },
+      {
+        "name":"NotificationsMenuMessage1", 
+        "text":"{{NOTIFICATIONS_MESSAGE1}}"
+      },
+      {
+        "name":"NotificationsMenuMessage2", 
+        "text":"{{NOTIFICATIONS_MESSAGE2}}"
+      },
+      {
+        "name":"NotificationsMenuMessage3", 
+        "text":"{{NOTIFICATIONS_MESSAGE3}}"
+      }
+    ]
+  },
+  {
+    "name": "Health and Fitness Menu",
+    "parent_menu": "Root Menu",
+    "parent_menu_item": "Health and Fitness",
+    "items":
+    [
+      {
+        "name":"HealthAndFitnessMenuDistance", 
+        "text":"{{HEALTH_DISTANCE}}"
+      },
+      {
+        "name":"HealthAndFitnessMenuSteps", 
+        "text":"{{HEALTH_STEPS}}"
+      },
+      {
+        "name":"HealthAndFitnessMenuCalories", 
+        "text":"{{HEALTH_CALORIES}}"
+      },
+      {
+        "name":"HealthAndFitnessMenuHeartRate", 
+        "text":"{{HEALTH_HEART_RATE}}"
+      }
+    ]
+  }
+]
