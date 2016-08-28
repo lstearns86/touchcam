@@ -4,57 +4,57 @@
     "actions":
     [
       {
-        "context": "Phone",
-        "gesture": "Double Tap",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "text":"{{PHONE_ANSWER}}",
-        "sets_menu_item": "{{PREV_CONTEXT}}",
-        "repeats_text": false
+        "Context": "Phone",
+        "Gesture": "Double Tap",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "Text":"{{PHONE_ANSWER}}",
+        "SetsMenuItem": "{{PREV_CONTEXT}}",
+        "RepeatsText": false
       },
       {
-        "context": "Phone",
-        "gesture": "Swipe Down",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "text": "{{PHONE_REJECT}}",
-        "sets_menu_item": "{{PREV_CONTEXT}}",
-        "repeats_text": false
+        "Context": "Phone",
+        "Gesture": "Swipe Down",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "Text": "{{PHONE_REJECT}}",
+        "SetsMenuItem": "{{PREV_CONTEXT}}",
+        "RepeatsText": false
       },
       {
-        "context": "^(?!Phone$)",
-        "gesture": "Swipe Right",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "sets_menu_item": "{{NEXT_MENU_ITEM}}"
+        "Context": "^(?!Phone$)",
+        "Gesture": "Swipe Right",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "SetsMenuItem": "{{NEXT_MENU_ITEM}}"
       },
       {
-        "context": "^(?!Phone$)",
-        "gesture": "Swipe Left",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "sets_menu_item": "{{PREV_MENU_ITEM}}"
+        "Context": "^(?!Phone$)",
+        "Gesture": "Swipe Left",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "SetsMenuItem": "{{PREV_MENU_ITEM}}"
       },
       {
-        "context": "^(?!Phone$)",
-        "gesture": "Double Tap",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "sets_menu_item": "{{EXPAND_MENU}}"
+        "Context": "^(?!Phone$)",
+        "Gesture": "Double Tap",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "SetsMenuItem": "{{EXPAND_MENU}}"
       },
       {
-        "context": "^(?!Phone$)",
-        "gesture": "Swipe Down",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "sets_menu_item": "{{COLLAPSE_MENU}}"
+        "Context": "^(?!Phone$)",
+        "Gesture": "Swipe Down",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "SetsMenuItem": "{{COLLAPSE_MENU}}"
       },
       {
-        "context": "^(?!Phone$)",
-        "gesture": "Hover|Tap",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "text": "{{REPEAT}}"
+        "Context": "^(?!Phone$)",
+        "Gesture": "Hover|Tap",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "Text": "{{REPEAT}}"
       },
     ]
   },
@@ -63,92 +63,92 @@
     "actions":
     [
       {
-        "context": "Phone",
-        "gesture": "Double Tap",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "text":"{{PHONE_ANSWER}}",
-        "sets_menu_item": "{{PREV_CONTEXT}}",
-        "repeats_text": false
+        "Context": "Phone",
+        "Gesture": "Double Tap",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "Text":"{{PHONE_ANSWER}}",
+        "SetsMenuItem": "{{PREV_CONTEXT}}",
+        "RepeatsText": false
       },
       {
-        "context": "Phone",
-        "gesture": "Swipe Down",
-        "coarse_location": ".*",
-        "fine_location": ".*",
-        "text": "{{PHONE_REJECT}}",
-        "sets_menu_item": "{{PREV_CONTEXT}}",
-        "repeats_text": false
+        "Context": "Phone",
+        "Gesture": "Swipe Down",
+        "CoarseLocation": ".*",
+        "FineLocation": ".*",
+        "Text": "{{PHONE_REJECT}}",
+        "SetsMenuItem": "{{PREV_CONTEXT}}",
+        "RepeatsText": false
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Palm",
-        "fine_location":"Left",
-        "sets_menu_item":"Clock"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Palm",
+        "FineLocation":"Left",
+        "SetsMenuItem":"Clock"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Palm",
-        "fine_location":"Right",
-        "sets_menu_item":"Daily Summary"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Palm",
+        "FineLocation":"Right",
+        "SetsMenuItem":"Daily Summary"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Palm",
-        "fine_location":"Up",
-        "sets_menu_item":"Notifications"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Palm",
+        "FineLocation":"Up",
+        "SetsMenuItem":"Notifications"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Palm",
-        "fine_location":"Down",
-        "sets_menu_item":"Health and Activities"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Palm",
+        "FineLocation":"Down",
+        "SetsMenuItem":"Health and Activities"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Palm",
-        "fine_location":"Center",
-        "sets_menu_item":"Voice Input"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Palm",
+        "FineLocation":"Center",
+        "SetsMenuItem":"Voice Input"
       },
       {
-        "context":".*",
-        "gesture":"Tap",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "text":"{{REPEAT}}"
+        "Context":".*",
+        "Gesture":"Tap",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "Text":"{{REPEAT}}"
       }
       {
-        "context":"^(?!Phone$)",
-        "gesture":"Double Tap",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{EXPAND_MENU}}"
+        "Context":"^(?!Phone$)",
+        "Gesture":"Double Tap",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{EXPAND_MENU}}"
       },
       {
-        "context":"^(?!(Phone|Root Menu)$)",
-        "gesture":"Swipe Right",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{NEXT_MENU_ITEM}}"
+        "Context":"^(?!(Phone|Root Menu)$)",
+        "Gesture":"Swipe Right",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{NEXT_MENU_ITEM}}"
       },
       {
-        "context":"^(?!(Phone|Root Menu)$)",
-        "gesture":"Swipe Left",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{PREV_MENU_ITEM}}"
+        "Context":"^(?!(Phone|Root Menu)$)",
+        "Gesture":"Swipe Left",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{PREV_MENU_ITEM}}"
       },
       {
-        "context":"^(?!(Phone|Root Menu)$)",
-        "gesture":"Swipe Down",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{COLLAPSE_MENU}}"
+        "Context":"^(?!(Phone|Root Menu)$)",
+        "Gesture":"Swipe Down",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{COLLAPSE_MENU}}"
       }
     ]
   },
@@ -157,92 +157,92 @@
     "actions":
     [
       {
-        "context": "Phone",
-        "gesture": "Double Tap",
-        "coarse_location": "Ear",
-        "fine_location": ".*",
-        "text":"{{PHONE_ANSWER}}",
-        "sets_menu_item": "{{PREV_CONTEXT}}",
-        "repeats_text": false
+        "Context": "Phone",
+        "Gesture": "Double Tap",
+        "CoarseLocation": "Ear",
+        "FineLocation": ".*",
+        "Text":"{{PHONE_ANSWER}}",
+        "SetsMenuItem": "{{PREV_CONTEXT}}",
+        "RepeatsText": false
       },
       {
-        "context": "Phone",
-        "gesture": "Swipe Down",
-        "coarse_location": "Ear",
-        "fine_location": ".*",
-        "text": "{{PHONE_REJECT}}",
-        "sets_menu_item": "{{PREV_CONTEXT}}",
-        "repeats_text": false
+        "Context": "Phone",
+        "Gesture": "Swipe Down",
+        "CoarseLocation": "Ear",
+        "FineLocation": ".*",
+        "Text": "{{PHONE_REJECT}}",
+        "SetsMenuItem": "{{PREV_CONTEXT}}",
+        "RepeatsText": false
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Wrist",
-        "fine_location":"Outer",
-        "sets_menu_item":"Clock"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Wrist",
+        "FineLocation":"Outer",
+        "SetsMenuItem":"Clock"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Palm",
-        "fine_location":"Left|Down",
-        "sets_menu_item":"Daily Summary"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Palm",
+        "FineLocation":"Left|Down",
+        "SetsMenuItem":"Daily Summary"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Palm",
-        "fine_location":"Up|Right|Center",
-        "sets_menu_item":"Notifications"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Palm",
+        "FineLocation":"Up|Right|Center",
+        "SetsMenuItem":"Notifications"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Wrist",
-        "fine_location":"Inner",
-        "sets_menu_item":"Health and Activities"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Wrist",
+        "FineLocation":"Inner",
+        "SetsMenuItem":"Health and Activities"
       },
       {
-        "context":"Root Menu",
-        "gesture":"Hover",
-        "coarse_location":"Ear",
-        "fine_location":".*",
-        "sets_menu_item":"Voice Input"
+        "Context":"Root Menu",
+        "Gesture":"Hover",
+        "CoarseLocation":"Ear",
+        "FineLocation":".*",
+        "SetsMenuItem":"Voice Input"
       },
       {
-        "context":".*",
-        "gesture":"Tap",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "text":"{{REPEAT}}"
+        "Context":".*",
+        "Gesture":"Tap",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "Text":"{{REPEAT}}"
       }
       {
-        "context":"^(?!Phone$)",
-        "gesture":"Double Tap",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{EXPAND_MENU}}"
+        "Context":"^(?!Phone$)",
+        "Gesture":"Double Tap",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{EXPAND_MENU}}"
       },
       {
-        "context":"^(?!(Phone|Root Menu)$)",
-        "gesture":"Swipe Right",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{NEXT_MENU_ITEM}}"
+        "Context":"^(?!(Phone|Root Menu)$)",
+        "Gesture":"Swipe Right",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{NEXT_MENU_ITEM}}"
       },
       {
-        "context":"^(?!(Phone|Root Menu)$)",
-        "gesture":"Swipe Left",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{PREV_MENU_ITEM}}"
+        "Context":"^(?!(Phone|Root Menu)$)",
+        "Gesture":"Swipe Left",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{PREV_MENU_ITEM}}"
       },
       {
-        "context":"^(?!(Phone|Root Menu)$)",
-        "gesture":"Swipe Down",
-        "coarse_location":".*",
-        "fine_location":".*",
-        "sets_menu_item":"{{COLLAPSE_MENU}}"
+        "Context":"^(?!(Phone|Root Menu)$)",
+        "Gesture":"Swipe Down",
+        "CoarseLocation":".*",
+        "FineLocation":".*",
+        "SetsMenuItem":"{{COLLAPSE_MENU}}"
       }
     ]
   }
