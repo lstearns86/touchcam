@@ -1,128 +1,128 @@
 [
   {
-    "name": "Root Menu",
-    "items":
+    "Name": "Root Menu",
+    "Items":
     [
       {
-        "name":"Clock",
-        "text":"{{CLOCK}}",
-        "submenu":"Clock Menu",
-        "expand_text":"{{ONETIME:Clock menu opened, }}{{CLOCK_TIME}}"
+        "Name":"Clock",
+        "Text":"{{CLOCK}}",
+        "Submenu":"Clock Menu",
+        "ExpandText":"{{ONETIME:Clock menu opened, }}{{CLOCK_TIME}}"
       },
       {
-        "name":"Daily Summary",
-        "text":"{{DAILY_SUMMARY}}",
-        "submenu":"Daily Summary Menu",
-        "expand_text":"{{ONETIME:Daily summary menu opened, }}{{DAILY_SUMMARY_DATE}}"
+        "Name":"Daily Summary",
+        "Text":"{{DAILY_SUMMARY}}",
+        "Submenu":"Daily Summary Menu",
+        "ExpandText":"{{ONETIME:Daily summary menu opened, }}{{DAILY_SUMMARY_DATE}}"
       },
       {
-        "name":"Notifications",
-        "text":"{{NOTIFICATIONS}}",
-        "submenu":"Notifications Menu",
-        "expand_text":"{{ONETIME:Notifications menu opened, }}{{NOTIFICATIONS SUMMARY}}"
+        "Name":"Notifications",
+        "Text":"{{NOTIFICATIONS}}",
+        "Submenu":"Notifications Menu",
+        "ExpandText":"{{ONETIME:Notifications menu opened, }}{{NOTIFICATIONS SUMMARY}}"
       },
       {
-        "name":"Health and Activities",
-        "text":"{{HEALTH_AND_ACTIVITIES}}",
-        "submenu":"Health and Activities Menu",
-        "expand_text":"{{ONETIME:Health and activities menu opened, }}{{HEALTH_DISTANCE}}"
+        "Name":"Health and Activities",
+        "Text":"{{HEALTH_AND_ACTIVITIES}}",
+        "Submenu":"Health and Activities Menu",
+        "ExpandText":"{{ONETIME:Health and activities menu opened, }}{{HEALTH_DISTANCE}}"
       },
       {
-        "name":"Voice Input",
-        "text":"{{VOICE_INPUT}}",
-        "expand_text":"{{VOICE_INPUT_SELECTED}}"
+        "Name":"Voice Input",
+        "Text":"{{VOICE_INPUT}}",
+        "ExpandText":"{{VOICE_INPUT_SELECTED}}"
       }
     ]
   },
   {
-    "name": "Clock Menu",
-    "parent_menu": "Root Menu",
-    "parent_menu_item": "Clock",
-    "items":
+    "Name": "Clock Menu",
+    "ParentMenu": "Root Menu",
+    "ParentMenuItem": "Clock",
+    "Items":
     [
       {
-        "name":"Time",
-        "text":"{{CLOCK_TIME}}"
+        "Name":"Time",
+        "Text":"{{CLOCK_TIME}}"
       },
       {
-        "name":"Timer", 
-        "text":"{{CLOCK_TIMER}}"        
+        "Name":"Timer", 
+        "Text":"{{CLOCK_TIMER}}"        
       },
       {
-        "name":"Stopwatch", 
-        "text":"{{CLOCK_STOPWATCH}}"
+        "Name":"Stopwatch", 
+        "Text":"{{CLOCK_STOPWATCH}}"
       },
       {
-        "name":"Alarm", 
-        "text":"{{CLOCK_ALARM}}"
+        "Name":"Alarm", 
+        "Text":"{{CLOCK_ALARM}}"
       }
     ]
   },
   {
-    "name": "Daily Summary Menu",
-    "parent_menu": "Root Menu",
-    "parent_menu_item": "Daily Summary",
-    "items":
+    "Name": "Daily Summary Menu",
+    "ParentMenu": "Root Menu",
+    "ParentMenuItem": "Daily Summary",
+    "Items":
     [
       {
-        "name":"Date",
-        "text":"{{DAILY_SUMMARY_DATE}}"
+        "Name":"Date",
+        "Text":"{{DAILY_SUMMARY_DATE}}"
       },
       {
-        "name":"Weather", 
-        "text":"{{DAILY_SUMMARY_WEATHER}}"
+        "Name":"Weather", 
+        "Text":"{{DAILY_SUMMARY_WEATHER}}"
       },
       {
-        "name":"Next Event", 
-        "text":"{{DAILY_SUMMARY_NEXT_EVENT}}", 
+        "Name":"Next Event", 
+        "Text":"{{DAILY_SUMMARY_NEXT_EVENT}}", 
       }
     ]
   },
   {
-    "name": "Notifications Menu",
-    "parent_menu": "Root Menu",
-    "parent_menu_item": "Notifications",
-    "items":
+    "Name": "Notifications Menu",
+    "ParentMenu": "Root Menu",
+    "ParentMenuItem": "Notifications",
+    "Items":
     [
       {
-        "name":"Summary", 
-        "text":"{{NOTIFICATIONS_SUMMARY}}"
+        "Name":"Summary", 
+        "Text":"{{NOTIFICATIONS_SUMMARY}}"
       },
       {
-        "name":"Message 1", 
-        "text":"{{NOTIFICATIONS_MESSAGE1}}"
+        "Name":"Message 1", 
+        "Text":"{{NOTIFICATIONS_MESSAGE1}}"
       },
       {
-        "name":"Message 2", 
-        "text":"{{NOTIFICATIONS_MESSAGE2}}"
+        "Name":"Message 2", 
+        "Text":"{{NOTIFICATIONS_MESSAGE2}}"
       },
       {
-        "name":"Message 3", 
-        "text":"{{NOTIFICATIONS_MESSAGE3}}"
+        "Name":"Message 3", 
+        "Text":"{{NOTIFICATIONS_MESSAGE3}}"
       }
     ]
   },
   {
-    "name": "Health and Activities Menu",
-    "parent_menu": "Root Menu",
-    "parent_menu_item": "Health and Activities",
-    "items":
+    "Name": "Health and Activities Menu",
+    "ParentMenu": "Root Menu",
+    "ParentMenuItem": "Health and Activities",
+    "Items":
     [
       {
-        "name":"Distance", 
-        "text":"{{HEALTH_DISTANCE}}"
+        "Name":"Distance", 
+        "Text":"{{HEALTH_DISTANCE}}"
       },
       {
-        "name":"Steps", 
-        "text":"{{HEALTH_STEPS}}"
+        "Name":"Steps", 
+        "Text":"{{HEALTH_STEPS}}"
       },
       {
-        "name":"Calories", 
-        "text":"{{HEALTH_CALORIES}}"
+        "Name":"Calories", 
+        "Text":"{{HEALTH_CALORIES}}"
       },
       {
-        "name":"Heart Rate", 
-        "text":"{{HEALTH_HEART_RATE}}"
+        "Name":"Heart Rate", 
+        "Text":"{{HEALTH_HEART_RATE}}"
       }
     ]
   }
