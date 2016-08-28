@@ -1,7 +1,7 @@
 [
   {
-    "name": "Gestures Only",
-    "actions":
+    "Name": "Gestures Only",
+    "Actions":
     [
       {
         "Context": "Phone",
@@ -59,8 +59,8 @@
     ]
   },
   {
-    "name": "Palm Only",
-    "actions":
+    "Name": "Palm Only",
+    "Actions":
     [
       {
         "Context": "Phone",
@@ -153,8 +153,8 @@
     ]
   },
   {
-    "name": "Full Body",
-    "actions":
+    "Name": "Full Body",
+    "Actions":
     [
       {
         "Context": "Phone",
