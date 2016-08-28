@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,17 +9,39 @@ namespace HandSightOnBodyInteractionGPU
 {
     public class GestureActionMap
     {
+        internal class Menu
+        {
+            public string Name = "";
+            public MenuItem[] Items = null;
+            public string ParentMenu = "";
+            public string ParentMenuItem = "";
+        }
+
+        internal class MenuItem
+        {
+            public string Name = "";
+            public string Text = "";
+            public string Submenu = "";
+            public string ExpandText = "";
+        }
+
+        internal class ActionMode
+        {
+            public string Name = "";
+            public GestureAction[] Actions = null;
+        }
+
         internal class GestureAction
         {
             public string Context = "*";
             public string Gesture = "*";
             public string CoarseLocation = "*";
             public string FineLocation = "*";
-            public bool SetsNewContext = false;
+            public string SetsMenuItem = "";
             public string Text = "";
-            public string NewContext = "";
+            public bool RepeatsText = true;
 
-            public GestureAction(string data)
+            /*public GestureAction(string data)
             {
                 string[] parts = data.Split('=');
                 string[] inputs = parts[0].Split('~');
@@ -48,7 +70,7 @@ namespace HandSightOnBodyInteractionGPU
                     SetsNewContext = false;
                     Text = parts[1];
                 }
-            }
+            }*/
 
             public bool IsMatch(string context, string gesture, string coarseLocation, string fineLocation)
             {
@@ -63,17 +85,53 @@ namespace HandSightOnBodyInteractionGPU
 
         private static DateTime start = DateTime.Now;
 
-        private static Dictionary<string, List<GestureAction>> actions = new Dictionary<string, List<GestureAction>>();
-        private static string context = "none";
+        //private static Dictionary<string, List<GestureAction>> actions = new Dictionary<string, List<GestureAction>>();
+        private static Dictionary<string, string> macros = new Dictionary<string, string>();
+        private static Dictionary<string, ActionMode> modes = new Dictionary<string, ActionMode>();
+        private static Dictionary<string, Menu> menus = new Dictionary<string, Menu>();
+        private static string context = "Root Menu Clock";
+        private static string currMenu = "Root Menu", currMenuItem = "Clock";
         private static string lastText = "{{TIME}}";
+        private static string lastMenu = "Root Menu", lastMenuItem = "Clock";
 
         public static string Context { get { return context; } set { context = value; } }
 
-        public static string[] Modes { get { if (actions == null) return null; else return actions.Keys.ToArray(); } }
+        public static string[] Modes { get { if (actions == null) return null; else return modes.Keys.ToArray(); } }
 
-        public static void Load(string actionData)
+        public static void LoadMacros(string macroData)
         {
-            actions.Clear();
+            macros.Clear();
+            string[] lines = Regex.Split(macroData, "\r\n|\r|\n");
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                if (line.IndexOf('#') >= 0) line = line.Substring(0, line.IndexOf('#'));
+                line = line.Trim();
+
+                if (line.Length > 0)
+                {
+                    string[] parts = line.Split('=')
+                    macros.Add(parts[0], parts[1]);
+                }
+            }
+        }
+
+        public static void LoadMenus(string menuData)
+        {
+            menus.Clear();
+            Menu[] tempMenus = JsonConvert.DeserializeObject<Menu[]>(menuData);
+            foreach(Menu menu in tempMenus)
+                menus.add(menu.Name, menu);
+        }
+
+        public static void LoadActions(string actionData)
+        {
+            modes.Clear();
+            ActionMode[] tempModes = JsonConvert.DeserializeObject<ActionMode[]>(actionData);
+            foreach(ActionMode mode in tempModes)
+                modes.add(mode.Name, mode);
+
+            /*actions.Clear();
             string[] lines = Regex.Split(actionData, "\r\n|\r|\n");
             string mode = "default";
             for (int i = 0; i < lines.Length; i++)
@@ -94,22 +152,28 @@ namespace HandSightOnBodyInteractionGPU
                         actions[mode].Add(new GestureAction(line));
                     }
                 }
-            }
+            }*/
         }
 
         public static string PerformAction(string gesture, string coarseLocation, string fineLocation, string mode = null, bool fixedResponses = true)
         {
             if (mode == null || !Modes.Contains(mode)) mode = Modes[0];
 
-            foreach (GestureAction action in actions[mode])
+            foreach (GestureAction action in modes[mode].Actions)
             {
                 if (action.IsMatch(context, gesture, coarseLocation, fineLocation))
                 {
-                    if (action.SetsNewContext) context = action.NewContext;
-                    string responseText = ParseMacros(action.Text, fixedResponses);
-                    if(!action.Text.Contains("{{REPEAT}}"))
-                        lastText = action.Text;
-                    return responseText;
+                    //if (action.SetsNewContext) context = action.NewContext;
+                    //string responseText = ParseMacros(action.Text, fixedResponses);
+                    //if(!action.Text.Contains("{{REPEAT}}"))
+                    //    lastText = action.Text;
+                    //return responseText;
+
+                    // TODO: process action
+                    string responseText = action.Text
+                    while(Regex.IsMatch(reponseText, "{{.*}}"))
+                        responseText = ParseMacros(responseText, fixedResponses);
+                    return "";
                 }
             }
             lastText = "";
@@ -176,85 +240,14 @@ namespace HandSightOnBodyInteractionGPU
                 string replacement = fixedResponses ? "Wednesday, August 24th, 2016" : DateTime.Now.ToLongDateString();
                 text = text.Replace("{{DATE}}", replacement);
             }
-            if (text.Contains("{{NEXTEVENT}}"))
+            if (text.Contains("{{NOREPEAT}}"))
             {
-                text = text.Replace("{{NEXTEVENT}}", "dentist appointment from 2pm to 3pm starts in 1 hour and 35 minutes");
+                text = text.Replace("{{NOREPEAT}}", "");
             }
-            if (text.Contains("{{ALARM}}"))
+            foreach(string macro in macros.Keys)
             {
-                text = text.Replace("{{ALARM}}", "8 AM");
-            }
-            if (text.Contains("{{MESSAGECOUNT}}"))
-            {
-                text = text.Replace("{{MESSAGECOUNT}}", "1 missed phone call and 2 new messages");
-            }
-            if (text.Contains("{{NOTIFICATION1}}"))
-            {
-                text = text.Replace("{{NOTIFICATION1}}", "Missed phone call from Alice, just now");
-            }
-            if (text.Contains("{{NOTIFICATION2}}"))
-            {
-                text = text.Replace("{{NOTIFICATION2}}", "Message from Bob 16 minutes ago. Okay, I will see you soon");
-            }
-            if (text.Contains("{{NOTIFICATION3}}"))
-            {
-                text = text.Replace("{{NOTIFICATION3}}", "Message from Charlie 5 hours ago. What's up?");
-            }
-            if (text.Contains("{{WEATHER}}"))
-            {
-                text = text.Replace("{{WEATHER}}", "It's partly cloudy and 81 degrees currently and the high for today was forecast as 84 degrees");
-            }
-            if (text.Contains("{{MISSEDCALLS}}"))
-            {
-                text = text.Replace("{{MISSEDCALLS}}", "1");
-            }
-            if (text.Contains("{{MESSAGES}}"))
-            {
-                text = text.Replace("{{MESSAGES}}", "2");
-            }
-            if (text.Contains("{{EMAILS}}"))
-            {
-                text = text.Replace("{{EMAILS}}", "6");
-            }
-            if (text.Contains("{{FACEBOOK}}"))
-            {
-                text = text.Replace("{{FACEBOOK}}", "7");
-            }
-            if (text.Contains("{{CALORIES}}"))
-            {
-                text = text.Replace("{{CALORIES}}", "497");
-            }
-            if (text.Contains("{{STEPS}}"))
-            {
-                text = text.Replace("{{STEPS}}", "2366");
-            }
-            if (text.Contains("{{DISTANCE}}"))
-            {
-                text = text.Replace("{{DISTANCE}}", "1.8 miles");
-            }
-            if (text.Contains("{{HEARTRATE}}"))
-            {
-                text = text.Replace("{{HEARTRATE}}", "118 bpm");
-            }
-            if (text.Contains("{{VOLUMEUP}}"))
-            {
-                text = text.Replace("{{VOLUMEUP}}", "Volume up");
-            }
-            if (text.Contains("{{VOLUMEDOWN}}"))
-            {
-                text = text.Replace("{{VOLUMEDOWN}}", "Volume down");
-            }
-            if (text.Contains("{{ANSWERCALL}}"))
-            {
-                text = text.Replace("{{ANSWERCALL}}", "Call answered. Hello?");
-            }
-            if (text.Contains("{{REJECTCALL}}"))
-            {
-                text = text.Replace("{{REJECTCALL}}", "Call Rejected");
-            }
-            if (text.Contains("{{VOICEINPUT}}"))
-            {
-                text = text.Replace("{{VOICEPROMPT}}", "How can I help you today?");
+                if(text.Contains(macro))
+                    text = text.Replace(macro, macros[macro]);
             }
             return text;
         }
