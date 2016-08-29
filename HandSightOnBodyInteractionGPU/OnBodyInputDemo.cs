@@ -118,7 +118,9 @@ namespace HandSightOnBodyInteractionGPU
 
             Text = "Connecting to Camera and Sensors...";
 
-            GestureActionMap.Load(File.ReadAllText("defaults/actions.txt"));
+            GestureActionMap.LoadMacros(File.ReadAllText("defaults/macros.txt"));
+            GestureActionMap.LoadMenus(File.ReadAllText("defaults/menus.txt"));
+            GestureActionMap.LoadActions(File.ReadAllText("defaults/actions.txt"));
 
             //trainingForm.TrainingDataUpdated += () => { UpdateTrainingLabel(); };
             trainingForm.RecordLocation += (string coarseLocation, string fineLocation) =>
@@ -138,7 +140,7 @@ namespace HandSightOnBodyInteractionGPU
                 {
                     if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
                     AddTemplate();
-                    trainingForm.UpdateLocationList();
+                    //trainingForm.UpdateLocationList();
                 }
             };
             trainingForm.RecordGesture += (string gesture) =>
@@ -258,7 +260,8 @@ namespace HandSightOnBodyInteractionGPU
                                 start = DateTime.Now;
                                 if (!autoTrainGesture)
                                 {
-                                    trainingForm.UpdateGestureList();
+                                    //trainingForm.UpdateGestureList();
+                                    trainingForm.AddGesture(gesture);
                                     Debug.WriteLine("Updating List: " + (DateTime.Now - start).TotalMilliseconds + " ms");
                                 }
 
@@ -481,7 +484,6 @@ namespace HandSightOnBodyInteractionGPU
                 {
                     if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
                     AddTemplate();
-                    trainingForm.UpdateLocationList();
                 }
 
                 Invoke(new MethodInvoker(delegate
@@ -491,19 +493,29 @@ namespace HandSightOnBodyInteractionGPU
             }
         }
 
-        private void AddTemplate()
+        private ImageTemplate AddTemplate(ImageTemplate template = null)
         {
-            ImageTemplate template = CopyTemplate(currTemplate);
+            if(template == null) template = CopyTemplate(currTemplate);
             template["coarse"] = coarseLocationToTrain;
             template["fine"] = fineLocationToTrain;
                 
             Localization.Instance.AddTrainingExample(template, coarseLocationToTrain, fineLocationToTrain);
             Localization.Instance.Train();
 
-            trainingForm.UpdateLocationList();
-            
+            //trainingForm.UpdateLocationList();
+            try
+            {
+                trainingForm.AddLocation(template);
+            }
+            catch (Exception ex)
+            {
+
+            }
+
             // perform cross-validation
             //if PerformCrossValidation();
+
+            return template;
         }
 
         //private void PerformCrossValidation()
@@ -711,9 +723,15 @@ namespace HandSightOnBodyInteractionGPU
 
                             if(autoTrainLocation && (coarseLocation != coarseLocationToTrain || fineLocation != fineLocationToTrain) && Monitor.TryEnter(trainingLock))
                             {
+                                trainingForm.Training = true;
+                                ImageTemplate newTemplate = CopyTemplate(currTemplate);
                                 if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
-                                AddTemplate();
+                                AddTemplate(newTemplate);
+                                Thread.Sleep(100);
+                                if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
+                                trainingForm.Training = false;
                                 Monitor.Exit(trainingLock);
+                                return;
                             }
 
                             if ((DateTime.Now - touchStart).TotalMilliseconds > Properties.Settings.Default.HoverTimeThreshold && Properties.Settings.Default.EnableSpeechOutput)

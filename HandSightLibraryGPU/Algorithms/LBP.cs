@@ -14,7 +14,8 @@ namespace HandSightLibrary.ImageProcessing
         private static Dictionary<Size, LBP> instances = new Dictionary<Size, LBP>();
 
         const double PI = Math.PI;
-        const int numNeighbors = 16, radius = 1, numVarBins = 16;
+        //const int numNeighbors = 16, radius = 1, numVarBins = 16;
+        const int numNeighbors = 16, radius = 2, numVarBins = 16;
 
         static bool useSubuniform = true;
         static int numPatterns = (int)Math.Pow(2, numNeighbors);

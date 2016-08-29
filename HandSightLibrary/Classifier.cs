@@ -415,15 +415,14 @@ namespace HandSightLibrary
             return className;
         }
 
-        //public void saveModel(string name){
-        //    model.Save(name);
+        //public void SaveSVM(string path)
+        //{
+        //    svm.Save(path);
         //}
 
-        //public void loadModel(string name)
+        //public void LoadSVM(string path)
         //{
-        //    model = new SVM();
-        //    //model.Load(name);
-        //    model.Read((new FileStorage(name, FileStorage.Mode.Read)).GetFirstTopLevelNode());
+        //    svm = MulticlassSupportVectorMachine.Load(path);
         //}
 
         /*

@@ -108,6 +108,7 @@ namespace HandSightOnBodyInteractionGPU
         {
             Properties.Settings.Default.GestureMode = (string)GestureModeChooser.SelectedItem;
             Properties.Settings.Default.Save();
+            GestureActionMap.Reset();
         }
 
         private void SettingsForm_Move(object sender, EventArgs e)
@@ -126,6 +127,11 @@ namespace HandSightOnBodyInteractionGPU
         {
             Properties.Settings.Default.SettingsVisible = false;
             Properties.Settings.Default.Save();
+        }
+
+        private void ResetMenuLocationButton_Click(object sender, EventArgs e)
+        {
+            GestureActionMap.Reset();
         }
     }
 }

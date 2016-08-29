@@ -367,5 +367,29 @@ namespace HandSightLibrary
                 mergedList.AddRange(list);
             return mergedList;
         }
+
+        public static string ToReadableTimespanString(TimeSpan span)
+        {
+            int years = span.Days;
+            int weeks = (span.Days - years * 365) / 7;
+            int days = span.Days - years * 365 - weeks * 7;
+            int hours = span.Hours;
+            int minutes = span.Minutes;
+            int seconds = span.Seconds;
+
+            // special cases, with some rounding for ease of comprehension
+            if (years > 0) return years + " years";
+            if (weeks > 0) return weeks + " weeks" + (days > 0 ? " and " + days + " days" : "");
+            if (days > 1) return days + " days";
+            if (days == 1) return (hours + 24) + " hours";
+
+            string response = "";
+            if (hours > 1) response += hours + " hours ";
+            else if (hours == 1) response += "1 hour ";
+            if (minutes > 1) response += minutes + " minutes ";
+            else if (minutes == 1) response += "1 minute ";
+            response += (response == "" ? "" : "and ") + (seconds == 1 ? "1 second" : seconds + " seconds");
+            return response;
+        }
     }
 }

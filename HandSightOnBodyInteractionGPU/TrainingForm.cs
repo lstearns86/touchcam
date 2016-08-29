@@ -73,7 +73,7 @@ namespace HandSightOnBodyInteractionGPU
         }
 
         private bool training = false;
-        public bool Training { get { return training; } }
+        public bool Training { get { return training; } set { training = value; } }
 
         public TrainingForm()
         {
@@ -124,9 +124,26 @@ namespace HandSightOnBodyInteractionGPU
             Properties.Settings.Default.Save();
         }
 
+        public void AddLocation(ImageTemplate template)
+        {
+            if (InvokeRequired) { Invoke(new MethodInvoker(delegate { AddLocation(template); })); return; }
+
+            string location = template["coarse"] + " " + template["fine"];
+            ListViewGroup group = LocationView.Groups[location];
+            if(group == null) group = LocationView.Groups.Add(location, location);
+            LocationView.LargeImageList.Images.Add(template.Image.Bitmap);
+            ListViewItem item = new ListViewItem() { Text = location + " " + (group.Items.Count + 1), ImageIndex = LocationView.LargeImageList.Images.Count - 1, Tag = template };
+            LocationView.Items.Add(item);
+            item.Group = group;
+            //LocationView.TopItem = item;
+            item.EnsureVisible();
+
+            LocationCountLabel.Text = Localization.Instance.GetNumTrainingExamples() + " location examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
+        }
+
         public void UpdateLocationList()
         {
-            if (InvokeRequired) { Invoke(new MethodInvoker(UpdateLists)); return; }
+            if (InvokeRequired) { Invoke(new MethodInvoker(UpdateLocationList)); return; }
 
             int locationTopItemIndex = 0;
             try
@@ -163,7 +180,8 @@ namespace HandSightOnBodyInteractionGPU
             LocationView.EndUpdate();
             try
             {
-                LocationView.TopItem = LocationView.Items[locationTopItemIndex];
+                //LocationView.TopItem = LocationView.Items[locationTopItemIndex];
+                LocationView.Items[locationTopItemIndex].EnsureVisible();
             }
             catch
             { }
@@ -171,9 +189,31 @@ namespace HandSightOnBodyInteractionGPU
             unsaved = true;
         }
 
+        public void AddGesture(Gesture template)
+        {
+            if (InvokeRequired) { Invoke(new MethodInvoker(delegate { AddGesture(template); })); return; }
+
+            float duration = template.CorrectedSensorReadings[template.CorrectedSensorReadings.Count - 1].Timestamp - template.CorrectedSensorReadings[0].Timestamp;
+            duration /= 1000.0f;
+
+            Bitmap img = template.Visualization;
+
+            ListViewGroup group = GestureView.Groups[template.ClassName];
+            if(group == null) group = GestureView.Groups.Add(template.ClassName, template.ClassName);
+            GestureView.LargeImageList.Images.Add(img);
+            ListViewItem item = new ListViewItem() { Text = template.ClassName + " " + (group.Items.Count + 1) + " (" + duration.ToString("0.0") + "s)", ImageIndex = (GestureView.LargeImageList.Images.Count - 1), Tag = template };
+            GestureView.Items.Add(item);
+            item.Group = group;
+
+            //GestureView.TopItem = item;
+            item.EnsureVisible();
+
+            GestureCountLabel.Text = GestureRecognition.GetNumExamples() + " gesture examples (" + GestureRecognition.GetNumClasses() + " classes)";
+        }
+
         public void UpdateGestureList()
         {
-            if (InvokeRequired) { Invoke(new MethodInvoker(UpdateLists)); return; }
+            if (InvokeRequired) { Invoke(new MethodInvoker(UpdateGestureList)); return; }
 
             int gestureTopItemIndex = 0;
             try
@@ -212,7 +252,8 @@ namespace HandSightOnBodyInteractionGPU
             GestureView.EndUpdate();
             try
             {
-                GestureView.TopItem = GestureView.Items[gestureTopItemIndex];
+                //GestureView.TopItem = GestureView.Items[gestureTopItemIndex];
+                GestureView.Items[gestureTopItemIndex].EnsureVisible();
             }
             catch { }
 

@@ -1,6 +1,6 @@
 [
   {
-    "Name": "Root Menu",
+    "Name": "Main Menu",
     "Items":
     [
       {
@@ -19,7 +19,7 @@
         "Name":"Notifications",
         "Text":"{{NOTIFICATIONS}}",
         "Submenu":"Notifications Menu",
-        "ExpandText":"{{ONETIME:Notifications menu opened, }}{{NOTIFICATIONS SUMMARY}}"
+        "ExpandText":"{{ONETIME:Notifications menu opened, }}{{NOTIFICATIONS_SUMMARY}}"
       },
       {
         "Name":"Health and Activities",
@@ -30,13 +30,14 @@
       {
         "Name":"Voice Input",
         "Text":"{{VOICE_INPUT}}",
+		"Submenu":"Main Menu",
         "ExpandText":"{{VOICE_INPUT_SELECTED}}"
       }
     ]
   },
   {
     "Name": "Clock Menu",
-    "ParentMenu": "Root Menu",
+    "ParentMenu": "Main Menu",
     "ParentMenuItem": "Clock",
     "Items":
     [
@@ -60,7 +61,7 @@
   },
   {
     "Name": "Daily Summary Menu",
-    "ParentMenu": "Root Menu",
+    "ParentMenu": "Main Menu",
     "ParentMenuItem": "Daily Summary",
     "Items":
     [
@@ -80,7 +81,7 @@
   },
   {
     "Name": "Notifications Menu",
-    "ParentMenu": "Root Menu",
+    "ParentMenu": "Main Menu",
     "ParentMenuItem": "Notifications",
     "Items":
     [
@@ -104,7 +105,7 @@
   },
   {
     "Name": "Health and Activities Menu",
-    "ParentMenu": "Root Menu",
+    "ParentMenu": "Main Menu",
     "ParentMenuItem": "Health and Activities",
     "Items":
     [

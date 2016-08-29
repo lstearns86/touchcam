@@ -46,6 +46,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.HoverTimeThresholdChooser = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
+            this.ResetMenuLocationButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.PredictionSmoothingChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BrightnessChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HoverTimeThresholdChooser)).BeginInit();
@@ -134,7 +135,7 @@
             // 
             // CalibrationButton
             // 
-            this.CalibrationButton.Location = new System.Drawing.Point(15, 265);
+            this.CalibrationButton.Location = new System.Drawing.Point(12, 293);
             this.CalibrationButton.Name = "CalibrationButton";
             this.CalibrationButton.Size = new System.Drawing.Size(170, 23);
             this.CalibrationButton.TabIndex = 23;
@@ -144,7 +145,7 @@
             // 
             // IMUCalibrationButton
             // 
-            this.IMUCalibrationButton.Location = new System.Drawing.Point(15, 294);
+            this.IMUCalibrationButton.Location = new System.Drawing.Point(12, 322);
             this.IMUCalibrationButton.Name = "IMUCalibrationButton";
             this.IMUCalibrationButton.Size = new System.Drawing.Size(170, 23);
             this.IMUCalibrationButton.TabIndex = 24;
@@ -218,7 +219,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(15, 233);
+            this.label2.Location = new System.Drawing.Point(12, 261);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(89, 13);
             this.label2.TabIndex = 31;
@@ -231,7 +232,7 @@
             0,
             0,
             0});
-            this.HoverTimeThresholdChooser.Location = new System.Drawing.Point(108, 231);
+            this.HoverTimeThresholdChooser.Location = new System.Drawing.Point(105, 259);
             this.HoverTimeThresholdChooser.Maximum = new decimal(new int[] {
             3000,
             0,
@@ -255,17 +256,28 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(167, 233);
+            this.label3.Location = new System.Drawing.Point(164, 261);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(20, 13);
             this.label3.TabIndex = 33;
             this.label3.Text = "ms";
             // 
+            // ResetMenuLocationButton
+            // 
+            this.ResetMenuLocationButton.Location = new System.Drawing.Point(15, 225);
+            this.ResetMenuLocationButton.Name = "ResetMenuLocationButton";
+            this.ResetMenuLocationButton.Size = new System.Drawing.Size(170, 23);
+            this.ResetMenuLocationButton.TabIndex = 34;
+            this.ResetMenuLocationButton.Text = "Reset Menu Location";
+            this.ResetMenuLocationButton.UseVisualStyleBackColor = true;
+            this.ResetMenuLocationButton.Click += new System.EventHandler(this.ResetMenuLocationButton_Click);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(194, 330);
+            this.ClientSize = new System.Drawing.Size(194, 357);
+            this.Controls.Add(this.ResetMenuLocationButton);
             this.Controls.Add(this.HoverTimeThresholdChooser);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -317,5 +329,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown HoverTimeThresholdChooser;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button ResetMenuLocationButton;
     }
 }

@@ -16,7 +16,7 @@
 # {{COLLAPSE_MENU}} goes back to the previous level of the menu hierarch. If already at the top, does nothing.
 
 CLOCK={{ONETIME:Clock, the time is }}{{TIME}}.
-CLOCK_TIME={{ONETIME:The time is}}{{TIME}}.
+CLOCK_TIME={{ONETIME:The time is }}{{TIME}}.
 CLOCK_TIMER={{ONETIME:Timer, }}{{TIMER}} remaining.
 CLOCK_STOPWATCH={{ONETIME:Stopwatch, }}{{STOPWATCH}} elapsed.
 CLOCK_ALARM={{ONETIME:An alarm is set for }}8 AM.

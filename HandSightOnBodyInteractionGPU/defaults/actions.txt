@@ -81,35 +81,35 @@
         "RepeatsText": false
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Palm",
         "FineLocation":"Left",
         "SetsMenuItem":"Clock"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Palm",
         "FineLocation":"Right",
         "SetsMenuItem":"Daily Summary"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Palm",
         "FineLocation":"Up",
         "SetsMenuItem":"Notifications"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Palm",
         "FineLocation":"Down",
         "SetsMenuItem":"Health and Activities"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Palm",
         "FineLocation":"Center",
@@ -117,11 +117,11 @@
       },
       {
         "Context":".*",
-        "Gesture":"Tap",
+        "Gesture":"^Tap$",
         "CoarseLocation":".*",
         "FineLocation":".*",
         "Text":"{{REPEAT}}"
-      }
+      },
       {
         "Context":"^(?!Phone$)",
         "Gesture":"Double Tap",
@@ -130,21 +130,21 @@
         "SetsMenuItem":"{{EXPAND_MENU}}"
       },
       {
-        "Context":"^(?!(Phone|Root Menu)$)",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"Swipe Right",
         "CoarseLocation":".*",
         "FineLocation":".*",
         "SetsMenuItem":"{{NEXT_MENU_ITEM}}"
       },
       {
-        "Context":"^(?!(Phone|Root Menu)$)",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"Swipe Left",
         "CoarseLocation":".*",
         "FineLocation":".*",
         "SetsMenuItem":"{{PREV_MENU_ITEM}}"
       },
       {
-        "Context":"^(?!(Phone|Root Menu)$)",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"Swipe Down",
         "CoarseLocation":".*",
         "FineLocation":".*",
@@ -175,35 +175,35 @@
         "RepeatsText": false
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Wrist",
         "FineLocation":"Outer",
         "SetsMenuItem":"Clock"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Palm",
         "FineLocation":"Left|Down",
         "SetsMenuItem":"Daily Summary"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Palm",
         "FineLocation":"Up|Right|Center",
         "SetsMenuItem":"Notifications"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Wrist",
         "FineLocation":"Inner",
         "SetsMenuItem":"Health and Activities"
       },
       {
-        "Context":"Root Menu",
+        "Context":"Main Menu",
         "Gesture":"Hover",
         "CoarseLocation":"Ear",
         "FineLocation":".*",
@@ -211,11 +211,11 @@
       },
       {
         "Context":".*",
-        "Gesture":"Tap",
+        "Gesture":"^Tap$",
         "CoarseLocation":".*",
         "FineLocation":".*",
         "Text":"{{REPEAT}}"
-      }
+      },
       {
         "Context":"^(?!Phone$)",
         "Gesture":"Double Tap",
@@ -224,21 +224,21 @@
         "SetsMenuItem":"{{EXPAND_MENU}}"
       },
       {
-        "Context":"^(?!(Phone|Root Menu)$)",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"Swipe Right",
         "CoarseLocation":".*",
         "FineLocation":".*",
         "SetsMenuItem":"{{NEXT_MENU_ITEM}}"
       },
       {
-        "Context":"^(?!(Phone|Root Menu)$)",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"Swipe Left",
         "CoarseLocation":".*",
         "FineLocation":".*",
         "SetsMenuItem":"{{PREV_MENU_ITEM}}"
       },
       {
-        "Context":"^(?!(Phone|Root Menu)$)",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"Swipe Down",
         "CoarseLocation":".*",
         "FineLocation":".*",

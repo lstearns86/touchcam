@@ -111,7 +111,6 @@
     <Compile Include="IMUTest.Designer.cs">
       <DependentUpon>IMUTest.cs</DependentUpon>
     </Compile>
-    <Compile Include="GestureActionMap.cs" />
     <Compile Include="OnBodyInputDemo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -197,6 +196,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="defaults\locations.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="defaults\macros.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="defaults\menus.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="FodyWeavers.xml" />

@@ -63,6 +63,8 @@ namespace HandSightLibrary
         public class LocationEvent : LogEvent
         {
             public string location;
+            public string predictedLocation;
+            public string smoothedLocation;
             public bool manual;
 
             public LocationEvent(string location, bool manual)
@@ -71,6 +73,41 @@ namespace HandSightLibrary
                 this.location = location;
                 this.manual = manual;
                 type = "location";
+            }
+        }
+
+        public class AudioEvent : LogEvent
+        {
+            public string speechOutput;
+            public string audioCue;
+
+            public AudioEvent(string text, bool isSpeech)
+            {
+                if (isSpeech) this.speechOutput = text;
+                else this.audioCue = text;
+                type = "audio";
+            }
+        }
+
+        public class TrainingEvent : LogEvent
+        {
+            public string message;
+            
+            public TrainingEvent(string message)
+            {
+                this.message = message;
+                type = "training";
+            }
+        }
+
+        public class UIEvent : LogEvent
+        {
+            public string action;
+
+            public UIEvent(string action)
+            {
+                this.action = action;
+                type = "user_interface";
             }
         }
 
