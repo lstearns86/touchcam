@@ -62,5 +62,26 @@
     <Setting Name="SettingsVisible" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
+    <Setting Name="TestingVisible" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="TestingLocation" Type="System.Drawing.Point" Scope="User">
+      <Value Profile="(Default)">0, 0</Value>
+    </Setting>
+    <Setting Name="LastParticipant" Type="System.String" Scope="User">
+      <Value Profile="(Default)">pilot0</Value>
+    </Setting>
+    <Setting Name="TestingMode" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Training Locations</Value>
+    </Setting>
+    <Setting Name="CurrentTask" Type="System.String" Scope="User">
+      <Value Profile="(Default)">Clock</Value>
+    </Setting>
+    <Setting Name="LogDirectory" Type="System.String" Scope="User">
+      <Value Profile="(Default)">logs</Value>
+    </Setting>
+    <Setting Name="RandomizeOrders" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

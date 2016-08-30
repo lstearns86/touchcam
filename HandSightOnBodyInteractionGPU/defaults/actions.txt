@@ -82,41 +82,41 @@
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Palm",
         "FineLocation":"Left",
         "SetsMenuItem":"Clock"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Palm",
         "FineLocation":"Right",
         "SetsMenuItem":"Daily Summary"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Palm",
         "FineLocation":"Up",
         "SetsMenuItem":"Notifications"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Palm",
         "FineLocation":"Down",
         "SetsMenuItem":"Health and Activities"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Palm",
         "FineLocation":"Center",
         "SetsMenuItem":"Voice Input"
       },
       {
-        "Context":".*",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"^Tap$",
         "CoarseLocation":".*",
         "FineLocation":".*",
@@ -176,41 +176,41 @@
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Wrist",
         "FineLocation":"Outer",
         "SetsMenuItem":"Clock"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
-        "CoarseLocation":"Palm",
-        "FineLocation":"Left|Down",
+        "Gesture":"^(Hover|Tap)$",
+        "CoarseLocation":"Wrist",
+        "FineLocation":"Inner",
         "SetsMenuItem":"Daily Summary"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Palm",
-        "FineLocation":"Up|Right|Center",
+        "FineLocation":".*",
         "SetsMenuItem":"Notifications"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
-        "CoarseLocation":"Wrist",
-        "FineLocation":"Inner",
+        "Gesture":"^(Hover|Tap)$",
+        "CoarseLocation":"Chest",
+        "FineLocation":"Chest",
         "SetsMenuItem":"Health and Activities"
       },
       {
         "Context":"Main Menu",
-        "Gesture":"Hover",
+        "Gesture":"^(Hover|Tap)$",
         "CoarseLocation":"Ear",
         "FineLocation":".*",
         "SetsMenuItem":"Voice Input"
       },
       {
-        "Context":".*",
+        "Context":"^(?!(Phone|Main Menu))",
         "Gesture":"^Tap$",
         "CoarseLocation":".*",
         "FineLocation":".*",

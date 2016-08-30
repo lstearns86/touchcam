@@ -75,8 +75,12 @@ namespace HandSightLibrary.ImageProcessing
                 Directory.CreateDirectory(dir);
             else
             {
-                foreach (string filename in Directory.GetFiles(dir, "*.png"))
-                    File.Delete(filename);
+                try
+                {
+                    foreach (string filename in Directory.GetFiles(dir, "*.png"))
+                        File.Delete(filename);
+                }
+                catch { }
             }
 
             foreach(string region in samples.Keys)

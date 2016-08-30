@@ -62,17 +62,34 @@ namespace HandSightLibrary
         }
         public class LocationEvent : LogEvent
         {
-            public string location;
             public string predictedLocation;
             public string smoothedLocation;
-            public bool manual;
+            public float likelihood;
 
-            public LocationEvent(string location, bool manual)
+            public LocationEvent(string predictedLocation, string smoothedLocation = "", float likelihood = 0)
                 : base()
             {
-                this.location = location;
-                this.manual = manual;
+                this.predictedLocation = predictedLocation;
+                this.smoothedLocation = smoothedLocation;
+                this.likelihood = 0;
                 type = "location";
+            }
+        }
+
+        public class GestureEvent : LogEvent
+        {
+            public Gesture gesture;
+            public float duration;
+            public string predictedGesture;
+            public string predictedLocation;
+
+            public GestureEvent(string predictedGesture, string predictedLocation, Gesture gesture)
+                : base()
+            {
+                this.predictedGesture = predictedGesture;
+                this.predictedLocation = predictedLocation;
+                this.gesture = gesture;
+                type = "gesture";
             }
         }
 
@@ -91,8 +108,6 @@ namespace HandSightLibrary
 
         public class TrainingEvent : LogEvent
         {
-            public string message;
-            
             public TrainingEvent(string message)
             {
                 this.message = message;
@@ -141,7 +156,7 @@ namespace HandSightLibrary
 
         static void StartVideo()
         {
-            string path = filename + Index + ".avi";
+            string path = Path.ChangeExtension(filename, "avi"); //+ Index + ".avi";
             
             videoWriter = new VideoFileWriter();
             videoWriter.Open(path, videoSize.Width, videoSize.Height, 90, VideoCodec.MPEG4, defaultBitrate);
@@ -171,7 +186,7 @@ namespace HandSightLibrary
 
         static void StartEvents()
         {
-            string path = filename + Index + ".json";
+            string path = filename;// + Index + ".json";
             eventWriter = new StreamWriter(path);
             
             // TODO: write additional header info (e.g., gesture, pid, etc.)
@@ -249,11 +264,53 @@ namespace HandSightLibrary
             eventQueue.Add(new SensorReadingEvent(reading));
         }
 
-        public static void LogLocationEvent(string location, bool manual = true)
+        public static void LogLocationEvent(string predictedLocation, string smoothedLocation = "", float likelihood = 0)
         {
             if (!Running) return;
 
-            eventQueue.Add(new LocationEvent(location, manual));
+            eventQueue.Add(new LocationEvent(predictedLocation, smoothedLocation, likelihood));
+        }
+
+        public static void LogGestureEvent(string predictedGesture, string predictedLocation = "", Gesture gesture = null)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new GestureEvent(predictedGesture, predictedLocation, gesture));
+        }
+
+        public static void LogAudioEvent(string text, bool isSpeech = true)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new AudioEvent(text, isSpeech));
+        }
+
+        public static void LogTrainingEvent(string message)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new TrainingEvent(message));
+        }
+
+        public static void LogUIEvent(string action)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new UIEvent(action));
+        }
+
+        public static void LogOtherEvent(string message)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new LogEvent(message));
+        }
+
+        public static void LogOtherEvent(LogEvent logEvent)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(logEvent);
         }
 
         public static List<LogEvent> ReadLog(string path, Action<float> progressReport = null)
@@ -289,7 +346,7 @@ namespace HandSightLibrary
                 }
                 catch { }
 
-                if (progressReport != null) progressReport((float)i / (float)lines.Count);
+                progressReport?.Invoke((float)i / (float)lines.Count);
             }
 
             return events;

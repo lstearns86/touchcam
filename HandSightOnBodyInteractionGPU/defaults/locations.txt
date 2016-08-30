@@ -1,3 +1,4 @@
 Palm: Up, Down, Left, Right, Center
 Wrist: Inner, Outer
 Ear: Front
+Chest: Chest

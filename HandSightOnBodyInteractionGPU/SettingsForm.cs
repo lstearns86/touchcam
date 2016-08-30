@@ -21,13 +21,7 @@ namespace HandSightOnBodyInteractionGPU
             CoarseOnlyCheckbox.Checked = Properties.Settings.Default.CoarseOnly;
             SingleIMUCheckbox.Checked = Properties.Settings.Default.SingleIMU;
             EnableSoundEffectsCheckbox.Checked = Properties.Settings.Default.EnableSoundEffects;
-            EnableSpeechCheckbox.Checked = Properties.Settings.Default.EnableSpeechOutput;
-            EnableApplicationDemoCheckbox.Checked = Properties.Settings.Default.EnableApplicationDemos;
-            FixedApplicationResonsesCheckbox.Checked = Properties.Settings.Default.FixedApplicationResponses;
             HoverTimeThresholdChooser.Value = Properties.Settings.Default.HoverTimeThreshold;
-            GestureModeChooser.Items.AddRange(GestureActionMap.Modes);
-            if (GestureModeChooser.Items.Contains(Properties.Settings.Default.GestureMode))
-                GestureModeChooser.SelectedItem = Properties.Settings.Default.GestureMode;
         }
 
         private void BrightnessChooser_ValueChanged(object sender, EventArgs e)
@@ -80,35 +74,10 @@ namespace HandSightOnBodyInteractionGPU
             OrientationTracker.Secondary.Reset();
         }
 
-        private void FixedApplicationResonsesCheckbox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.FixedApplicationResponses = FixedApplicationResonsesCheckbox.Checked;
-            Properties.Settings.Default.Save();
-        }
-
-        private void EnableApplicationDemoCheckbox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.EnableApplicationDemos = EnableApplicationDemoCheckbox.Checked;
-            Properties.Settings.Default.Save();
-        }
-
         private void EnableSoundEffectsCheckbox_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.EnableSoundEffects = EnableSoundEffectsCheckbox.Checked;
             Properties.Settings.Default.Save();
-        }
-
-        private void EnableSpeechCheckbox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.EnableSpeechOutput = EnableSpeechCheckbox.Checked;
-            Properties.Settings.Default.Save();
-        }
-
-        private void GestureModeChooser_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.GestureMode = (string)GestureModeChooser.SelectedItem;
-            Properties.Settings.Default.Save();
-            GestureActionMap.Reset();
         }
 
         private void SettingsForm_Move(object sender, EventArgs e)

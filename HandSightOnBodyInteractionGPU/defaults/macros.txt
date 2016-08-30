@@ -15,25 +15,25 @@
 # {{EXPAND_MENU}} expands the currently selected menu item if possible
 # {{COLLAPSE_MENU}} goes back to the previous level of the menu hierarch. If already at the top, does nothing.
 
-CLOCK={{ONETIME:Clock, the time is }}{{TIME}}.
-CLOCK_TIME={{ONETIME:The time is }}{{TIME}}.
-CLOCK_TIMER={{ONETIME:Timer, }}{{TIMER}} remaining.
-CLOCK_STOPWATCH={{ONETIME:Stopwatch, }}{{STOPWATCH}} elapsed.
-CLOCK_ALARM={{ONETIME:An alarm is set for }}8 AM.
-DAILY_SUMMARY={{ONETIME:Daily summary for }}{{DATE}}.
-DAILY_SUMMARY_DATE={{ONETIME:The date is }}{{DATE}}.
-DAILY_SUMMARY_WEATHER={{ONETIME:The weather is }}partly cloudy and 81 degrees currently and the high for today was forecast as 84 degrees.
-DAILY_SUMMARY_NEXT_EVENT=Your next calendar event is a dentist appointment from 2pm to 3pm starts in 1 hour and 35 minutes.
-NOTIFICATIONS={{ONETIME:Notifications, you have }}1 missed phone call and 2 new messages.
+CLOCK={{ONETIME:Clock: the time is }}{{TIME}}.
+CLOCK_TIME={{ONETIME:Clock: the time is }}{{TIME}}.
+CLOCK_TIMER={{ONETIME:Timer: }}{{TIMER}} remaining.
+CLOCK_STOPWATCH={{ONETIME:Stopwatch: }}{{STOPWATCH}} elapsed.
+CLOCK_ALARM={{ONETIME:Alarm: set for }}8 AM.
+DAILY_SUMMARY={{ONETIME:Daily summary: }}{{DATE}}.
+DAILY_SUMMARY_DATE={{ONETIME:Date: }}{{DATE}}.
+DAILY_SUMMARY_WEATHER={{ONETIME:Weather: }}partly cloudy and 81 degrees currently and the high for today was forecast as 84 degrees.
+DAILY_SUMMARY_NEXT_EVENT={{ONETIME:Next event: }}dentist appointment from 2pm to 3pm starts in 1 hour and 35 minutes.
+NOTIFICATIONS={{ONETIME:Notifications: you have }}1 missed phone call and 2 new messages.
 NOTIFICATIONS_SUMMARY={{ONETIME:You have }}1 missed phone call and 2 new messages.
 NOTIFICATIONS_MESSAGE1=Missed phone call from Alice, just now.
 NOTIFICATIONS_MESSAGE2=Message from Bob 16 minutes ago. Okay, I will see you soon.
 NOTIFICATIONS_MESSAGE3=Message from Charlie 5 hours ago. What's up?
-HEALTH_AND_ACTIVITIES={{ONETIME:Health and activities, }}1.8 miles traveled today.
-HEALTH_DISTANCE={{ONETIME:You've traveled }}1.8 miles{{ONETIME: today}}.
-HEALTH_STEPS={{ONETIME:You've taken }}2366 steps{{ONETIME: today}}.
-HEALTH_CALORIES={{ONETIME:You've burnt }}497 calories{{ONETIME: today}}.
-HEALTH_HEART_RATE={{ONETIME:Your heart rate is }}118 bpm.
+HEALTH_AND_ACTIVITIES={{ONETIME:Health and activities: }}1.8 miles traveled today.
+HEALTH_DISTANCE={{ONETIME:Distance: you've traveled }}1.8 miles{{ONETIME: today}}.
+HEALTH_STEPS={{ONETIME:Steps: you've taken }}2366 steps{{ONETIME: today}}.
+HEALTH_CALORIES={{ONETIME:Calories: you've burnt }}497 calories{{ONETIME: today}}.
+HEALTH_HEART_RATE={{ONETIME:Heart rate: }}118 bpm.
 VOICE_INPUT=Voice Input
 VOICE_INPUT_SELECTED=What can I help you with?
 PHONE_ANSWER=Phone Call Answered.{{NOREPEAT}}

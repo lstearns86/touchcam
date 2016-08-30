@@ -7,25 +7,25 @@
         "Name":"Clock",
         "Text":"{{CLOCK}}",
         "Submenu":"Clock Menu",
-        "ExpandText":"{{ONETIME:Clock menu opened, }}{{CLOCK_TIME}}"
+        "ExpandText":"{{ONETIME:Clock menu opened, }}"
       },
       {
         "Name":"Daily Summary",
         "Text":"{{DAILY_SUMMARY}}",
         "Submenu":"Daily Summary Menu",
-        "ExpandText":"{{ONETIME:Daily summary menu opened, }}{{DAILY_SUMMARY_DATE}}"
+        "ExpandText":"{{ONETIME:Daily summary menu opened, }}"
       },
       {
         "Name":"Notifications",
         "Text":"{{NOTIFICATIONS}}",
         "Submenu":"Notifications Menu",
-        "ExpandText":"{{ONETIME:Notifications menu opened, }}{{NOTIFICATIONS_SUMMARY}}"
+        "ExpandText":"{{ONETIME:Notifications menu opened, }}"
       },
       {
         "Name":"Health and Activities",
         "Text":"{{HEALTH_AND_ACTIVITIES}}",
         "Submenu":"Health and Activities Menu",
-        "ExpandText":"{{ONETIME:Health and activities menu opened, }}{{HEALTH_DISTANCE}}"
+        "ExpandText":"{{ONETIME:Health and activities menu opened, }}"
       },
       {
         "Name":"Voice Input",

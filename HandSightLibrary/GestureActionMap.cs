@@ -56,6 +56,10 @@ namespace HandSightLibrary
 
         private static DateTime start = DateTime.Now;
 
+        public delegate void TaskCompletedDelegate();
+        public static event TaskCompletedDelegate TaskCompleted;
+        private static void OnTaskCompleted() { TaskCompleted?.Invoke(); }
+
         //private static Dictionary<string, List<GestureAction>> actions = new Dictionary<string, List<GestureAction>>();
         private static Dictionary<string, string> macros = new Dictionary<string, string>();
         private static Dictionary<string, ActionMode> modes = new Dictionary<string, ActionMode>();
@@ -64,6 +68,11 @@ namespace HandSightLibrary
         private static string currMenu = "Main Menu";
         private static string lastText = "{{TIME}}";
         private static int currMenuIndex = 0;
+
+        private static string currentTask;
+        public static string CurrentTask { get { return currentTask; } set { currentTask = value; } }
+
+        public static void StartTask(string task) { currentTask = task; }
 
         public static void Reset()
         {
@@ -95,8 +104,10 @@ namespace HandSightLibrary
             }
         }
 
+        static string savedMenuData = "";
         public static void LoadMenus(string menuData)
         {
+            savedMenuData = menuData;
             menus.Clear();
             Menu[] tempMenus = JsonConvert.DeserializeObject<Menu[]>(menuData);
             foreach(Menu menu in tempMenus)
@@ -111,6 +122,31 @@ namespace HandSightLibrary
                 modes.Add(mode.Name, mode);
         }
 
+        public static void RandomizeMenuItems()
+        {
+            foreach(string app in menus.Keys)
+            {
+                menus[app].Items.Shuffle();
+            }
+        }
+
+        public static void ResetMenus()
+        {
+            LoadMenus(savedMenuData);
+            currMenu = "Main Menu";
+            currMenuIndex = 0;
+        }
+
+        public static string GetMenuItem(string menu, int index)
+        {
+            if(menus.ContainsKey(menu) && index >= 0 && index < menus[menu].Items.Length)
+            {
+                return menus[menu].Items[index].Name;
+            }
+
+            return "";
+        }
+
         public static string PerformAction(string gesture, string coarseLocation, string fineLocation, string mode = null, bool fixedResponses = true)
         {
             if (mode == null || !Modes.Contains(mode)) mode = Modes[0];
@@ -119,12 +155,6 @@ namespace HandSightLibrary
             {
                 if (action.IsMatch(context, gesture, coarseLocation, fineLocation))
                 {
-                    //if (action.SetsNewContext) context = action.NewContext;
-                    //string responseText = ParseMacros(action.Text, fixedResponses);
-                    //if(!action.Text.Contains("{{REPEAT}}"))
-                    //    lastText = action.Text;
-                    //return responseText;
-
                     // process action, update the menu location and generate response text
                     string responseText = "";
                     if(action.SetsMenuItem != null && action.SetsMenuItem.Length > 0)
@@ -147,13 +177,32 @@ namespace HandSightLibrary
                         {
                             if (menus.ContainsKey(menus[currMenu].Items[currMenuIndex].Submenu))
                             {
+                                string prevMenu = currMenu;
                                 responseText = menus[currMenu].Items[currMenuIndex].ExpandText;
                                 currMenu = menus[currMenu].Items[currMenuIndex].Submenu;
                                 currMenuIndex = 0;
+                                if (prevMenu != currMenu)
+                                    responseText += menus[currMenu].Items[currMenuIndex].Text; // add the text for the initial menu item
+                                else
+                                {
+                                    if (currentTask == menus[currMenu].Items[currMenuIndex].Name)
+                                    {
+                                        responseText = "Task Completed";
+                                        currentTask = null;
+                                        OnTaskCompleted();
+                                    }
+                                }
                             }
                             else
                             {
                                 responseText = menus[currMenu].Items[currMenuIndex].Text;
+
+                                if (currentTask == menus[currMenu].Items[currMenuIndex].Name)
+                                {
+                                    responseText = "Task Completed";
+                                    currentTask = null;
+                                    OnTaskCompleted();
+                                }
                             }
                         }
                         else if(action.SetsMenuItem == "{{COLLAPSE_MENU}}")

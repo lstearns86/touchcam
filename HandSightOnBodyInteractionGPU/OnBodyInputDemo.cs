@@ -93,7 +93,16 @@ namespace HandSightOnBodyInteractionGPU
         SoundPlayer captureSound, tickSound, beepSound, phoneSound;
 
         TrainingForm trainingForm = new TrainingForm();
+        TestingForm testingForm = new TestingForm();
         bool autoTrainGesture = false, autoTrainLocation = false, prepareToAutoTrainLocation = false;
+
+        private void testingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            testingForm = new TestingForm();
+            testingForm.Show();
+            Properties.Settings.Default.TestingVisible = true;
+            Properties.Settings.Default.Save();
+        }
 
         public OnBodyInputDemo()
         {
@@ -125,6 +134,7 @@ namespace HandSightOnBodyInteractionGPU
             //trainingForm.TrainingDataUpdated += () => { UpdateTrainingLabel(); };
             trainingForm.RecordLocation += (string coarseLocation, string fineLocation) =>
             {
+                Logging.LogTrainingEvent("prepare_to_capture_location");
                 coarseLocationToTrain = coarseLocation;
                 fineLocationToTrain = fineLocation;
 
@@ -145,18 +155,21 @@ namespace HandSightOnBodyInteractionGPU
             };
             trainingForm.RecordGesture += (string gesture) =>
             {
+                Logging.LogTrainingEvent("start_recording_gesture");
                 if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
                 gestureToTrain = gesture;
                 recordingGesture = true;
             };
             trainingForm.AutoCaptureGesture += (string gesture) =>
             {
+                Logging.LogTrainingEvent("start_autocapture_gesture");
                 if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
                 gestureToTrain = gesture;
                 autoTrainGesture = true;
             };
             trainingForm.StopAutoCapturingGestures += () =>
             {
+                Logging.LogTrainingEvent("stop_autocapture_gesture");
                 autoTrainGesture = false;
                 GestureRecognition.Train();
                 trainingForm.UpdateGestureList();
@@ -165,6 +178,8 @@ namespace HandSightOnBodyInteractionGPU
             {
                 coarseLocationToTrain = coarseLocation;
                 fineLocationToTrain = fineLocation;
+
+                Logging.LogTrainingEvent("start_autocapture_location");
 
                 countdown = Properties.Settings.Default.CountdownTimer;
                 if (countdown > 0)
@@ -184,6 +199,7 @@ namespace HandSightOnBodyInteractionGPU
             trainingForm.StopAutoCapturingLocation += () =>
             {
                 autoTrainLocation = false;
+                Logging.LogTrainingEvent("stop_autocapture_location");
             };
 
             TouchSegmentation.TouchDownEvent += () => 
@@ -194,6 +210,8 @@ namespace HandSightOnBodyInteractionGPU
                 hoverFineLocation = null;
                 touchStart = DateTime.Now;
                 Sensors.Instance.Brightness = 1;
+
+                Logging.LogOtherEvent("touch_down");
 
                 // reset the location predictions
                 if (!recentTouchUp)
@@ -207,6 +225,7 @@ namespace HandSightOnBodyInteractionGPU
                     while (gestureFocusWeights.Count > 0) { gestureFocusWeights.Take(); }
                     while (gestureSensorReadings.Count > 0) { gestureSensorReadings.Take(); }
                     foreach (Sensors.Reading reading in sensorReadingHistory) gestureSensorReadings.Add(reading);
+                    Logging.LogOtherEvent("smoothing_reset");
                 }
 
                 Invoke(new MethodInvoker(delegate { TouchStatusLabel.Text = "Touch Down"; }));
@@ -216,6 +235,7 @@ namespace HandSightOnBodyInteractionGPU
                 touchDown = false;
                 recentTouchUp = true;
                 Invoke(new MethodInvoker(delegate { TouchStatusLabel.Text = "Touch Up"; }));
+                Logging.LogOtherEvent("touch_up");
                 
                 Task.Factory.StartNew(() =>
                 {
@@ -223,6 +243,7 @@ namespace HandSightOnBodyInteractionGPU
                     recentTouchUp = false;
                     if(!touchDown)
                     {
+                        Logging.LogOtherEvent("touch_up_timeout");
                         Sensors.Instance.Brightness = 0;
 
                         if (autoTrainLocation)
@@ -246,11 +267,12 @@ namespace HandSightOnBodyInteractionGPU
 
                                 recordingGesture = false;
 
-                                if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
+                                if (Properties.Settings.Default.EnableSoundEffects) { captureSound.Play(); Logging.LogAudioEvent("capture", false); }
 
                                 DateTime start = DateTime.Now;
                                 gesture.ClassName = gestureToTrain;
                                 GestureRecognition.AddTrainingExample(gesture, gestureToTrain);
+                                Logging.LogTrainingEvent("Add gesture: " + gestureToTrain);
                                 if (!autoTrainGesture)
                                 {
                                     GestureRecognition.Train();
@@ -334,6 +356,8 @@ namespace HandSightOnBodyInteractionGPU
                                 fineProbability = maxProb;
                             }
 
+                        Logging.LogGestureEvent(gesture.ClassName, coarseLocation + " " + fineLocation, gesture);
+
                         Monitor.Exit(recognitionLock);
 
                         if (fineLocation == "")
@@ -355,11 +379,13 @@ namespace HandSightOnBodyInteractionGPU
                                     speech.SpeakAsyncCancelAll();
                                     //speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
                                     speech.SpeakAsync(actionResult);
+                                    Logging.LogAudioEvent(actionResult);
                                 }
                                 else if(!Properties.Settings.Default.EnableApplicationDemos)
                                 {
                                     speech.SpeakAsyncCancelAll();
                                     speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
+                                    Logging.LogAudioEvent(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
                                 }
                             }
                         }));
@@ -379,8 +405,8 @@ namespace HandSightOnBodyInteractionGPU
 
                 Sensors.Instance.ReadingAvailable += Sensors_ReadingAvailable;
 
-                Camera.Instance.Connect();
-                Sensors.Instance.Connect();
+                Camera.Instance.Connect(); Logging.LogOtherEvent("camera_connected");
+                Sensors.Instance.Connect(); Logging.LogOtherEvent("sensors_connected");
 
                 Sensors.Instance.NumSensors = Properties.Settings.Default.SingleIMU ? 1 : 2;
 
@@ -388,6 +414,7 @@ namespace HandSightOnBodyInteractionGPU
                 {
                     if (Properties.Settings.Default.TrainingVisible) trainingToolStripMenuItem.PerformClick();
                     if (Properties.Settings.Default.SettingsVisible) settingsToolStripMenuItem.PerformClick();
+                    if (Properties.Settings.Default.TestingVisible) testingToolStripMenuItem.PerformClick();
                 }));
             });
         }
@@ -403,7 +430,8 @@ namespace HandSightOnBodyInteractionGPU
         private void triggerPhoneCallToolStripMenuItem_Click(object sender, EventArgs e)
         {
             GestureActionMap.Context = "Phone";
-            phoneSound.Play();
+            if (Properties.Settings.Default.EnableSoundEffects) { phoneSound.Play(); Logging.LogAudioEvent("phone", false); }
+
         }
 
         private void OnBodyInputDemo_Resize(object sender, EventArgs e)
@@ -416,23 +444,24 @@ namespace HandSightOnBodyInteractionGPU
         {
             OrientationTracker.Primary.UpdateWithReading(reading);
             //OrientationTracker.Secondary.UpdateWithReading(reading, -1, true);
+
+            Quaternion quaternion = OrientationTracker.Primary.EstimateOrientation();
+            EulerAngles orientation = quaternion.GetEulerAngles();
+            //OrientationTracker.EulerAngles orientation = OrientationTracker.Primary.EstimateOrientation();
+            //orientation.Roll += (float)Math.PI; if (orientation.Roll > Math.PI) orientation.Roll -= (float)(2 * Math.PI);
+            //orientation.Pitch = -orientation.Pitch;
+
+            int resolution = 10;
+            int yaw = resolution * (int)Math.Round(orientation.Yaw * 180 / Math.PI / resolution);
+            int pitch = resolution * (int)Math.Round(orientation.Pitch * 180 / Math.PI / resolution);
+            int roll = resolution * (int)Math.Round(orientation.Roll * 180 / Math.PI / resolution);
+            //int yaw = resolution * (int)Math.Round(orientation.Yaw / resolution);
+            //int pitch = resolution * (int)Math.Round(orientation.Pitch / resolution);
+            //int roll = resolution * (int)Math.Round(orientation.Roll / resolution);
+            reading.Orientation1 = quaternion;
+
             if ((DateTime.Now - last).TotalMilliseconds > 30)
             {
-                Quaternion quaternion = OrientationTracker.Primary.EstimateOrientation();
-                EulerAngles orientation = quaternion.GetEulerAngles();
-                //OrientationTracker.EulerAngles orientation = OrientationTracker.Primary.EstimateOrientation();
-                //orientation.Roll += (float)Math.PI; if (orientation.Roll > Math.PI) orientation.Roll -= (float)(2 * Math.PI);
-                //orientation.Pitch = -orientation.Pitch;
-
-                int resolution = 10;
-                int yaw = resolution * (int)Math.Round(orientation.Yaw * 180 / Math.PI / resolution);
-                int pitch = resolution * (int)Math.Round(orientation.Pitch * 180 / Math.PI / resolution);
-                int roll = resolution * (int)Math.Round(orientation.Roll * 180 / Math.PI / resolution);
-                //int yaw = resolution * (int)Math.Round(orientation.Yaw / resolution);
-                //int pitch = resolution * (int)Math.Round(orientation.Pitch / resolution);
-                //int roll = resolution * (int)Math.Round(orientation.Roll / resolution);
-                reading.Orientation1 = quaternion;
-
                 Invoke(new MethodInvoker(delegate
                 {
                     OrientationLabel.Text = yaw + ", " + pitch + ", " + roll;
@@ -442,6 +471,8 @@ namespace HandSightOnBodyInteractionGPU
             }
 
             TouchSegmentation.UpdateWithReading(reading);
+
+            Logging.LogSensorReading(reading);
 
             sensorReadingHistory.Add(reading);
             while(sensorReadingHistory.Count > sensorReadingPreBuffer) sensorReadingHistory.Take();
@@ -460,7 +491,7 @@ namespace HandSightOnBodyInteractionGPU
             if(countdown > 1)
             {
                 countdown--;
-                if(Properties.Settings.Default.EnableSoundEffects) tickSound.Play();
+                if (Properties.Settings.Default.EnableSoundEffects) { tickSound.Play(); Logging.LogAudioEvent("tick", false); }
                 Invoke(new MethodInvoker(delegate
                 {
                     CountdownLabel.Text = countdown.ToString();
@@ -482,8 +513,9 @@ namespace HandSightOnBodyInteractionGPU
                 }
                 else
                 {
-                    if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
-                    AddTemplate();
+                    if (Properties.Settings.Default.EnableSoundEffects) { captureSound.Play(); Logging.LogAudioEvent("capture", false); }
+                    ImageTemplate template = AddTemplate();
+                    Logging.LogTrainingEvent("Added template: " + template["coarse"] + " " + template["fine"]);
                 }
 
                 Invoke(new MethodInvoker(delegate
@@ -574,6 +606,7 @@ namespace HandSightOnBodyInteractionGPU
                 e.Cancel = true;
 
                 // TODO: cleanup any sensors and resources
+                Logging.Stop();
                 Sensors.Instance.Disconnect();
                 Camera.Instance.Disconnect();
 
@@ -610,12 +643,15 @@ namespace HandSightOnBodyInteractionGPU
             {
                 try
                 {
+                    Logging.LogVideoFrame(frame.Image.Bitmap);
+
                     float focus = 0;
                     //lock (processingLock)
                     if (Monitor.TryEnter(preprocessingLock))
                     {
                         ImageProcessing.ProcessTemplate(template, false);
                         focus = ImageProcessing.ImageFocus(template);
+                        Logging.LogOtherEvent("frame_processed");
                         currTemplate = template;
                         FPS.Instance("processing").Update();
                         Monitor.Exit(preprocessingLock);
@@ -628,6 +664,7 @@ namespace HandSightOnBodyInteractionGPU
                     string coarseLocation = "", fineLocation = "";
                     float coarseProbability = 0, fineProbability = 0;
                     bool hasUpdate = false;
+                    string predictedCoarseLocation = "", predictedFineLocation = "";
                     if (touchDown && !trainingForm.Training && Monitor.TryEnter(recognitionLock))
                     {
                         try
@@ -635,7 +672,7 @@ namespace HandSightOnBodyInteractionGPU
                             if (Localization.Instance.GetNumTrainingExamples() > 0)
                             {
                                 Dictionary<string, float> coarseProbabilities = new Dictionary<string, float>();
-                                string predictedCoarseLocation = Localization.Instance.PredictCoarseLocation(currTemplate, out coarseProbabilities);
+                                predictedCoarseLocation = Localization.Instance.PredictCoarseLocation(currTemplate, out coarseProbabilities);
                                 //coarseLocationPredictions.Add(predictedCoarseLocation);
                                 //while (coarseLocationPredictions.Count > numLocationPredictions) coarseLocationPredictions.Take();
                                 coarseLocationProbabilities.Add(coarseProbabilities);
@@ -675,7 +712,7 @@ namespace HandSightOnBodyInteractionGPU
                                 {
                                     bool foundFeatureMatch = false;
                                     Dictionary<string, float> fineProbabilities = new Dictionary<string, float>();
-                                    string predictedFineLocation = Localization.Instance.PredictFineLocation(currTemplate, out foundFeatureMatch, out fineProbabilities, true, false, false, coarseLocation);
+                                    predictedFineLocation = Localization.Instance.PredictFineLocation(currTemplate, out foundFeatureMatch, out fineProbabilities, true, false, false, coarseLocation);
                                     //fineLocationPredictions.Add(predictedFineLocation);
                                     //while (fineLocationPredictions.Count > numLocationPredictions) fineLocationPredictions.Take();
                                     fineLocationProbabilities.Add(fineProbabilities);
@@ -715,6 +752,8 @@ namespace HandSightOnBodyInteractionGPU
                                         }
                                 }
 
+                                Logging.LogLocationEvent(predictedCoarseLocation + " " + predictedFineLocation, coarseLocation + " " + fineLocation);
+
                                 gestureFocusWeights.Add(focus);
 
                                 FPS.Instance("matching").Update();
@@ -725,10 +764,11 @@ namespace HandSightOnBodyInteractionGPU
                             {
                                 trainingForm.Training = true;
                                 ImageTemplate newTemplate = CopyTemplate(currTemplate);
-                                if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
+                                if (Properties.Settings.Default.EnableSoundEffects) { captureSound.Play(); Logging.LogAudioEvent("capture", false); }
                                 AddTemplate(newTemplate);
+                                Logging.LogTrainingEvent("Added template: " + newTemplate["coarse"] + " " + newTemplate["fine"]);
                                 Thread.Sleep(100);
-                                if (Properties.Settings.Default.EnableSoundEffects) beepSound.Play();
+                                if (Properties.Settings.Default.EnableSoundEffects) { beepSound.Play(); Logging.LogAudioEvent("beep", false); }
                                 trainingForm.Training = false;
                                 Monitor.Exit(trainingLock);
                                 return;
@@ -749,11 +789,13 @@ namespace HandSightOnBodyInteractionGPU
                                         {
                                             speech.SpeakAsyncCancelAll();
                                             speech.SpeakAsync(actionResult);
+                                            Logging.LogAudioEvent(actionResult);
                                         }
                                         else if (!Properties.Settings.Default.EnableApplicationDemos)
                                         {
                                             speech.SpeakAsyncCancelAll();
                                             speech.SpeakAsync("Hover " + coarseLocation + " " + fineLocation);
+                                            Logging.LogAudioEvent("Hover " + coarseLocation + " " + fineLocation);
                                         }
                                     }
                                 }

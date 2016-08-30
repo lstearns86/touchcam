@@ -262,5 +262,89 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["SettingsVisible"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool TestingVisible {
+            get {
+                return ((bool)(this["TestingVisible"]));
+            }
+            set {
+                this["TestingVisible"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 0")]
+        public global::System.Drawing.Point TestingLocation {
+            get {
+                return ((global::System.Drawing.Point)(this["TestingLocation"]));
+            }
+            set {
+                this["TestingLocation"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("pilot0")]
+        public string LastParticipant {
+            get {
+                return ((string)(this["LastParticipant"]));
+            }
+            set {
+                this["LastParticipant"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Training Locations")]
+        public string TestingMode {
+            get {
+                return ((string)(this["TestingMode"]));
+            }
+            set {
+                this["TestingMode"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Clock")]
+        public string CurrentTask {
+            get {
+                return ((string)(this["CurrentTask"]));
+            }
+            set {
+                this["CurrentTask"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("logs")]
+        public string LogDirectory {
+            get {
+                return ((string)(this["LogDirectory"]));
+            }
+            set {
+                this["LogDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool RandomizeOrders {
+            get {
+                return ((bool)(this["RandomizeOrders"]));
+            }
+            set {
+                this["RandomizeOrders"] = value;
+            }
+        }
     }
 }
