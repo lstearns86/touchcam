@@ -45,8 +45,9 @@
             this.viewToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.trainingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.settingsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.triggerPhoneCallToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.testingToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.triggerPhoneCallToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.TrainingLabel = new System.Windows.Forms.Label();
             ((System.ComponentModel.ISupportInitialize)(this.Display)).BeginInit();
             this.panel1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
@@ -192,16 +193,23 @@
             // trainingToolStripMenuItem
             // 
             this.trainingToolStripMenuItem.Name = "trainingToolStripMenuItem";
-            this.trainingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.trainingToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.trainingToolStripMenuItem.Text = "Training";
             this.trainingToolStripMenuItem.Click += new System.EventHandler(this.trainingToolStripMenuItem_Click);
             // 
             // settingsToolStripMenuItem
             // 
             this.settingsToolStripMenuItem.Name = "settingsToolStripMenuItem";
-            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.settingsToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
             this.settingsToolStripMenuItem.Text = "Settings";
             this.settingsToolStripMenuItem.Click += new System.EventHandler(this.settingsToolStripMenuItem_Click);
+            // 
+            // testingToolStripMenuItem
+            // 
+            this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
+            this.testingToolStripMenuItem.Size = new System.Drawing.Size(117, 22);
+            this.testingToolStripMenuItem.Text = "Testing";
+            this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
             // 
             // triggerPhoneCallToolStripMenuItem
             // 
@@ -210,18 +218,23 @@
             this.triggerPhoneCallToolStripMenuItem.Text = "Trigger Phone Call";
             this.triggerPhoneCallToolStripMenuItem.Click += new System.EventHandler(this.triggerPhoneCallToolStripMenuItem_Click);
             // 
-            // testingToolStripMenuItem
+            // TrainingLabel
             // 
-            this.testingToolStripMenuItem.Name = "testingToolStripMenuItem";
-            this.testingToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.testingToolStripMenuItem.Text = "Testing";
-            this.testingToolStripMenuItem.Click += new System.EventHandler(this.testingToolStripMenuItem_Click);
+            this.TrainingLabel.AutoSize = true;
+            this.TrainingLabel.Location = new System.Drawing.Point(901, 5);
+            this.TrainingLabel.Name = "TrainingLabel";
+            this.TrainingLabel.Size = new System.Drawing.Size(45, 13);
+            this.TrainingLabel.TabIndex = 8;
+            this.TrainingLabel.Text = "Training";
+            this.TrainingLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+            this.TrainingLabel.Visible = false;
             // 
             // OnBodyInputDemo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(952, 678);
+            this.Controls.Add(this.TrainingLabel);
             this.Controls.Add(this.CountdownLabel);
             this.Controls.Add(this.Display);
             this.Controls.Add(this.panel1);
@@ -261,5 +274,6 @@
         private System.Windows.Forms.ToolStripMenuItem settingsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem triggerPhoneCallToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem testingToolStripMenuItem;
+        private System.Windows.Forms.Label TrainingLabel;
     }
 }

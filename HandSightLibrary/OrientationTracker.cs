@@ -70,22 +70,22 @@ namespace HandSightLibrary
             rotatedAcceleration1.Z -= (float)GRAVITY;
             newReading.Accelerometer1 = orientation1.InverseRotateVector(rotatedAcceleration1);
 
-            if (useSecondSensor)
-            {
-                //    Quaternion q2 = sensorReading.Orientation2;
-                //    Point3D g2 = new Point3D(
-                //            (float)(2 * (q2.X * q2.Z - q2.W * q2.Y)),
-                //            (float)(2 * (q2.W * q2.X + q2.Y * q2.Z)),
-                //            (float)(q2.W * q2.W - q2.X * q2.X - q2.Y * q2.Y - q2.Z * q2.Z)
-                //        );
+            //if (useSecondSensor)
+            //{
+            //    //    Quaternion q2 = sensorReading.Orientation2;
+            //    //    Point3D g2 = new Point3D(
+            //    //            (float)(2 * (q2.X * q2.Z - q2.W * q2.Y)),
+            //    //            (float)(2 * (q2.W * q2.X + q2.Y * q2.Z)),
+            //    //            (float)(q2.W * q2.W - q2.X * q2.X - q2.Y * q2.Y - q2.Z * q2.Z)
+            //    //        );
 
-                //    newReading.Accelerometer2 -= g2 * (float)GRAVITY;
+            //    //    newReading.Accelerometer2 -= g2 * (float)GRAVITY;
 
-                Quaternion orientation2 = sensorReading.Orientation2;
-                Point3D rotatedAcceleration2 = orientation2.RotateVector(sensorReading.Accelerometer2);
-                rotatedAcceleration2.Z -= (float)GRAVITY;
-                newReading.Accelerometer2 = orientation2.InverseRotateVector(rotatedAcceleration2);
-            }
+            //    Quaternion orientation2 = sensorReading.Orientation2;
+            //    Point3D rotatedAcceleration2 = orientation2.RotateVector(sensorReading.Accelerometer2);
+            //    rotatedAcceleration2.Z -= (float)GRAVITY;
+            //    newReading.Accelerometer2 = orientation2.InverseRotateVector(rotatedAcceleration2);
+            //}
 
             return newReading;
         }
@@ -126,19 +126,19 @@ namespace HandSightLibrary
                 sampleFreq = 1000.0f / elapsedTime;
                 lastReadingTimestamp = info.Timestamp;
                 double ax, ay, az, gx, gy, gz, mx, my, mz;
-                if (secondary)
-                {
-                    ax = sensorReading.Accelerometer2.X;
-                    ay = sensorReading.Accelerometer2.Y;
-                    az = sensorReading.Accelerometer2.Z;
-                    gx = sensorReading.Gyroscope2.X;
-                    gy = sensorReading.Gyroscope2.Y;
-                    gz = sensorReading.Gyroscope2.Z;
-                    mx = sensorReading.Magnetometer2.X;
-                    my = sensorReading.Magnetometer2.Y;
-                    mz = sensorReading.Magnetometer2.Z;
-                }
-                else
+                //if (secondary)
+                //{
+                //    ax = sensorReading.Accelerometer2.X;
+                //    ay = sensorReading.Accelerometer2.Y;
+                //    az = sensorReading.Accelerometer2.Z;
+                //    gx = sensorReading.Gyroscope2.X;
+                //    gy = sensorReading.Gyroscope2.Y;
+                //    gz = sensorReading.Gyroscope2.Z;
+                //    mx = sensorReading.Magnetometer2.X;
+                //    my = sensorReading.Magnetometer2.Y;
+                //    mz = sensorReading.Magnetometer2.Z;
+                //}
+                //else
                 {
                     ax = sensorReading.Accelerometer1.X;
                     ay = sensorReading.Accelerometer1.Y;
@@ -161,10 +161,10 @@ namespace HandSightLibrary
                                    my,
                                    mz);
 
-                if (!secondary)
+                //if (!secondary)
                     sensorReading.Orientation1 = orientationEstimate;
-                else
-                    sensorReading.Orientation2 = orientationEstimate;
+                //else
+                //    sensorReading.Orientation2 = orientationEstimate;
 
                 Monitor.Exit(stopwatch);
             }

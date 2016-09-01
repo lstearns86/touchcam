@@ -93,12 +93,11 @@ namespace HandSightOnBodyInteractionGPU
         SoundPlayer captureSound, tickSound, beepSound, phoneSound;
 
         TrainingForm trainingForm = new TrainingForm();
-        TestingForm testingForm = new TestingForm();
+        TestingForm testingForm;// = new TestingForm();
         bool autoTrainGesture = false, autoTrainLocation = false, prepareToAutoTrainLocation = false;
 
         private void testingToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            testingForm = new TestingForm();
             testingForm.Show();
             Properties.Settings.Default.TestingVisible = true;
             Properties.Settings.Default.Save();
@@ -130,6 +129,20 @@ namespace HandSightOnBodyInteractionGPU
             GestureActionMap.LoadMacros(File.ReadAllText("defaults/macros.txt"));
             GestureActionMap.LoadMenus(File.ReadAllText("defaults/menus.txt"));
             GestureActionMap.LoadActions(File.ReadAllText("defaults/actions.txt"));
+
+            testingForm = new TestingForm();
+
+            testingForm.TaskStarted += (string task) =>
+            {
+                speech.SpeakAsyncCancelAll();
+                speech.SpeakAsync("Begin");
+            };
+
+            testingForm.TaskFinished += (string task) =>
+            {
+                speech.SpeakAsyncCancelAll();
+                speech.SpeakAsync("Task Completed");
+            };
 
             //trainingForm.TrainingDataUpdated += () => { UpdateTrainingLabel(); };
             trainingForm.RecordLocation += (string coarseLocation, string fineLocation) =>
@@ -764,12 +777,14 @@ namespace HandSightOnBodyInteractionGPU
                             {
                                 trainingForm.Training = true;
                                 ImageTemplate newTemplate = CopyTemplate(currTemplate);
+                                Invoke(new MethodInvoker(delegate { TrainingLabel.Visible = true; }));
                                 if (Properties.Settings.Default.EnableSoundEffects) { captureSound.Play(); Logging.LogAudioEvent("capture", false); }
                                 AddTemplate(newTemplate);
                                 Logging.LogTrainingEvent("Added template: " + newTemplate["coarse"] + " " + newTemplate["fine"]);
                                 Thread.Sleep(100);
-                                if (Properties.Settings.Default.EnableSoundEffects) { beepSound.Play(); Logging.LogAudioEvent("beep", false); }
+                                //if (Properties.Settings.Default.EnableSoundEffects) { beepSound.Play(); Logging.LogAudioEvent("beep", false); }
                                 trainingForm.Training = false;
+                                Invoke(new MethodInvoker(delegate { TrainingLabel.Visible = false; }));
                                 Monitor.Exit(trainingLock);
                                 return;
                             }

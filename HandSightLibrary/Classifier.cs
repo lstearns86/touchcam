@@ -22,6 +22,7 @@ using AForge.Neuro;
 using Accord.Neuro;
 using Accord.Math;
 using System.Diagnostics;
+using System.IO;
 
 namespace HandSightLibrary
 {
@@ -56,6 +57,16 @@ namespace HandSightLibrary
             Matrix<float> data = new Matrix<float>(1, features.Length);
             for (int i = 0; i < features.Length; i++) data[0, i] = features[i];
             return data;
+        }
+
+
+        public void AddClass(string className)
+        {
+            if (!idForName.ContainsKey(className))
+            {
+                idForName.Add(className, nameForID.Count);
+                nameForID.Add(className);
+            }
         }
 
         public void AddExample(string className, float[] features, bool important = false)
@@ -411,19 +422,33 @@ namespace HandSightLibrary
             }
             
             int classID = (int)Math.Round(response);
-            string className = (classID >= 0 && classID < trainLabels.Rows) ? nameForID[classID] : "no_match";
+            //string className = (classID >= 0 && classID < trainLabels.Rows) ? nameForID[classID] : "no_match";
+            string className = (classID >= 0 && classID < nameForID.Count) ? nameForID[classID] : "no_match";
             return className;
         }
 
-        //public void SaveSVM(string path)
-        //{
-        //    svm.Save(path);
-        //}
+        public void SaveSVM(string path)
+        {
+            svm.Save(path);
 
-        //public void LoadSVM(string path)
-        //{
-        //    svm = MulticlassSupportVectorMachine.Load(path);
-        //}
+            List<string> classList = new List<string>();
+            for (int index = 0; index < nameForID.Count; index++)
+                classList.Add(nameForID[index]);
+            File.WriteAllLines(Path.ChangeExtension(path, "dat"), classList.ToArray());
+        }
+
+        public void LoadSVM(string path)
+        {
+            svm = MulticlassSupportVectorMachine.Load(path);
+
+            string[] classList = File.ReadAllLines(Path.ChangeExtension(path, "dat"));
+            for(int index = 0; index < classList.Length; index++)
+            {
+                string className = classList[index];
+                nameForID.Add(className);
+                idForName.Add(className, index);
+            }
+        }
 
         /*
         public Matrix<float> runSVM(Matrix<float> trainData, Matrix<float> label, int classNum, int trainID)

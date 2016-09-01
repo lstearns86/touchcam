@@ -126,7 +126,8 @@ namespace HandSightLibrary
         {
             foreach(string app in menus.Keys)
             {
-                menus[app].Items.Shuffle();
+                if(app != "Main Menu")
+                    menus[app].Items.ShuffleAfterFirst();
             }
         }
 
@@ -163,15 +164,18 @@ namespace HandSightLibrary
                         {
                             currMenuIndex = (currMenuIndex + 1) % menus[currMenu].Items.Length;
                             responseText = menus[currMenu].Items[currMenuIndex].Text;
+                            Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
                         }
                         else if (action.SetsMenuItem == "{{PREV_MENU_ITEM}}")
                         {
                             currMenuIndex = (currMenuIndex + menus[currMenu].Items.Length - 1) % menus[currMenu].Items.Length;
                             responseText = menus[currMenu].Items[currMenuIndex].Text;
+                            Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
                         }
                         else if(action.SetsMenuItem == "{{PREV_CONTEXT}}")
                         {
                             responseText = action.Text;
+                            Logging.LogUIEvent("set_context=" + action.SetsMenuItem);
                         }
                         else if(action.SetsMenuItem == "{{EXPAND_MENU}}")
                         {
@@ -192,6 +196,7 @@ namespace HandSightLibrary
                                         OnTaskCompleted();
                                     }
                                 }
+                                Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
                             }
                             else
                             {
@@ -203,6 +208,7 @@ namespace HandSightLibrary
                                     currentTask = null;
                                     OnTaskCompleted();
                                 }
+                                Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
                             }
                         }
                         else if(action.SetsMenuItem == "{{COLLAPSE_MENU}}")
@@ -217,6 +223,7 @@ namespace HandSightLibrary
                                 }
                             currMenu = menus[currMenu].ParentMenu;
                             responseText = menus[currMenu].Name + ", " + menus[currMenu].Items[currMenuIndex].Text;
+                            Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
                         }
                         else
                         {
@@ -226,6 +233,7 @@ namespace HandSightLibrary
                                 {
                                     currMenuIndex = i;
                                     responseText = menus[currMenu].Items[i].Text;
+                                    Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
                                 }
                             }
                         }

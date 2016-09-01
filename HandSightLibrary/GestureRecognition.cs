@@ -7,6 +7,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+using System.Diagnostics;
+using System.Collections.Concurrent;
 
 namespace HandSightLibrary
 {
@@ -38,6 +40,16 @@ namespace HandSightLibrary
         {
             samples.Clear();
             classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);
+        }
+
+        public static void SaveClassifier()
+        {
+            classifier.SaveSVM("gestureClassifier.svm");
+        }
+
+        public static void LoadClassifier()
+        {
+            classifier.LoadSVM("gestureClassifier.svm");
         }
 
         public static void Save(string name, bool overwrite = true)
@@ -74,13 +86,18 @@ namespace HandSightLibrary
             }
         }
 
-        public static void Load(string name)
+        public static void Load(string name, bool retrain = true, bool isDefault = false)
         {
             string dir = Path.Combine("savedProfiles", name);
             if (!Directory.Exists(dir))
                 return;
 
-            foreach (string filename in Directory.GetFiles(dir, "*.gest"))
+            BlockingCollection<Gesture> tempTemplates = new BlockingCollection<Gesture>();
+
+            string[] filenames = Directory.GetFiles(dir, "*.gest");
+            Gesture.InitNoVisualization();
+            Parallel.ForEach(filenames, (string filename) =>
+            //foreach (string filename in )
             {
                 //float[] features = null;
                 //using (FileStream stream = new FileStream(filename, FileMode.Open))
@@ -104,26 +121,37 @@ namespace HandSightLibrary
                 //template.ClassName = className;
                 //template.Features = features;
 
-                string json = File.ReadAllText(filename);
-                json = json.Replace(",\"Visualization\":\"System.Drawing.Bitmap\"", "");
-                Gesture template = JsonConvert.DeserializeObject<Gesture>(json);
-                string className = template.ClassName;
+                try
+                {
+                    string json = File.ReadAllText(filename);
+                    json = json.Replace(",\"Visualization\":\"System.Drawing.Bitmap\"", "");
+                    Gesture template = JsonConvert.DeserializeObject<Gesture>(json);
+                    template.DefaultGesture = isDefault;
+                    //string className = template.ClassName;
 
-                AddTrainingExample(template, className);
-            }
+                    //AddTrainingExample(template, className);
+                    tempTemplates.Add(template);
+                }
+                catch
+                {
+                    Debug.WriteLine("Error loading file \"" + filename + "\"");
+                }
+            });
 
-            Train();
+            foreach (Gesture template in tempTemplates) AddTrainingExample(template, template.ClassName);
+
+            if(retrain) Train();
         }
 
         public static void PreprocessGesture(Gesture gesture, bool useSecondSensor = false)
         {
             Quaternion orientation1 = gesture.SensorReadings[0].Orientation1;
-            Quaternion orientation2 = gesture.SensorReadings[0].Orientation2;
+            //Quaternion orientation2 = gesture.SensorReadings[0].Orientation2;
             foreach (Sensors.Reading reading in gesture.SensorReadings)
             {
                 Sensors.Reading correctedReading = OrientationTracker.SubtractGravity(reading, useSecondSensor);
                 correctedReading.Magnetometer1 = OrientationTracker.SubtractOrientation(correctedReading.Magnetometer1, orientation1);
-                if (useSecondSensor) correctedReading.Magnetometer2 = OrientationTracker.SubtractOrientation(correctedReading.Magnetometer2, orientation2);
+                //if (useSecondSensor) correctedReading.Magnetometer2 = OrientationTracker.SubtractOrientation(correctedReading.Magnetometer2, orientation2);
                 gesture.CorrectedSensorReadings.Add(correctedReading);
             }
 
@@ -147,15 +175,25 @@ namespace HandSightLibrary
             }
         }
 
-        public static void Train()
+        public static void Train(bool fullRetrain = true)
         {
             if (GetNumClasses() > 1)
             {
                 classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);
-                foreach(string className in samples.Keys)
-                    foreach(Gesture gesture in samples[className])
-                        classifier.AddExample(className, gesture.Features);
-                classifier.Train();
+                if(fullRetrain)
+                    foreach (string className in samples.Keys)
+                        foreach (Gesture gesture in samples[className])
+                            classifier.AddExample(className, gesture.Features);
+                //else
+                //{
+                //    // load the classes in the right order, so that they will match what was trained
+                //    classifier.AddClass("Swipe Left");
+                //    classifier.AddClass("Tap");
+                //    classifier.AddClass("Swipe Down");
+                //    classifier.AddClass("Double Tap");
+                //    classifier.AddClass("Swipe Right");
+                //}
+                if(fullRetrain) classifier.Train();
             }
         }
 

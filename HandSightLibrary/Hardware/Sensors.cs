@@ -5,6 +5,8 @@ using System.Linq;
 using System.Timers;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+
 namespace HandSightLibrary
 {
     public class Sensors
@@ -18,7 +20,7 @@ namespace HandSightLibrary
         float GYRO_UNIT = 0.01750f; // deg / s
         float IR_UNIT = 1.0f / 1024.0f; // % max intensity
 
-        string PORT_ID = "COM3"; // TODO: provide an interface to select the port, and save to user preference
+        string PORT_ID = "COM7"; // TODO: provide an interface to select the port, and save to user preference
         int BAUD_RATE = 250000;
 
         //Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
@@ -36,13 +38,13 @@ namespace HandSightLibrary
             public Point3D Accelerometer1;
             public Point3D Magnetometer1;
             public Point3D Gyroscope1;
-            public Point3D Accelerometer2;
-            public Point3D Magnetometer2;
-            public Point3D Gyroscope2;
+            //public Point3D Accelerometer2;
+            //public Point3D Magnetometer2;
+            //public Point3D Gyroscope2;
             public float InfraredReflectance1;
             public float InfraredReflectance2;
             public Quaternion Orientation1;
-            public Quaternion Orientation2;
+            //public Quaternion Orientation2;
 
             public Reading()
             {
@@ -56,13 +58,13 @@ namespace HandSightLibrary
                 reading.Accelerometer1 = Accelerometer1 == null ? null : new Point3D(Accelerometer1.X, Accelerometer1.Y, Accelerometer1.Z);
                 reading.Magnetometer1 = Magnetometer1 == null ? null : new Point3D(Magnetometer1.X, Magnetometer1.Y, Magnetometer1.Z);
                 reading.Gyroscope1 = Gyroscope1 == null ? null : new Point3D(Gyroscope1.X, Gyroscope1.Y, Gyroscope1.Z);
-                reading.Accelerometer2 = Accelerometer2 == null ? null : new Point3D(Accelerometer2.X, Accelerometer2.Y, Accelerometer2.Z);
-                reading.Magnetometer2 = Magnetometer2 == null ? null : new Point3D(Magnetometer2.X, Magnetometer2.Y, Magnetometer2.Z);
-                reading.Gyroscope2 = Gyroscope2 == null ? null : new Point3D(Gyroscope2.X, Gyroscope2.Y, Gyroscope2.Z);
+                //reading.Accelerometer2 = Accelerometer2 == null ? null : new Point3D(Accelerometer2.X, Accelerometer2.Y, Accelerometer2.Z);
+                //reading.Magnetometer2 = Magnetometer2 == null ? null : new Point3D(Magnetometer2.X, Magnetometer2.Y, Magnetometer2.Z);
+                //reading.Gyroscope2 = Gyroscope2 == null ? null : new Point3D(Gyroscope2.X, Gyroscope2.Y, Gyroscope2.Z);
                 reading.InfraredReflectance1 = InfraredReflectance1;
                 reading.InfraredReflectance2 = InfraredReflectance2;
                 reading.Orientation1 = Orientation1 == null ? null : Orientation1.Clone();
-                reading.Orientation2 = Orientation2 == null ? null : Orientation2.Clone();
+                //reading.Orientation2 = Orientation2 == null ? null : Orientation2.Clone();
                 return reading;
             }
         }
@@ -157,8 +159,8 @@ namespace HandSightLibrary
         {
             minMag1 = new Point3D(float.MaxValue, float.MaxValue, float.MaxValue);
             maxMag1 = new Point3D(float.MinValue, float.MinValue, float.MinValue);
-            minMag2 = new Point3D(float.MaxValue, float.MaxValue, float.MaxValue);
-            maxMag2 = new Point3D(float.MinValue, float.MinValue, float.MinValue);
+            //minMag2 = new Point3D(float.MaxValue, float.MaxValue, float.MaxValue);
+            //maxMag2 = new Point3D(float.MinValue, float.MinValue, float.MinValue);
         }
 
         private void WriteCommand()
@@ -395,12 +397,12 @@ namespace HandSightLibrary
                                 gy = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
                                 gz = BitConverter.ToInt16(buffer, bufferIndex++ * 2) * GYRO_UNIT;
                                 
-                                reading.Accelerometer2 = new Point3D(ax, ay, az);
-                                reading.Magnetometer2 = CorrectMagnetometer2Bias(mx, my, mz);
-                                reading.Magnetometer2.X *= MAG_UNIT;
-                                reading.Magnetometer2.Y *= MAG_UNIT;
-                                reading.Magnetometer2.Z *= MAG_UNIT;
-                                reading.Gyroscope2 = new Point3D(gx, gy, gz);
+                                //reading.Accelerometer2 = new Point3D(ax, ay, az);
+                                //reading.Magnetometer2 = CorrectMagnetometer2Bias(mx, my, mz);
+                                //reading.Magnetometer2.X *= MAG_UNIT;
+                                //reading.Magnetometer2.Y *= MAG_UNIT;
+                                //reading.Magnetometer2.Z *= MAG_UNIT;
+                                //reading.Gyroscope2 = new Point3D(gx, gy, gz);
                             }
 
                             OnReadingAvailable(reading);

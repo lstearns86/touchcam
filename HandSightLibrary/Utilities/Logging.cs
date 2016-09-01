@@ -28,7 +28,7 @@ namespace HandSightLibrary
             public string type;
             public float timestamp;
             public string message;
-            public string videoFile;
+            //public string videoFile;
 
             public LogEvent() : this("") { }
             public LogEvent(string message)
@@ -126,12 +126,27 @@ namespace HandSightLibrary
             }
         }
 
+        public class MenuEvent : LogEvent
+        {
+            public string menu;
+            public int menuIndex;
+            public string item;
+
+            public MenuEvent(string menu, int menuIndex, string item)
+            {
+                this.menu = menu;
+                this.menuIndex = menuIndex;
+                this.item = item;
+                type = "menu";
+            }
+        }
+
         #endregion
 
         #region Constants and Variables
 
         // constants
-        const int defaultBitrate = 4 * 1024 * 1024;
+        const int defaultBitrate = 10 * 1024 * 1024;
 
         // internal variables
         static bool loggingVideo = false, loggingEvents = false, shouldEndLogging = false;
@@ -159,7 +174,7 @@ namespace HandSightLibrary
             string path = Path.ChangeExtension(filename, "avi"); //+ Index + ".avi";
             
             videoWriter = new VideoFileWriter();
-            videoWriter.Open(path, videoSize.Width, videoSize.Height, 90, VideoCodec.MPEG4, defaultBitrate);
+            videoWriter.Open(path, videoSize.Width, videoSize.Height, 60, VideoCodec.MPEG4, defaultBitrate);
 
             loggingVideo = true;
 
@@ -297,6 +312,13 @@ namespace HandSightLibrary
             if (!Running) return;
 
             eventQueue.Add(new UIEvent(action));
+        }
+
+        public static void LogMenuEvent(string menu, int menuIndex, string item)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new MenuEvent(menu, menuIndex, item));
         }
 
         public static void LogOtherEvent(string message)

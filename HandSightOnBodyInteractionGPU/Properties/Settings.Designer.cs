@@ -346,5 +346,17 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["RandomizeOrders"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool OverwriteExistingSamples {
+            get {
+                return ((bool)(this["OverwriteExistingSamples"]));
+            }
+            set {
+                this["OverwriteExistingSamples"] = value;
+            }
+        }
     }
 }

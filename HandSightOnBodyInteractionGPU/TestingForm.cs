@@ -12,6 +12,16 @@ namespace HandSightOnBodyInteractionGPU
     {
         public bool HideFromList { get { return true; } }
 
+        public delegate void TaskStartedDelegate(string task);
+        public event TaskStartedDelegate TaskStarted;
+        private void OnTaskStarted(string task) { TaskStarted?.Invoke(task); }
+
+        public delegate void TaskFinishedDelegate(string task);
+        public event TaskFinishedDelegate TaskFinished;
+        private void OnTaskFinished(string task) { TaskStarted?.Invoke(task); }
+
+        private bool runningParticipant = false;
+
         public TestingForm()
         {
             InitializeComponent();
@@ -33,16 +43,50 @@ namespace HandSightOnBodyInteractionGPU
 
             SetTasks();
 
-            GestureActionMap.TaskCompleted += TaskFinished;
+            GestureActionMap.TaskCompleted += FinishTask;
+
+            DialogResult result = MessageBox.Show("Would you like to start a new participant", "New Participant?", MessageBoxButtons.YesNoCancel);
+            if (result == DialogResult.Yes) SetupNewParticipant();
+            if (result != DialogResult.Cancel)
+            {
+                StartParticipant();
+                runningParticipant = true;
+            }
+        }
+
+        public void SetupNewParticipant()
+        {
+            try
+            {
+                ParticipantIDChooser.SelectedIndex++;
+            }
+            catch { }
+        }
+
+        public void StartParticipant()
+        {
+            if (!Logging.Running)
+            {
+                StartStopLoggingButton.Text = "Stop Logging";
+                StartLogging();
+            }
+            EnableSpeechCheckbox.Checked = false;
+            EnableApplicationDemoCheckbox.Checked = false;
+            FixedApplicationResonsesCheckbox.Checked = true;
+            RandomizeCheckbox.Checked = true;
         }
 
         private void SetTasks()
         {
             TaskChooser.Items.Clear();
-            TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Clock Menu", 2));
-            TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Daily Summary Menu", 0));
-            TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Health and Activities Menu", 1));
-            TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Notifications Menu", 3));
+            //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Clock Menu", 2));
+            //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Daily Summary Menu", 0));
+            //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Health and Activities Menu", 1));
+            //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Notifications Menu", 3));
+            TaskChooser.Items.Add("Timer");
+            TaskChooser.Items.Add("Next Event");
+            TaskChooser.Items.Add("Steps");
+            TaskChooser.Items.Add("Message 3");
             TaskChooser.Items.Add("Voice Input");
             TaskChooser.SelectedIndex = 0;
         }
@@ -122,6 +166,20 @@ namespace HandSightOnBodyInteractionGPU
                 if (Properties.Settings.Default.RandomizeOrders) GestureActionMap.RandomizeMenuItems();
 
                 TaskChooser.SelectedIndex = 0;
+
+                if(runningParticipant)
+                {
+                    EnableSpeechCheckbox.Checked = true;
+                    EnableApplicationDemoCheckbox.Checked = true;
+                }
+            }
+            else
+            {
+                if(runningParticipant)
+                {
+                    EnableSpeechCheckbox.Checked = false;
+                    EnableApplicationDemoCheckbox.Checked = false;
+                }
             }
             GestureActionMap.Reset();
         }
@@ -134,8 +192,8 @@ namespace HandSightOnBodyInteractionGPU
             if (File.Exists(Path.Combine(dir, filename + ".log")))
             {
                 int index = 2;
-                while (File.Exists(Path.Combine(dir, filename + index + ".log"))) index++;
-                filename += index;
+                while (File.Exists(Path.Combine(dir, filename + "_" + index + ".log"))) index++;
+                filename += "_" + index;
             }
 
             Logging.Start(Path.Combine(dir, filename + ".log"));
@@ -203,17 +261,24 @@ namespace HandSightOnBodyInteractionGPU
         }
 
         bool taskStarted = false;
-        public bool TaskStarted { get { return taskStarted; } }
-        public void TaskFinished()
+        public bool IsTaskStarted { get { return taskStarted; } }
+        public void FinishTask()
         {
             taskStarted = false;
 
-            Logging.LogOtherEvent("Task finished: " + TaskChooser.Text);
+            Invoke(new MethodInvoker(delegate
+            {
+                Logging.LogOtherEvent("Task finished: " + TaskChooser.Text);
 
-            if (TaskChooser.SelectedIndex + 1 < TaskChooser.Items.Count) TaskChooser.SelectedIndex++;
-            else if (ModeChooser.SelectedIndex + 1 < ModeChooser.Items.Count) ModeChooser.SelectedIndex++;
+                if (TaskChooser.SelectedIndex + 1 < TaskChooser.Items.Count) TaskChooser.SelectedIndex++;
+                else if (ModeChooser.SelectedIndex + 1 < ModeChooser.Items.Count) ModeChooser.SelectedIndex++;
 
-            StartStopTaskButton.Text = "Start";
+                StartStopTaskButton.Text = "Start";
+
+                GestureActionMap.Reset();
+
+                OnTaskFinished(TaskChooser.Text);
+            }));
         }
 
         private void StartStopTaskButton_Click(object sender, EventArgs e)
@@ -221,6 +286,8 @@ namespace HandSightOnBodyInteractionGPU
             taskStarted = !taskStarted;
 
             Logging.LogOtherEvent("Task " + (taskStarted ? "started" : "stopped") + ": " + TaskChooser.Text);
+
+            OnTaskStarted(TaskChooser.Text);
 
             StartStopTaskButton.Text = taskStarted ? "Stop" : "Start";
 

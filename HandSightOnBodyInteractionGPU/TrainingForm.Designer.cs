@@ -30,13 +30,15 @@
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TrainingForm));
             this.panel1 = new System.Windows.Forms.Panel();
+            this.ResetGesturesButton = new System.Windows.Forms.Button();
+            this.AutoCaptureGestureButton = new System.Windows.Forms.Button();
+            this.AutoCaptureLocationButton = new System.Windows.Forms.Button();
             this.GestureCountLabel = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.TimerChooser = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
-            this.IncludeGesturesInProfileCheckbox = new System.Windows.Forms.CheckBox();
-            this.LoadDefaultGesturesButton = new System.Windows.Forms.Button();
-            this.SaveDefaultGesturesButton = new System.Windows.Forms.Button();
+            this.OverwriteExistingSamplesCheckbox = new System.Windows.Forms.CheckBox();
+            this.LoadAllSavedGesturesButton = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.GestureChooser = new System.Windows.Forms.ComboBox();
             this.RecordGestureButton = new System.Windows.Forms.Button();
@@ -46,7 +48,7 @@
             this.LoadProfileButton = new System.Windows.Forms.Button();
             this.SaveProfileButton = new System.Windows.Forms.Button();
             this.LocationCountLabel = new System.Windows.Forms.Label();
-            this.ResetButton = new System.Windows.Forms.Button();
+            this.ResetLocationsButton = new System.Windows.Forms.Button();
             this.RecordLocationButton = new System.Windows.Forms.Button();
             this.label1 = new System.Windows.Forms.Label();
             this.CoarseLocationChooser = new System.Windows.Forms.ComboBox();
@@ -56,8 +58,6 @@
             this.GestureTab = new System.Windows.Forms.TabPage();
             this.GestureView = new System.Windows.Forms.ListView();
             this.RemoveButton = new System.Windows.Forms.Button();
-            this.AutoCaptureLocationButton = new System.Windows.Forms.Button();
-            this.AutoCaptureGestureButton = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             this.TrainingDataViewer.SuspendLayout();
@@ -67,15 +67,15 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.ResetGesturesButton);
             this.panel1.Controls.Add(this.AutoCaptureGestureButton);
             this.panel1.Controls.Add(this.AutoCaptureLocationButton);
             this.panel1.Controls.Add(this.GestureCountLabel);
             this.panel1.Controls.Add(this.label2);
             this.panel1.Controls.Add(this.TimerChooser);
             this.panel1.Controls.Add(this.label3);
-            this.panel1.Controls.Add(this.IncludeGesturesInProfileCheckbox);
-            this.panel1.Controls.Add(this.LoadDefaultGesturesButton);
-            this.panel1.Controls.Add(this.SaveDefaultGesturesButton);
+            this.panel1.Controls.Add(this.OverwriteExistingSamplesCheckbox);
+            this.panel1.Controls.Add(this.LoadAllSavedGesturesButton);
             this.panel1.Controls.Add(this.label8);
             this.panel1.Controls.Add(this.GestureChooser);
             this.panel1.Controls.Add(this.RecordGestureButton);
@@ -85,7 +85,7 @@
             this.panel1.Controls.Add(this.LoadProfileButton);
             this.panel1.Controls.Add(this.SaveProfileButton);
             this.panel1.Controls.Add(this.LocationCountLabel);
-            this.panel1.Controls.Add(this.ResetButton);
+            this.panel1.Controls.Add(this.ResetLocationsButton);
             this.panel1.Controls.Add(this.RecordLocationButton);
             this.panel1.Controls.Add(this.label1);
             this.panel1.Controls.Add(this.CoarseLocationChooser);
@@ -94,6 +94,36 @@
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(202, 648);
             this.panel1.TabIndex = 0;
+            // 
+            // ResetGesturesButton
+            // 
+            this.ResetGesturesButton.Location = new System.Drawing.Point(106, 600);
+            this.ResetGesturesButton.Name = "ResetGesturesButton";
+            this.ResetGesturesButton.Size = new System.Drawing.Size(86, 36);
+            this.ResetGesturesButton.TabIndex = 49;
+            this.ResetGesturesButton.Text = "Reset Gestures";
+            this.ResetGesturesButton.UseVisualStyleBackColor = true;
+            this.ResetGesturesButton.Click += new System.EventHandler(this.ResetGesturesButton_Click);
+            // 
+            // AutoCaptureGestureButton
+            // 
+            this.AutoCaptureGestureButton.Location = new System.Drawing.Point(153, 298);
+            this.AutoCaptureGestureButton.Name = "AutoCaptureGestureButton";
+            this.AutoCaptureGestureButton.Size = new System.Drawing.Size(41, 48);
+            this.AutoCaptureGestureButton.TabIndex = 48;
+            this.AutoCaptureGestureButton.Text = "Auto";
+            this.AutoCaptureGestureButton.UseVisualStyleBackColor = true;
+            this.AutoCaptureGestureButton.Click += new System.EventHandler(this.AutoCaptureGestureButton_Click);
+            // 
+            // AutoCaptureLocationButton
+            // 
+            this.AutoCaptureLocationButton.Location = new System.Drawing.Point(151, 136);
+            this.AutoCaptureLocationButton.Name = "AutoCaptureLocationButton";
+            this.AutoCaptureLocationButton.Size = new System.Drawing.Size(41, 48);
+            this.AutoCaptureLocationButton.TabIndex = 47;
+            this.AutoCaptureLocationButton.Text = "Auto";
+            this.AutoCaptureLocationButton.UseVisualStyleBackColor = true;
+            this.AutoCaptureLocationButton.Click += new System.EventHandler(this.AutoCaptureLocationButton_Click);
             // 
             // GestureCountLabel
             // 
@@ -135,36 +165,26 @@
             this.label3.TabIndex = 45;
             this.label3.Text = "seconds";
             // 
-            // IncludeGesturesInProfileCheckbox
+            // OverwriteExistingSamplesCheckbox
             // 
-            this.IncludeGesturesInProfileCheckbox.AutoSize = true;
-            this.IncludeGesturesInProfileCheckbox.Location = new System.Drawing.Point(15, 477);
-            this.IncludeGesturesInProfileCheckbox.Name = "IncludeGesturesInProfileCheckbox";
-            this.IncludeGesturesInProfileCheckbox.Size = new System.Drawing.Size(149, 17);
-            this.IncludeGesturesInProfileCheckbox.TabIndex = 42;
-            this.IncludeGesturesInProfileCheckbox.Text = "Include Gestures in Profile";
-            this.IncludeGesturesInProfileCheckbox.UseVisualStyleBackColor = true;
-            this.IncludeGesturesInProfileCheckbox.CheckedChanged += new System.EventHandler(this.IncludeGesturesInProfileCheckbox_CheckedChanged);
+            this.OverwriteExistingSamplesCheckbox.AutoSize = true;
+            this.OverwriteExistingSamplesCheckbox.Location = new System.Drawing.Point(15, 478);
+            this.OverwriteExistingSamplesCheckbox.Name = "OverwriteExistingSamplesCheckbox";
+            this.OverwriteExistingSamplesCheckbox.Size = new System.Drawing.Size(153, 17);
+            this.OverwriteExistingSamplesCheckbox.TabIndex = 42;
+            this.OverwriteExistingSamplesCheckbox.Text = "Overwrite Existing Samples";
+            this.OverwriteExistingSamplesCheckbox.UseVisualStyleBackColor = true;
+            this.OverwriteExistingSamplesCheckbox.CheckedChanged += new System.EventHandler(this.OverwriteExistingSamplesCheckbox_CheckedChanged);
             // 
-            // LoadDefaultGesturesButton
+            // LoadAllSavedGesturesButton
             // 
-            this.LoadDefaultGesturesButton.Location = new System.Drawing.Point(106, 554);
-            this.LoadDefaultGesturesButton.Name = "LoadDefaultGesturesButton";
-            this.LoadDefaultGesturesButton.Size = new System.Drawing.Size(86, 48);
-            this.LoadDefaultGesturesButton.TabIndex = 41;
-            this.LoadDefaultGesturesButton.Text = "Load Default Gestures";
-            this.LoadDefaultGesturesButton.UseVisualStyleBackColor = true;
-            this.LoadDefaultGesturesButton.Click += new System.EventHandler(this.LoadDefaultGesturesButton_Click);
-            // 
-            // SaveDefaultGesturesButton
-            // 
-            this.SaveDefaultGesturesButton.Location = new System.Drawing.Point(11, 554);
-            this.SaveDefaultGesturesButton.Name = "SaveDefaultGesturesButton";
-            this.SaveDefaultGesturesButton.Size = new System.Drawing.Size(86, 48);
-            this.SaveDefaultGesturesButton.TabIndex = 40;
-            this.SaveDefaultGesturesButton.Text = "Save Default Gestures";
-            this.SaveDefaultGesturesButton.UseVisualStyleBackColor = true;
-            this.SaveDefaultGesturesButton.Click += new System.EventHandler(this.SaveDefaultGesturesButton_Click);
+            this.LoadAllSavedGesturesButton.Location = new System.Drawing.Point(12, 555);
+            this.LoadAllSavedGesturesButton.Name = "LoadAllSavedGesturesButton";
+            this.LoadAllSavedGesturesButton.Size = new System.Drawing.Size(180, 39);
+            this.LoadAllSavedGesturesButton.TabIndex = 41;
+            this.LoadAllSavedGesturesButton.Text = "Load All Saved Gestures";
+            this.LoadAllSavedGesturesButton.UseVisualStyleBackColor = true;
+            this.LoadAllSavedGesturesButton.Click += new System.EventHandler(this.LoadAllSavedGesturesButton_Click);
             // 
             // label8
             // 
@@ -233,7 +253,7 @@
             // 
             // LoadProfileButton
             // 
-            this.LoadProfileButton.Location = new System.Drawing.Point(106, 500);
+            this.LoadProfileButton.Location = new System.Drawing.Point(106, 501);
             this.LoadProfileButton.Name = "LoadProfileButton";
             this.LoadProfileButton.Size = new System.Drawing.Size(86, 48);
             this.LoadProfileButton.TabIndex = 33;
@@ -243,7 +263,7 @@
             // 
             // SaveProfileButton
             // 
-            this.SaveProfileButton.Location = new System.Drawing.Point(11, 500);
+            this.SaveProfileButton.Location = new System.Drawing.Point(12, 501);
             this.SaveProfileButton.Name = "SaveProfileButton";
             this.SaveProfileButton.Size = new System.Drawing.Size(86, 48);
             this.SaveProfileButton.TabIndex = 32;
@@ -260,15 +280,15 @@
             this.LocationCountLabel.Text = "0 training examples (0 classes)";
             this.LocationCountLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
             // 
-            // ResetButton
+            // ResetLocationsButton
             // 
-            this.ResetButton.Location = new System.Drawing.Point(12, 613);
-            this.ResetButton.Name = "ResetButton";
-            this.ResetButton.Size = new System.Drawing.Size(181, 23);
-            this.ResetButton.TabIndex = 30;
-            this.ResetButton.Text = "Reset";
-            this.ResetButton.UseVisualStyleBackColor = true;
-            this.ResetButton.Click += new System.EventHandler(this.ResetButton_Click);
+            this.ResetLocationsButton.Location = new System.Drawing.Point(12, 600);
+            this.ResetLocationsButton.Name = "ResetLocationsButton";
+            this.ResetLocationsButton.Size = new System.Drawing.Size(86, 36);
+            this.ResetLocationsButton.TabIndex = 30;
+            this.ResetLocationsButton.Text = "Reset Locations";
+            this.ResetLocationsButton.UseVisualStyleBackColor = true;
+            this.ResetLocationsButton.Click += new System.EventHandler(this.ResetLocationsButton_Click);
             // 
             // RecordLocationButton
             // 
@@ -363,26 +383,6 @@
             this.RemoveButton.UseVisualStyleBackColor = true;
             this.RemoveButton.Click += new System.EventHandler(this.RemoveButton_Click);
             // 
-            // AutoCaptureLocationButton
-            // 
-            this.AutoCaptureLocationButton.Location = new System.Drawing.Point(151, 136);
-            this.AutoCaptureLocationButton.Name = "AutoCaptureLocationButton";
-            this.AutoCaptureLocationButton.Size = new System.Drawing.Size(41, 48);
-            this.AutoCaptureLocationButton.TabIndex = 47;
-            this.AutoCaptureLocationButton.Text = "Auto";
-            this.AutoCaptureLocationButton.UseVisualStyleBackColor = true;
-            this.AutoCaptureLocationButton.Click += new System.EventHandler(this.AutoCaptureLocationButton_Click);
-            // 
-            // AutoCaptureGestureButton
-            // 
-            this.AutoCaptureGestureButton.Location = new System.Drawing.Point(153, 298);
-            this.AutoCaptureGestureButton.Name = "AutoCaptureGestureButton";
-            this.AutoCaptureGestureButton.Size = new System.Drawing.Size(41, 48);
-            this.AutoCaptureGestureButton.TabIndex = 48;
-            this.AutoCaptureGestureButton.Text = "Auto";
-            this.AutoCaptureGestureButton.UseVisualStyleBackColor = true;
-            this.AutoCaptureGestureButton.Click += new System.EventHandler(this.AutoCaptureGestureButton_Click);
-            // 
             // TrainingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -411,9 +411,8 @@
         #endregion
 
         private System.Windows.Forms.Panel panel1;
-        private System.Windows.Forms.CheckBox IncludeGesturesInProfileCheckbox;
-        private System.Windows.Forms.Button LoadDefaultGesturesButton;
-        private System.Windows.Forms.Button SaveDefaultGesturesButton;
+        private System.Windows.Forms.CheckBox OverwriteExistingSamplesCheckbox;
+        private System.Windows.Forms.Button LoadAllSavedGesturesButton;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ComboBox GestureChooser;
         private System.Windows.Forms.Button RecordGestureButton;
@@ -423,7 +422,7 @@
         private System.Windows.Forms.Button LoadProfileButton;
         private System.Windows.Forms.Button SaveProfileButton;
         private System.Windows.Forms.Label LocationCountLabel;
-        private System.Windows.Forms.Button ResetButton;
+        private System.Windows.Forms.Button ResetLocationsButton;
         private System.Windows.Forms.Button RecordLocationButton;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ComboBox CoarseLocationChooser;
@@ -439,5 +438,6 @@
         private System.Windows.Forms.ListView GestureView;
         private System.Windows.Forms.Button AutoCaptureGestureButton;
         private System.Windows.Forms.Button AutoCaptureLocationButton;
+        private System.Windows.Forms.Button ResetGesturesButton;
     }
 }

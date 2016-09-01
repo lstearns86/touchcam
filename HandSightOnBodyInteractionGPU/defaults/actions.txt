@@ -198,8 +198,8 @@
       {
         "Context":"Main Menu",
         "Gesture":"^(Hover|Tap)$",
-        "CoarseLocation":"Chest",
-        "FineLocation":"Chest",
+        "CoarseLocation":"Thigh",
+        "FineLocation":"Thigh",
         "SetsMenuItem":"Health and Activities"
       },
       {

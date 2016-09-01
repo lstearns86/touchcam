@@ -9,6 +9,8 @@ namespace HandSightLibrary
 {
     public class Gesture
     {
+        public static Bitmap defaultVisualization = null;
+
         string className;
         string location;
 
@@ -21,6 +23,8 @@ namespace HandSightLibrary
         public List<Sensors.Reading> SensorReadings { get { return sensorReadings; } }
         public List<Sensors.Reading> CorrectedSensorReadings { get { return correctedSensorReadings; }  }
         public float[] Features { get { return features; } set { features = value; } }
+
+        public bool DefaultGesture = false;
 
         private Bitmap visualization = null;
         public Bitmap Visualization
@@ -57,8 +61,29 @@ namespace HandSightLibrary
             correctedSensorReadings = new List<HandSightLibrary.Sensors.Reading>();
         }
 
+        public static void InitNoVisualization()
+        {
+            defaultVisualization = new Bitmap(640, 640);
+            Graphics g = Graphics.FromImage(defaultVisualization);
+            g.Clear(Color.White);
+            g.DrawLine(Pens.Red, 0, 0, 640, 640);
+            g.DrawLine(Pens.Red, 640, 0, 0, 640);
+        }
+
+        public void NoVisualization()
+        {
+            if(defaultVisualization == null)
+            {
+                InitNoVisualization();
+            }
+
+            visualization = defaultVisualization;
+        }
+
         public void UpdateVisualization()
         {
+            if (DefaultGesture) { NoVisualization(); return; }
+
             Pen irPen = new Pen(Brushes.Black, 9);
             Pen xPen = new Pen(Brushes.Red, 5);
             Pen yPen = new Pen(Brushes.Green, 5);
