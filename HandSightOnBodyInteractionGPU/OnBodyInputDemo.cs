@@ -801,7 +801,7 @@ namespace HandSightOnBodyInteractionGPU
                             if ((DateTime.Now - touchStart).TotalMilliseconds > Properties.Settings.Default.HoverTimeThreshold && Properties.Settings.Default.EnableSpeechOutput)
                             {
                                 hovering = true;
-                                if (hoverCoarseLocation == null || coarseLocation == hoverCoarseLocation) // make sure we have the same coarse location, to help prevent jumping around
+                                //if (hoverCoarseLocation == null || coarseLocation == hoverCoarseLocation) // make sure we have the same coarse location, to help prevent jumping around
                                 {
                                     hoverCoarseLocation = coarseLocation;
                                     if (hoverFineLocation == null || fineLocation != hoverFineLocation) // make sure we haven't reported the fine location already
