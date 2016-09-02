@@ -420,6 +420,8 @@ namespace HandSightOnBodyInteractionGPU
                 if (Properties.Settings.Default.IncludeGesturesInProfile)
                     GestureRecognition.Save(profileName);
 
+                Debug.WriteLine("Finished Saving");
+
                 unsaved = false;
             });
         }

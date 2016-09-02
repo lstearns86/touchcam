@@ -18,7 +18,7 @@ namespace HandSightOnBodyInteractionGPU
 
         public delegate void TaskFinishedDelegate(string task);
         public event TaskFinishedDelegate TaskFinished;
-        private void OnTaskFinished(string task) { TaskStarted?.Invoke(task); }
+        private void OnTaskFinished(string task) { TaskFinished?.Invoke(task); }
 
         private bool runningParticipant = false;
 
@@ -78,16 +78,25 @@ namespace HandSightOnBodyInteractionGPU
 
         private void SetTasks()
         {
-            TaskChooser.Items.Clear();
+            
             //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Clock Menu", 2));
             //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Daily Summary Menu", 0));
             //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Health and Activities Menu", 1));
             //TaskChooser.Items.Add(GestureActionMap.GetMenuItem("Notifications Menu", 3));
-            TaskChooser.Items.Add("Timer");
-            TaskChooser.Items.Add("Next Event");
-            TaskChooser.Items.Add("Steps");
-            TaskChooser.Items.Add("Message 3");
-            TaskChooser.Items.Add("Voice Input");
+            List<string> items = new List<string>();
+            items.Add("Timer");
+            items.Add("Next Event");
+            items.Add("Steps");
+            items.Add("Message 3");
+            items.Add("Voice Input");
+            items.Add("Alarm");
+            items.Add("Weather");
+            items.Add("Heart Rate");
+            items.Add("Message 1");
+            items.Add("Voice Input");
+            
+            TaskChooser.Items.Clear();
+            TaskChooser.Items.AddRange(items.ToArray());
             TaskChooser.SelectedIndex = 0;
         }
 
@@ -99,9 +108,12 @@ namespace HandSightOnBodyInteractionGPU
             foreach (string item in TaskChooser.Items)
                 tasks.Add(item);
             tasks.Shuffle();
+
             TaskChooser.Items.Clear();
             TaskChooser.Items.AddRange(tasks.ToArray());
             TaskChooser.SelectedIndex = 0;
+
+            SetTasks();
         }
 
         private void FixedApplicationResonsesCheckbox_CheckedChanged(object sender, EventArgs e)
@@ -163,7 +175,11 @@ namespace HandSightOnBodyInteractionGPU
 
             if(((string)ModeChooser.SelectedItem).Contains("Testing: "))
             {
-                if (Properties.Settings.Default.RandomizeOrders) GestureActionMap.RandomizeMenuItems();
+                if (Properties.Settings.Default.RandomizeOrders)
+                {
+                    GestureActionMap.RandomizeMenuItems();
+                    RandomizeTasks();
+                }
 
                 TaskChooser.SelectedIndex = 0;
 
@@ -287,10 +303,11 @@ namespace HandSightOnBodyInteractionGPU
 
             Logging.LogOtherEvent("Task " + (taskStarted ? "started" : "stopped") + ": " + TaskChooser.Text);
 
-            OnTaskStarted(TaskChooser.Text);
+            if(taskStarted) OnTaskStarted(TaskChooser.Text);
 
             StartStopTaskButton.Text = taskStarted ? "Stop" : "Start";
 
+            GestureActionMap.Reset();
             GestureActionMap.CurrentTask = TaskChooser.Text;
         }
 

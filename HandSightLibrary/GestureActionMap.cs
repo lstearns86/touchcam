@@ -66,7 +66,7 @@ namespace HandSightLibrary
         private static Dictionary<string, Menu> menus = new Dictionary<string, Menu>();
         private static string context = "Main Menu";
         private static string currMenu = "Main Menu";
-        private static string lastText = "{{TIME}}";
+        private static string lastText = "{{CLOCK}}";
         private static int currMenuIndex = 0;
 
         private static string currentTask;
@@ -78,7 +78,7 @@ namespace HandSightLibrary
         {
             context = "Main Menu";
             currMenu = "Main Menu";
-            lastText = "{{TIME}}";
+            lastText = "{{CLOCK}}";
             currMenuIndex = 0;
         }
 
@@ -184,9 +184,11 @@ namespace HandSightLibrary
                                 string prevMenu = currMenu;
                                 responseText = menus[currMenu].Items[currMenuIndex].ExpandText;
                                 currMenu = menus[currMenu].Items[currMenuIndex].Submenu;
-                                currMenuIndex = 0;
                                 if (prevMenu != currMenu)
+                                {
+                                    currMenuIndex = 0;
                                     responseText += menus[currMenu].Items[currMenuIndex].Text; // add the text for the initial menu item
+                                }
                                 else
                                 {
                                     if (currentTask == menus[currMenu].Items[currMenuIndex].Name)
@@ -194,6 +196,7 @@ namespace HandSightLibrary
                                         responseText = "Task Completed";
                                         currentTask = null;
                                         OnTaskCompleted();
+                                        return "";
                                     }
                                 }
                                 Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
@@ -207,6 +210,7 @@ namespace HandSightLibrary
                                     responseText = "Task Completed";
                                     currentTask = null;
                                     OnTaskCompleted();
+                                    return "";
                                 }
                                 Logging.LogMenuEvent(currMenu, currMenuIndex, menus[currMenu].Items[currMenuIndex].Name);
                             }

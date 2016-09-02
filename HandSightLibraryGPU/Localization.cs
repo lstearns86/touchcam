@@ -160,8 +160,8 @@ namespace HandSightLibrary.ImageProcessing
             if (forceCompleteRetraining || coarseNeedsRetraining)
             {
                 int numTrainingSamples = 0;
-                if (enableCamera) groupClassifier = new Classifier(Classifier.ClassifierType.SVM);
-                if (enableSecondary) groupClassifierSecondary = new Classifier(Classifier.ClassifierType.SVM);
+                if (enableCamera) groupClassifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Chi2);
+                if (enableSecondary) groupClassifierSecondary = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Chi2);
                 foreach (string region in samples.Keys)
                 {
                     if (!coarseLocations.ContainsKey(region)) continue;
@@ -235,8 +235,8 @@ namespace HandSightLibrary.ImageProcessing
 
                 List<Tuple<string, int>> trainInfo = new List<Tuple<string, int>>();
                 Classifier bfClassifier = new Classifier(Classifier.ClassifierType.BruteForce);
-                Classifier classifier = new Classifier(Classifier.ClassifierType.SVM);
-                Classifier secondaryClassifier = new Classifier(Classifier.ClassifierType.SVM);
+                Classifier classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Chi2);
+                Classifier secondaryClassifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Chi2);
                 foreach (string region in groups[groupName])
                 {
                     if (!coarseLocations.ContainsKey(region)) continue;

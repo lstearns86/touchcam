@@ -42,6 +42,9 @@ namespace HandSightOnBodyInteractionGPU
             { "Nail", new string[] { "Thumb", "Index", "Middle", "Ring", "Pinky" } }
         };
 
+        const string TestingVoice = "Microsoft Zira Desktop";
+        const string MenuVoice = "Microsoft David Desktop";
+
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
@@ -135,12 +138,14 @@ namespace HandSightOnBodyInteractionGPU
             testingForm.TaskStarted += (string task) =>
             {
                 speech.SpeakAsyncCancelAll();
+                speech.SelectVoice(TestingVoice);
                 speech.SpeakAsync("Begin");
             };
 
             testingForm.TaskFinished += (string task) =>
             {
                 speech.SpeakAsyncCancelAll();
+                speech.SelectVoice(TestingVoice);
                 speech.SpeakAsync("Task Completed");
             };
 
@@ -390,6 +395,7 @@ namespace HandSightOnBodyInteractionGPU
                                 if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
                                 {
                                     speech.SpeakAsyncCancelAll();
+                                    speech.SelectVoice(MenuVoice);
                                     //speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
                                     speech.SpeakAsync(actionResult);
                                     Logging.LogAudioEvent(actionResult);
@@ -397,6 +403,7 @@ namespace HandSightOnBodyInteractionGPU
                                 else if(!Properties.Settings.Default.EnableApplicationDemos)
                                 {
                                     speech.SpeakAsyncCancelAll();
+                                    speech.SelectVoice(MenuVoice);
                                     speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
                                     Logging.LogAudioEvent(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
                                 }
@@ -649,6 +656,8 @@ namespace HandSightOnBodyInteractionGPU
         {
             if (closing) return;
 
+            numLocationPredictions = Properties.Settings.Default.TestingMode.Contains("Training") ? 1 : Properties.Settings.Default.PredictionSmoothing;
+
             ImageTemplate template = new ImageTemplate(frame.Clone());
             FPS.Camera.Update();
 
@@ -803,12 +812,14 @@ namespace HandSightOnBodyInteractionGPU
                                         if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
                                         {
                                             speech.SpeakAsyncCancelAll();
+                                            speech.SelectVoice(MenuVoice);
                                             speech.SpeakAsync(actionResult);
                                             Logging.LogAudioEvent(actionResult);
                                         }
                                         else if (!Properties.Settings.Default.EnableApplicationDemos)
                                         {
                                             speech.SpeakAsyncCancelAll();
+                                            speech.SelectVoice(MenuVoice);
                                             speech.SpeakAsync("Hover " + coarseLocation + " " + fineLocation);
                                             Logging.LogAudioEvent("Hover " + coarseLocation + " " + fineLocation);
                                         }
