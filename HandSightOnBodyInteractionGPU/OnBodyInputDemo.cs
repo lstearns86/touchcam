@@ -547,12 +547,23 @@ namespace HandSightOnBodyInteractionGPU
 
         private ImageTemplate AddTemplate(ImageTemplate template = null)
         {
+            bool newTemplate = template == null;
             if(template == null) template = CopyTemplate(currTemplate);
             template["coarse"] = coarseLocationToTrain;
             template["fine"] = fineLocationToTrain;
                 
             Localization.Instance.AddTrainingExample(template, coarseLocationToTrain, fineLocationToTrain);
             Localization.Instance.Train();
+
+            // autosave the image in the background
+            //Bitmap tempImage = (Bitmap)template.Image.Bitmap.Clone();
+            Task.Factory.StartNew(() =>
+            {
+                if (!Directory.Exists(Path.Combine("savedProfiles", "autosave"))) Directory.CreateDirectory(Path.Combine("savedProfiles", "autosave"));
+                int index = 1;
+                while (File.Exists(Path.Combine("savedProfiles", "autosave", coarseLocationToTrain + "_" + fineLocationToTrain + "_" + index + ".png"))) index++;
+                Invoke(new MethodInvoker(delegate { template.Image.Save(Path.Combine("savedProfiles", "autosave", coarseLocationToTrain + "_" + fineLocationToTrain + "_" + index + ".png")); }));
+            });
 
             //trainingForm.UpdateLocationList();
             try
@@ -673,7 +684,7 @@ namespace HandSightOnBodyInteractionGPU
                     {
                         ImageProcessing.ProcessTemplate(template, false);
                         focus = ImageProcessing.ImageFocus(template);
-                        Logging.LogOtherEvent("frame_processed");
+                        Logging.LogFrameProcessed();
                         currTemplate = template;
                         FPS.Instance("processing").Update();
                         Monitor.Exit(preprocessingLock);

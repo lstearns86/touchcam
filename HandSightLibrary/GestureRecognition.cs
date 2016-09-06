@@ -20,6 +20,7 @@ namespace HandSightLibrary
             ACCEL1_X, ACCEL1_Y, ACCEL1_Z, GYRO1_X, GYRO1_Y, GYRO1_Z, IR1, IR2
         };
 
+        static int numPretrainedExamples = 0;
         static Classifier classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);
         public static Dictionary<string, List<Gesture>> samples = new Dictionary<string, List<Gesture>>();
 
@@ -28,11 +29,12 @@ namespace HandSightLibrary
             int count = 0;
             foreach (string key in samples.Keys)
                 count += samples[key].Count;
-            return count;
+            return count + numPretrainedExamples;
         }
 
         public static int GetNumClasses()
         {
+            if (samples.Count == 0) return classifier.GetNumClasses();
             return samples.Count;
         }
 
@@ -40,16 +42,17 @@ namespace HandSightLibrary
         {
             samples.Clear();
             classifier = new Classifier(Classifier.ClassifierType.SVM, Classifier.KernelType.Linear);
+            numPretrainedExamples = 0;
         }
 
-        public static void SaveClassifier()
+        public static void SaveClassifier(string path = "gestureClassifier.svm")
         {
-            classifier.SaveSVM("gestureClassifier.svm");
+            classifier.SaveSVM(path);
         }
 
-        public static void LoadClassifier()
+        public static void LoadClassifier(string path = "gestureClassifier.svm")
         {
-            classifier.LoadSVM("gestureClassifier.svm");
+            numPretrainedExamples = classifier.LoadSVM(path);
         }
 
         public static void Save(string name, bool overwrite = true)
@@ -127,6 +130,7 @@ namespace HandSightLibrary
                     json = json.Replace(",\"Visualization\":\"System.Drawing.Bitmap\"", "");
                     Gesture template = JsonConvert.DeserializeObject<Gesture>(json);
                     template.DefaultGesture = isDefault;
+                    template.IsTrainingData = true;
                     //string className = template.ClassName;
 
                     //AddTrainingExample(template, className);

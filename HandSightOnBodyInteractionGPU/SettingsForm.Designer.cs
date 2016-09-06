@@ -41,6 +41,8 @@
             this.label2 = new System.Windows.Forms.Label();
             this.HoverTimeThresholdChooser = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
+            this.ReconnectCameraButton = new System.Windows.Forms.Button();
+            this.ReconnectIMUButton = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.PredictionSmoothingChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BrightnessChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HoverTimeThresholdChooser)).BeginInit();
@@ -204,11 +206,33 @@
             this.label3.TabIndex = 33;
             this.label3.Text = "ms";
             // 
+            // ReconnectCameraButton
+            // 
+            this.ReconnectCameraButton.Location = new System.Drawing.Point(12, 209);
+            this.ReconnectCameraButton.Name = "ReconnectCameraButton";
+            this.ReconnectCameraButton.Size = new System.Drawing.Size(80, 35);
+            this.ReconnectCameraButton.TabIndex = 34;
+            this.ReconnectCameraButton.Text = "Reconnect Camera";
+            this.ReconnectCameraButton.UseVisualStyleBackColor = true;
+            this.ReconnectCameraButton.Click += new System.EventHandler(this.ReconnectCameraButton_Click);
+            // 
+            // ReconnectIMUButton
+            // 
+            this.ReconnectIMUButton.Location = new System.Drawing.Point(102, 209);
+            this.ReconnectIMUButton.Name = "ReconnectIMUButton";
+            this.ReconnectIMUButton.Size = new System.Drawing.Size(80, 35);
+            this.ReconnectIMUButton.TabIndex = 35;
+            this.ReconnectIMUButton.Text = "Reconnect IMU";
+            this.ReconnectIMUButton.UseVisualStyleBackColor = true;
+            this.ReconnectIMUButton.Click += new System.EventHandler(this.ReconnectIMUButton_Click);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(194, 214);
+            this.ClientSize = new System.Drawing.Size(194, 256);
+            this.Controls.Add(this.ReconnectIMUButton);
+            this.Controls.Add(this.ReconnectCameraButton);
             this.Controls.Add(this.HoverTimeThresholdChooser);
             this.Controls.Add(this.label3);
             this.Controls.Add(this.label2);
@@ -250,5 +274,7 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.NumericUpDown HoverTimeThresholdChooser;
         private System.Windows.Forms.Label label3;
+        private System.Windows.Forms.Button ReconnectCameraButton;
+        private System.Windows.Forms.Button ReconnectIMUButton;
     }
 }

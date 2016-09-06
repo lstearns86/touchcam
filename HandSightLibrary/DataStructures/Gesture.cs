@@ -5,6 +5,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Newtonsoft.Json;
+
 namespace HandSightLibrary
 {
     public class Gesture
@@ -13,6 +15,9 @@ namespace HandSightLibrary
 
         string className;
         string location;
+
+        bool trainingData = false;
+        [JsonIgnore] public bool IsTrainingData { get { return trainingData; } set { trainingData = false; } }
 
         List<Sensors.Reading> sensorReadings, correctedSensorReadings;
         float[] features;
@@ -31,7 +36,7 @@ namespace HandSightLibrary
         {
             get
             {
-                if (visualization == null) UpdateVisualization();
+                if (visualization == null && trainingData) UpdateVisualization();
                 return visualization;
             }
             set
@@ -40,22 +45,25 @@ namespace HandSightLibrary
             }
         }
 
-        public Gesture()
+        public Gesture() : this(false) { }
+
+        public Gesture(bool isTrainingData)
         {
+            trainingData = isTrainingData;
             features = null;
             sensorReadings = new List<Sensors.Reading>();
             correctedSensorReadings = new List<Sensors.Reading>();
         }
 
-        public Gesture(string gestureName = "unknown", string gestureLocation = "unknown")
-            : this()
+        public Gesture(string gestureName = "unknown", string gestureLocation = "unknown", bool isTrainingData = false)
+            : this(isTrainingData)
         {
             this.className = gestureName;
             this.location = gestureLocation;
         }
 
-        public Gesture(Sensors.Reading[] readings, string gestureName = "unknown", string gestureLocation = "unknown")
-            : this(gestureName, gestureLocation)
+        public Gesture(Sensors.Reading[] readings, string gestureName = "unknown", string gestureLocation = "unknown", bool isTrainingData = false)
+            : this(gestureName, gestureLocation, isTrainingData)
         {
             sensorReadings = new List<Sensors.Reading>(readings);
             correctedSensorReadings = new List<HandSightLibrary.Sensors.Reading>();

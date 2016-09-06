@@ -102,5 +102,17 @@ namespace HandSightOnBodyInteractionGPU
         {
             GestureActionMap.Reset();
         }
+
+        private void ReconnectCameraButton_Click(object sender, EventArgs e)
+        {
+            Camera.Instance.Reconnect();
+            Logging.LogUIEvent("Camera Reconnected");
+        }
+
+        private void ReconnectIMUButton_Click(object sender, EventArgs e)
+        {
+            Sensors.Instance.Reconnect();
+            Logging.LogUIEvent("Sensors Reconnected");
+        }
     }
 }

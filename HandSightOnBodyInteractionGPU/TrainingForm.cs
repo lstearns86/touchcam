@@ -126,6 +126,20 @@ namespace HandSightOnBodyInteractionGPU
             Properties.Settings.Default.Save();
         }
 
+        public void UpdateLocationCount()
+        {
+            if(InvokeRequired) { Invoke(new MethodInvoker(UpdateLocationCount)); return; }
+
+            LocationCountLabel.Text = Localization.Instance.GetNumTrainingExamples() + " location examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
+        }
+
+        public void UpdateGestureCount()
+        {
+            if (InvokeRequired) { Invoke(new MethodInvoker(UpdateGestureCount)); return; }
+
+            GestureCountLabel.Text = GestureRecognition.GetNumExamples() + " gesture examples (" + GestureRecognition.GetNumClasses() + " classes)";
+        }
+
         public void AddLocation(ImageTemplate template)
         {
             if (InvokeRequired) { Invoke(new MethodInvoker(delegate { AddLocation(template); })); return; }
@@ -140,7 +154,7 @@ namespace HandSightOnBodyInteractionGPU
             //LocationView.TopItem = item;
             item.EnsureVisible();
 
-            LocationCountLabel.Text = Localization.Instance.GetNumTrainingExamples() + " location examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
+            UpdateLocationCount();
         }
 
         public void UpdateLocationList()
@@ -177,7 +191,7 @@ namespace HandSightOnBodyInteractionGPU
                 }
             }
 
-            LocationCountLabel.Text = Localization.Instance.GetNumTrainingExamples() + " location examples (" + Localization.Instance.GetNumTrainingClasses() + " classes)";
+            UpdateLocationCount();
             
             LocationView.EndUpdate();
             try
@@ -210,7 +224,7 @@ namespace HandSightOnBodyInteractionGPU
             //GestureView.TopItem = item;
             item.EnsureVisible();
 
-            GestureCountLabel.Text = GestureRecognition.GetNumExamples() + " gesture examples (" + GestureRecognition.GetNumClasses() + " classes)";
+            UpdateGestureCount();
         }
 
         public void UpdateGestureList()
@@ -266,7 +280,7 @@ namespace HandSightOnBodyInteractionGPU
                 }
             }
 
-            GestureCountLabel.Text = GestureRecognition.GetNumExamples() + " gesture examples (" + GestureRecognition.GetNumClasses() + " classes)";
+            UpdateGestureCount();
 
             GestureView.EndUpdate();
             try
@@ -323,6 +337,7 @@ namespace HandSightOnBodyInteractionGPU
 
                 training = true;
                 Localization.Instance.Train();
+                UpdateLocationCount();
                 training = false;
                 OnTrainingDataUpdated();
             }
@@ -347,6 +362,7 @@ namespace HandSightOnBodyInteractionGPU
 
                 training = true;
                 GestureRecognition.Train();
+                UpdateGestureCount();
                 training = false;
                 OnTrainingDataUpdated();
             }
@@ -379,12 +395,6 @@ namespace HandSightOnBodyInteractionGPU
 
         private void SaveProfileButton_Click(object sender, EventArgs e)
         {
-            if((ModifierKeys & Keys.Control) == Keys.Control)
-            {
-                GestureRecognition.SaveClassifier();
-                return;
-            }
-
             bool overwrite = false;
             if(profileName != null)
             {
@@ -474,75 +484,84 @@ namespace HandSightOnBodyInteractionGPU
         //    GestureRecognition.Save("default", false);
         //}
 
-        private void LoadAllSavedGesturesButton_Click(object sender, EventArgs e)
+        private void LoadGestureSVMButton_Click(object sender, EventArgs e)
         {
-            //if((ModifierKeys & Keys.Control) == Keys.Control)
-            //{
-            //    // merge the default gestures
-            //    List<string> profiles = new List<string>();
-            //    foreach (string dir in Directory.GetDirectories("savedProfiles"))
-            //        profiles.Add((new DirectoryInfo(dir)).Name);
-            //    if (profiles.Contains("default")) profiles.Remove("default");
-
-            //    foreach(string profile in profiles)
-            //    {
-            //        string[] filenames = Directory.GetFiles(Path.Combine("savedProfiles", profile), "*.gest");
-            //        foreach(string filename in filenames)
-            //        {
-            //            string name = Path.GetFileNameWithoutExtension((new FileInfo(filename)).Name);
-            //            string newFilename = Path.Combine("savedProfiles", "allGestures", name + ".gest");
-            //            if(File.Exists(newFilename))
-            //            {
-            //                int index = 0;
-            //                do
-            //                {
-            //                    index++;
-            //                    newFilename = Path.Combine("savedProfiles", "allGestures", name + "_" + index + ".gest");
-            //                } while (File.Exists(newFilename));
-            //            }
-
-            //            File.Copy(filename, newFilename);
-            //        }
-            //    }
-
-            //    return;
-            //}
-
-            Task.Factory.StartNew(() =>
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "SVM Files|*.svm";
+            dialog.InitialDirectory = Path.GetFullPath("savedProfiles");
+            dialog.CheckFileExists = true;
+            if (dialog.ShowDialog(this) == DialogResult.OK)
             {
-                try
+
+                //if((ModifierKeys & Keys.Control) == Keys.Control)
+                //{
+                //    // merge the default gestures
+                //    List<string> profiles = new List<string>();
+                //    foreach (string dir in Directory.GetDirectories("savedProfiles"))
+                //        profiles.Add((new DirectoryInfo(dir)).Name);
+                //    if (profiles.Contains("default")) profiles.Remove("default");
+
+                //    foreach(string profile in profiles)
+                //    {
+                //        string[] filenames = Directory.GetFiles(Path.Combine("savedProfiles", profile), "*.gest");
+                //        foreach(string filename in filenames)
+                //        {
+                //            string name = Path.GetFileNameWithoutExtension((new FileInfo(filename)).Name);
+                //            string newFilename = Path.Combine("savedProfiles", "allGestures", name + ".gest");
+                //            if(File.Exists(newFilename))
+                //            {
+                //                int index = 0;
+                //                do
+                //                {
+                //                    index++;
+                //                    newFilename = Path.Combine("savedProfiles", "allGestures", name + "_" + index + ".gest");
+                //                } while (File.Exists(newFilename));
+                //            }
+
+                //            File.Copy(filename, newFilename);
+                //        }
+                //    }
+
+                //    return;
+                //}
+
+                Task.Factory.StartNew(() =>
                 {
-                    if (Properties.Settings.Default.OverwriteExistingSamples) GestureRecognition.Reset();
+                    try
+                    {
+                        //if (Properties.Settings.Default.OverwriteExistingSamples) GestureRecognition.Reset();
 
-                    //List<string> profiles = new List<string>();
-                    //foreach (string dir in Directory.GetDirectories("savedProfiles"))
-                    //    profiles.Add((new DirectoryInfo(dir)).Name);
-                    //if (profiles.Contains("default")) profiles.Remove("default");
-                    //if (profiles.Count == 0)
-                    //{
-                    //    MessageBox.Show("Error: no saved profiles!");
-                    //    return;
-                    //}
+                        //List<string> profiles = new List<string>();
+                        //foreach (string dir in Directory.GetDirectories("savedProfiles"))
+                        //    profiles.Add((new DirectoryInfo(dir)).Name);
+                        //if (profiles.Contains("default")) profiles.Remove("default");
+                        //if (profiles.Count == 0)
+                        //{
+                        //    MessageBox.Show("Error: no saved profiles!");
+                        //    return;
+                        //}
 
-                    Debug.WriteLine("Loading all gestures");
-                    //foreach (string profile in profiles)
-                    string profile = "allGestures";
-                        GestureRecognition.Load(profile, false, true);
+                        //Debug.WriteLine("Loading all gestures");
+                        //foreach (string profile in profiles)
+                        //string profile = "allGestures";
+                        //GestureRecognition.Load(profile, false, true);
 
-                    Debug.WriteLine("Training classifier");
-                    GestureRecognition.Train(fullRetrain:false);
-                    GestureRecognition.LoadClassifier();
+                        //Debug.WriteLine("Training classifier");
+                        //GestureRecognition.Train(fullRetrain: false);
+                        GestureRecognition.LoadClassifier(dialog.FileName);
 
-                    //GestureRecognition.Load("default");
+                        //GestureRecognition.Load("default");
 
-                    Debug.WriteLine("Updating display");
-                    UpdateLists();
-                }
-                catch
-                {
-                    MessageBox.Show("Error: could not load gestures");
-                }
-            });
+                        //Debug.WriteLine("Updating display");
+                        //UpdateLists();
+                        UpdateGestureCount();
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Error: could not load gestures");
+                    }
+                });
+            }
         }
 
         private void ResetLocationsButton_Click(object sender, EventArgs e)
@@ -602,6 +621,19 @@ namespace HandSightOnBodyInteractionGPU
             GestureRecognition.Reset();
             training = false;
             UpdateGestureList();
+        }
+
+        private void SaveGestureSVMButton_Click(object sender, EventArgs e)
+        {
+            SaveFileDialog dialog = new SaveFileDialog();
+            dialog.InitialDirectory = Path.GetFullPath("savedProfiles");
+            dialog.DefaultExt = ".svm";
+            dialog.Filter = "SVM Files|*.svm";
+            dialog.OverwritePrompt = true;
+            if (dialog.ShowDialog(this) == DialogResult.OK)
+            {
+                GestureRecognition.SaveClassifier(dialog.FileName);
+            }
         }
 
         public void StopAutoCapture()

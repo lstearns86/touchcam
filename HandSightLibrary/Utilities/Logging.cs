@@ -37,6 +37,11 @@ namespace HandSightLibrary
                 type = "generic";
                 timestamp = 1000.0f * (float)stopwatch.ElapsedTicks / (float)Stopwatch.Frequency;
             }
+
+            public string ToJson()
+            {
+                return JsonConvert.SerializeObject(this);
+            }
         }
         public class VideoFrameEvent : LogEvent
         {
@@ -47,6 +52,14 @@ namespace HandSightLibrary
             {
                 this.frameIndex = frameIndex;
                 type = "video_frame";
+            }
+        }
+        public class FrameProcessedEvent : LogEvent
+        {
+            public FrameProcessedEvent()
+            {
+                this.message = "frame_processed";
+                type = "frame_processed";
             }
         }
         public class SensorReadingEvent : LogEvent
@@ -321,6 +334,13 @@ namespace HandSightLibrary
             eventQueue.Add(new MenuEvent(menu, menuIndex, item));
         }
 
+        public static void LogFrameProcessed()
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new FrameProcessedEvent());
+        }
+
         public static void LogOtherEvent(string message)
         {
             if (!Running) return;
@@ -363,6 +383,30 @@ namespace HandSightLibrary
                     else if (logEvent.type == "location")
                     {
                         logEvent = (LocationEvent)JsonConvert.DeserializeObject(line, typeof(LocationEvent));
+                    }
+                    else if (logEvent.type == "frame_processed")
+                    {
+                        logEvent = (FrameProcessedEvent)JsonConvert.DeserializeObject(line, typeof(FrameProcessedEvent));
+                    }
+                    else if (logEvent.type == "gesture")
+                    {
+                        logEvent = (GestureEvent)JsonConvert.DeserializeObject(line, typeof(GestureEvent));
+                    }
+                    else if (logEvent.type == "audio")
+                    {
+                        logEvent = (AudioEvent)JsonConvert.DeserializeObject(line, typeof(AudioEvent));
+                    }
+                    else if (logEvent.type == "training")
+                    {
+                        logEvent = (TrainingEvent)JsonConvert.DeserializeObject(line, typeof(TrainingEvent));
+                    }
+                    else if (logEvent.type == "user_interface")
+                    {
+                        logEvent = (UIEvent)JsonConvert.DeserializeObject(line, typeof(UIEvent));
+                    }
+                    else if (logEvent.type == "menu")
+                    {
+                        logEvent = (MenuEvent)JsonConvert.DeserializeObject(line, typeof(MenuEvent));
                     }
                     events.Add(logEvent);
                 }

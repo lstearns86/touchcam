@@ -192,6 +192,26 @@ namespace HandSightLibrary.ImageProcessing
             catch (Exception ex) { OnError(ex.Message); }
         }
 
+        public void Reconnect()
+        {
+            Disconnect();
+            Thread.Sleep(100);
+
+            provider = new IduleProviderCsCam(0);
+            provider.Initialize();
+            if (provider.IsConnected)
+            {
+                provider.ImageTransaction += provider_ImageTransaction;
+                provider.Interrupt += provider_Interrupt;
+                provider.Exception += camera_Exception;
+                provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x05, true, 0, prescaler));
+                provider.WriteRegister(new NanEyeGSRegisterPayload(false, 0x06, true, 0, exposure));
+                ProcessingWrapper.pr[0].ReduceProcessing = true;
+            }
+
+            Connect();
+        }
+
         /// <summary>
         /// Reset the brightness correction parameters and start calibrating them
         /// </summary>

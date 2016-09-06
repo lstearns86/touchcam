@@ -111,6 +111,12 @@
     <Compile Include="IMUTest.Designer.cs">
       <DependentUpon>IMUTest.cs</DependentUpon>
     </Compile>
+    <Compile Include="LogViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LogViewer.Designer.cs">
+      <DependentUpon>LogViewer.cs</DependentUpon>
+    </Compile>
     <Compile Include="OnBodyInputDemo.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -154,6 +160,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="IMUTest.resx">
       <DependentUpon>IMUTest.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LogViewer.resx">
+      <DependentUpon>LogViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OnBodyInputDemo.resx">
       <DependentUpon>OnBodyInputDemo.cs</DependentUpon>

@@ -38,7 +38,7 @@
             this.TimerChooser = new System.Windows.Forms.NumericUpDown();
             this.label3 = new System.Windows.Forms.Label();
             this.OverwriteExistingSamplesCheckbox = new System.Windows.Forms.CheckBox();
-            this.LoadAllSavedGesturesButton = new System.Windows.Forms.Button();
+            this.LoadGestureSVMButton = new System.Windows.Forms.Button();
             this.label8 = new System.Windows.Forms.Label();
             this.GestureChooser = new System.Windows.Forms.ComboBox();
             this.RecordGestureButton = new System.Windows.Forms.Button();
@@ -58,6 +58,7 @@
             this.GestureTab = new System.Windows.Forms.TabPage();
             this.GestureView = new System.Windows.Forms.ListView();
             this.RemoveButton = new System.Windows.Forms.Button();
+            this.SaveGestureSVMButton = new System.Windows.Forms.Button();
             this.panel1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.TimerChooser)).BeginInit();
             this.TrainingDataViewer.SuspendLayout();
@@ -67,6 +68,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.SaveGestureSVMButton);
             this.panel1.Controls.Add(this.ResetGesturesButton);
             this.panel1.Controls.Add(this.AutoCaptureGestureButton);
             this.panel1.Controls.Add(this.AutoCaptureLocationButton);
@@ -75,7 +77,7 @@
             this.panel1.Controls.Add(this.TimerChooser);
             this.panel1.Controls.Add(this.label3);
             this.panel1.Controls.Add(this.OverwriteExistingSamplesCheckbox);
-            this.panel1.Controls.Add(this.LoadAllSavedGesturesButton);
+            this.panel1.Controls.Add(this.LoadGestureSVMButton);
             this.panel1.Controls.Add(this.label8);
             this.panel1.Controls.Add(this.GestureChooser);
             this.panel1.Controls.Add(this.RecordGestureButton);
@@ -176,15 +178,15 @@
             this.OverwriteExistingSamplesCheckbox.UseVisualStyleBackColor = true;
             this.OverwriteExistingSamplesCheckbox.CheckedChanged += new System.EventHandler(this.OverwriteExistingSamplesCheckbox_CheckedChanged);
             // 
-            // LoadAllSavedGesturesButton
+            // LoadGestureSVMButton
             // 
-            this.LoadAllSavedGesturesButton.Location = new System.Drawing.Point(12, 555);
-            this.LoadAllSavedGesturesButton.Name = "LoadAllSavedGesturesButton";
-            this.LoadAllSavedGesturesButton.Size = new System.Drawing.Size(180, 39);
-            this.LoadAllSavedGesturesButton.TabIndex = 41;
-            this.LoadAllSavedGesturesButton.Text = "Load All Saved Gestures";
-            this.LoadAllSavedGesturesButton.UseVisualStyleBackColor = true;
-            this.LoadAllSavedGesturesButton.Click += new System.EventHandler(this.LoadAllSavedGesturesButton_Click);
+            this.LoadGestureSVMButton.Location = new System.Drawing.Point(106, 555);
+            this.LoadGestureSVMButton.Name = "LoadGestureSVMButton";
+            this.LoadGestureSVMButton.Size = new System.Drawing.Size(86, 39);
+            this.LoadGestureSVMButton.TabIndex = 41;
+            this.LoadGestureSVMButton.Text = "Load Gesture SVM";
+            this.LoadGestureSVMButton.UseVisualStyleBackColor = true;
+            this.LoadGestureSVMButton.Click += new System.EventHandler(this.LoadGestureSVMButton_Click);
             // 
             // label8
             // 
@@ -383,6 +385,16 @@
             this.RemoveButton.UseVisualStyleBackColor = true;
             this.RemoveButton.Click += new System.EventHandler(this.RemoveButton_Click);
             // 
+            // SaveGestureSVMButton
+            // 
+            this.SaveGestureSVMButton.Location = new System.Drawing.Point(12, 555);
+            this.SaveGestureSVMButton.Name = "SaveGestureSVMButton";
+            this.SaveGestureSVMButton.Size = new System.Drawing.Size(86, 39);
+            this.SaveGestureSVMButton.TabIndex = 50;
+            this.SaveGestureSVMButton.Text = "Save Gesture SVM";
+            this.SaveGestureSVMButton.UseVisualStyleBackColor = true;
+            this.SaveGestureSVMButton.Click += new System.EventHandler(this.SaveGestureSVMButton_Click);
+            // 
             // TrainingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -412,7 +424,7 @@
 
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.CheckBox OverwriteExistingSamplesCheckbox;
-        private System.Windows.Forms.Button LoadAllSavedGesturesButton;
+        private System.Windows.Forms.Button LoadGestureSVMButton;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ComboBox GestureChooser;
         private System.Windows.Forms.Button RecordGestureButton;
@@ -439,5 +451,6 @@
         private System.Windows.Forms.Button AutoCaptureGestureButton;
         private System.Windows.Forms.Button AutoCaptureLocationButton;
         private System.Windows.Forms.Button ResetGesturesButton;
+        private System.Windows.Forms.Button SaveGestureSVMButton;
     }
 }

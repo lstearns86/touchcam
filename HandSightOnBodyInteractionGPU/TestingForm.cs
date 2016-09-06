@@ -5,11 +5,16 @@ using HandSightLibrary;
 using HandSightLibrary.ImageProcessing;
 using System.IO;
 using System.Collections.Generic;
+using System.Drawing;
 
 namespace HandSightOnBodyInteractionGPU
 {
     public partial class TestingForm : Form
     {
+        private string[] phases = { "Intro", "Consent", "Demographics", "Smartphone Usage", "Smartwatch Demonstration", "Smartwatch Questionnaire", "On-body Intro", "Prototype Setup", "Location Training", "Gesture Testing/Training", "Training Condition 1", "Testing Condition 1", "Questions Condition 1", "Training Condition 2", "Testing Condition 2", "Questions Condition 2", "Training Condition 3", "Testing Condition 3", "Questions Condition 3", "Final Questionnare", "Conclusion" };
+        private int currPhase = -1;
+        private int[] conditionOrder = { 0, 1, 2 };
+
         public bool HideFromList { get { return true; } }
 
         public delegate void TaskStartedDelegate(string task);
@@ -98,6 +103,8 @@ namespace HandSightOnBodyInteractionGPU
             TaskChooser.Items.Clear();
             TaskChooser.Items.AddRange(items.ToArray());
             TaskChooser.SelectedIndex = 0;
+
+            RandomizeTasks();
         }
 
         private void RandomizeTasks()
@@ -112,8 +119,6 @@ namespace HandSightOnBodyInteractionGPU
             TaskChooser.Items.Clear();
             TaskChooser.Items.AddRange(tasks.ToArray());
             TaskChooser.SelectedIndex = 0;
-
-            SetTasks();
         }
 
         private void FixedApplicationResonsesCheckbox_CheckedChanged(object sender, EventArgs e)
@@ -198,6 +203,8 @@ namespace HandSightOnBodyInteractionGPU
                 }
             }
             GestureActionMap.Reset();
+
+            Logging.LogUIEvent("Mode Set: " + ModeChooser.SelectedItem);
         }
 
         private void StartLogging()
@@ -284,7 +291,7 @@ namespace HandSightOnBodyInteractionGPU
 
             Invoke(new MethodInvoker(delegate
             {
-                Logging.LogOtherEvent("Task finished: " + TaskChooser.Text);
+                Logging.LogUIEvent("Task finished: " + TaskChooser.Text);
 
                 if (TaskChooser.SelectedIndex + 1 < TaskChooser.Items.Count) TaskChooser.SelectedIndex++;
                 else if (ModeChooser.SelectedIndex + 1 < ModeChooser.Items.Count) ModeChooser.SelectedIndex++;
@@ -301,7 +308,7 @@ namespace HandSightOnBodyInteractionGPU
         {
             taskStarted = !taskStarted;
 
-            Logging.LogOtherEvent("Task " + (taskStarted ? "started" : "stopped") + ": " + TaskChooser.Text);
+            Logging.LogUIEvent("Task " + (taskStarted ? "started" : "stopped") + ": " + TaskChooser.Text);
 
             if(taskStarted) OnTaskStarted(TaskChooser.Text);
 
@@ -315,6 +322,80 @@ namespace HandSightOnBodyInteractionGPU
         {
             Properties.Settings.Default.RandomizeOrders = RandomizeCheckbox.Checked;
             Properties.Settings.Default.Save();
+        }
+
+        private void NextPhaseButton_Click(object sender, EventArgs e)
+        {
+            currPhase++;
+            if (currPhase > phases.Length) currPhase = phases.Length;
+            PrevPhaseButton.Enabled = currPhase > 0;
+            NextPhaseButton.Enabled = currPhase < phases.Length;
+            
+            if(currPhase >= 0 && currPhase < phases.Length)
+            {
+                PhaseLabel.Text = phases[currPhase];
+                Logging.LogUIEvent("Phase: " + phases[currPhase]);
+
+                if (phases[currPhase] == "Location Training") ModeChooser.SelectedIndex = 0;
+                else if (phases[currPhase] == "Gesture Testing/Training") ModeChooser.SelectedIndex = 1;
+                else if (phases[currPhase].Contains("Condition 1")) ModeChooser.SelectedIndex = 2;
+                else if (phases[currPhase].Contains("Condition 2")) ModeChooser.SelectedIndex = 3;
+                else if (phases[currPhase].Contains("Condition 3")) ModeChooser.SelectedIndex = 4;
+            }
+            else if(currPhase >= phases.Length)
+            {
+                PhaseLabel.Text = "Finished";
+                Logging.LogUIEvent("Phase: Finished");
+            }
+        }
+
+        private void PrevPhaseButton_Click(object sender, EventArgs e)
+        {
+            currPhase--;
+            if (currPhase < -1) currPhase = -1;
+            PrevPhaseButton.Enabled = currPhase > 0;
+            NextPhaseButton.Enabled = currPhase >= phases.Length;
+
+            if (currPhase >= 0 && currPhase < phases.Length)
+            {
+                PhaseLabel.Text = phases[currPhase];
+                Logging.LogUIEvent("Phase: " + phases[currPhase]);
+
+                if (phases[currPhase] == "Location Training") ModeChooser.SelectedIndex = 0;
+                else if (phases[currPhase] == "Gesture Testing/Training") ModeChooser.SelectedIndex = 1;
+                else if (phases[currPhase].Contains("Condition 1")) ModeChooser.SelectedIndex = 2 + conditionOrder[0];
+                else if (phases[currPhase].Contains("Condition 2")) ModeChooser.SelectedIndex = 2 + conditionOrder[1];
+                else if (phases[currPhase].Contains("Condition 3")) ModeChooser.SelectedIndex = 2 + conditionOrder[2];
+            }
+            else if (currPhase < 0)
+            {
+                PhaseLabel.Text = "Beginning";
+                Logging.LogUIEvent("Phase: Beginning");
+            }
+        }
+
+        private void ConditionOrderTextbox_TextChanged(object sender, EventArgs e)
+        {
+            ConditionOrderTextbox.BackColor = Color.White;
+            try
+            {
+                string[] parts = ConditionOrderTextbox.Text.Split(',');
+                if (parts.Length != 3) throw new Exception();
+
+                int condition1 = int.Parse(parts[0].Trim());
+                int condition2 = int.Parse(parts[1].Trim());
+                int condition3 = int.Parse(parts[2].Trim());
+
+                if (condition1 < 0 || condition1 >= 3 || condition2 < 0 || condition2 >= 3 || condition3 < 0 || condition3 >= 3 || condition1 == condition2 || condition1 == condition3 || condition2 == condition3) throw new Exception();
+
+                conditionOrder[0] = condition1;
+                conditionOrder[1] = condition2;
+                conditionOrder[2] = condition3;
+            }
+            catch
+            {
+                ConditionOrderTextbox.BackColor = Color.LightPink;
+            }
         }
     }
 }

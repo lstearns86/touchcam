@@ -45,12 +45,16 @@
             this.ResetMenusButton = new System.Windows.Forms.Button();
             this.StartStopTaskButton = new System.Windows.Forms.Button();
             this.RandomizeCheckbox = new System.Windows.Forms.CheckBox();
+            this.PrevPhaseButton = new System.Windows.Forms.Button();
+            this.NextPhaseButton = new System.Windows.Forms.Button();
+            this.PhaseLabel = new System.Windows.Forms.Label();
+            this.ConditionOrderTextbox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // EnableApplicationDemoCheckbox
             // 
             this.EnableApplicationDemoCheckbox.AutoSize = true;
-            this.EnableApplicationDemoCheckbox.Location = new System.Drawing.Point(15, 186);
+            this.EnableApplicationDemoCheckbox.Location = new System.Drawing.Point(213, 96);
             this.EnableApplicationDemoCheckbox.Name = "EnableApplicationDemoCheckbox";
             this.EnableApplicationDemoCheckbox.Size = new System.Drawing.Size(150, 17);
             this.EnableApplicationDemoCheckbox.TabIndex = 26;
@@ -61,7 +65,7 @@
             // FixedApplicationResonsesCheckbox
             // 
             this.FixedApplicationResonsesCheckbox.AutoSize = true;
-            this.FixedApplicationResonsesCheckbox.Location = new System.Drawing.Point(15, 209);
+            this.FixedApplicationResonsesCheckbox.Location = new System.Drawing.Point(213, 119);
             this.FixedApplicationResonsesCheckbox.Name = "FixedApplicationResonsesCheckbox";
             this.FixedApplicationResonsesCheckbox.Size = new System.Drawing.Size(162, 17);
             this.FixedApplicationResonsesCheckbox.TabIndex = 27;
@@ -72,7 +76,7 @@
             // EnableSpeechCheckbox
             // 
             this.EnableSpeechCheckbox.AutoSize = true;
-            this.EnableSpeechCheckbox.Location = new System.Drawing.Point(15, 163);
+            this.EnableSpeechCheckbox.Location = new System.Drawing.Point(213, 73);
             this.EnableSpeechCheckbox.Name = "EnableSpeechCheckbox";
             this.EnableSpeechCheckbox.Size = new System.Drawing.Size(134, 17);
             this.EnableSpeechCheckbox.TabIndex = 28;
@@ -84,7 +88,7 @@
             // 
             this.TaskChooser.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.TaskChooser.FormattingEnabled = true;
-            this.TaskChooser.Location = new System.Drawing.Point(15, 73);
+            this.TaskChooser.Location = new System.Drawing.Point(15, 104);
             this.TaskChooser.Name = "TaskChooser";
             this.TaskChooser.Size = new System.Drawing.Size(106, 21);
             this.TaskChooser.TabIndex = 29;
@@ -93,7 +97,7 @@
             // TaskLabel
             // 
             this.TaskLabel.AutoSize = true;
-            this.TaskLabel.Location = new System.Drawing.Point(12, 57);
+            this.TaskLabel.Location = new System.Drawing.Point(12, 88);
             this.TaskLabel.Name = "TaskLabel";
             this.TaskLabel.Size = new System.Drawing.Size(34, 13);
             this.TaskLabel.TabIndex = 30;
@@ -101,7 +105,7 @@
             // 
             // ResetMenuLocationButton
             // 
-            this.ResetMenuLocationButton.Location = new System.Drawing.Point(15, 100);
+            this.ResetMenuLocationButton.Location = new System.Drawing.Point(213, 10);
             this.ResetMenuLocationButton.Name = "ResetMenuLocationButton";
             this.ResetMenuLocationButton.Size = new System.Drawing.Size(170, 23);
             this.ResetMenuLocationButton.TabIndex = 34;
@@ -112,7 +116,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 9);
+            this.label2.Location = new System.Drawing.Point(12, 40);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(75, 13);
             this.label2.TabIndex = 36;
@@ -125,7 +129,7 @@
             this.ModeChooser.Items.AddRange(new object[] {
             "Training Locations",
             "Training Gestures"});
-            this.ModeChooser.Location = new System.Drawing.Point(15, 25);
+            this.ModeChooser.Location = new System.Drawing.Point(15, 56);
             this.ModeChooser.Name = "ModeChooser";
             this.ModeChooser.Size = new System.Drawing.Size(170, 21);
             this.ModeChooser.TabIndex = 35;
@@ -133,7 +137,7 @@
             // 
             // StartStopLoggingButton
             // 
-            this.StartStopLoggingButton.Location = new System.Drawing.Point(12, 259);
+            this.StartStopLoggingButton.Location = new System.Drawing.Point(213, 165);
             this.StartStopLoggingButton.Name = "StartStopLoggingButton";
             this.StartStopLoggingButton.Size = new System.Drawing.Size(109, 49);
             this.StartStopLoggingButton.TabIndex = 37;
@@ -143,7 +147,7 @@
             // 
             // ResetLoggingButton
             // 
-            this.ResetLoggingButton.Location = new System.Drawing.Point(127, 259);
+            this.ResetLoggingButton.Location = new System.Drawing.Point(328, 165);
             this.ResetLoggingButton.Name = "ResetLoggingButton";
             this.ResetLoggingButton.Size = new System.Drawing.Size(55, 49);
             this.ResetLoggingButton.TabIndex = 38;
@@ -153,7 +157,7 @@
             // 
             // SetLoggingLocationButton
             // 
-            this.SetLoggingLocationButton.Location = new System.Drawing.Point(12, 341);
+            this.SetLoggingLocationButton.Location = new System.Drawing.Point(213, 220);
             this.SetLoggingLocationButton.Name = "SetLoggingLocationButton";
             this.SetLoggingLocationButton.Size = new System.Drawing.Size(170, 23);
             this.SetLoggingLocationButton.TabIndex = 39;
@@ -181,16 +185,16 @@
             "p10",
             "p11",
             "p12"});
-            this.ParticipantIDChooser.Location = new System.Drawing.Point(12, 314);
+            this.ParticipantIDChooser.Location = new System.Drawing.Point(15, 12);
             this.ParticipantIDChooser.Name = "ParticipantIDChooser";
-            this.ParticipantIDChooser.Size = new System.Drawing.Size(170, 21);
+            this.ParticipantIDChooser.Size = new System.Drawing.Size(106, 21);
             this.ParticipantIDChooser.TabIndex = 40;
             this.ParticipantIDChooser.SelectedIndexChanged += new System.EventHandler(this.ParticipantIDChooser_SelectedIndexChanged);
             this.ParticipantIDChooser.TextUpdate += new System.EventHandler(this.ParticipantIDChooser_TextUpdate);
             // 
             // RandomizeSubmenusButton
             // 
-            this.RandomizeSubmenusButton.Location = new System.Drawing.Point(15, 129);
+            this.RandomizeSubmenusButton.Location = new System.Drawing.Point(213, 39);
             this.RandomizeSubmenusButton.Name = "RandomizeSubmenusButton";
             this.RandomizeSubmenusButton.Size = new System.Drawing.Size(106, 23);
             this.RandomizeSubmenusButton.TabIndex = 41;
@@ -200,7 +204,7 @@
             // 
             // ResetMenusButton
             // 
-            this.ResetMenusButton.Location = new System.Drawing.Point(127, 129);
+            this.ResetMenusButton.Location = new System.Drawing.Point(325, 39);
             this.ResetMenusButton.Name = "ResetMenusButton";
             this.ResetMenusButton.Size = new System.Drawing.Size(58, 23);
             this.ResetMenusButton.TabIndex = 42;
@@ -210,7 +214,7 @@
             // 
             // StartStopTaskButton
             // 
-            this.StartStopTaskButton.Location = new System.Drawing.Point(127, 72);
+            this.StartStopTaskButton.Location = new System.Drawing.Point(127, 103);
             this.StartStopTaskButton.Name = "StartStopTaskButton";
             this.StartStopTaskButton.Size = new System.Drawing.Size(58, 23);
             this.StartStopTaskButton.TabIndex = 43;
@@ -221,7 +225,7 @@
             // RandomizeCheckbox
             // 
             this.RandomizeCheckbox.AutoSize = true;
-            this.RandomizeCheckbox.Location = new System.Drawing.Point(15, 232);
+            this.RandomizeCheckbox.Location = new System.Drawing.Point(213, 142);
             this.RandomizeCheckbox.Name = "RandomizeCheckbox";
             this.RandomizeCheckbox.Size = new System.Drawing.Size(113, 17);
             this.RandomizeCheckbox.TabIndex = 44;
@@ -229,11 +233,55 @@
             this.RandomizeCheckbox.UseVisualStyleBackColor = true;
             this.RandomizeCheckbox.CheckedChanged += new System.EventHandler(this.RandomizeCheckbox_CheckedChanged);
             // 
+            // PrevPhaseButton
+            // 
+            this.PrevPhaseButton.Enabled = false;
+            this.PrevPhaseButton.Location = new System.Drawing.Point(15, 194);
+            this.PrevPhaseButton.Name = "PrevPhaseButton";
+            this.PrevPhaseButton.Size = new System.Drawing.Size(80, 49);
+            this.PrevPhaseButton.TabIndex = 45;
+            this.PrevPhaseButton.Text = "Prev";
+            this.PrevPhaseButton.UseVisualStyleBackColor = true;
+            this.PrevPhaseButton.Click += new System.EventHandler(this.PrevPhaseButton_Click);
+            // 
+            // NextPhaseButton
+            // 
+            this.NextPhaseButton.Location = new System.Drawing.Point(105, 194);
+            this.NextPhaseButton.Name = "NextPhaseButton";
+            this.NextPhaseButton.Size = new System.Drawing.Size(80, 49);
+            this.NextPhaseButton.TabIndex = 46;
+            this.NextPhaseButton.Text = "Next";
+            this.NextPhaseButton.UseVisualStyleBackColor = true;
+            this.NextPhaseButton.Click += new System.EventHandler(this.NextPhaseButton_Click);
+            // 
+            // PhaseLabel
+            // 
+            this.PhaseLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.PhaseLabel.Location = new System.Drawing.Point(13, 129);
+            this.PhaseLabel.Name = "PhaseLabel";
+            this.PhaseLabel.Size = new System.Drawing.Size(172, 62);
+            this.PhaseLabel.TabIndex = 47;
+            this.PhaseLabel.Text = "Beginning";
+            this.PhaseLabel.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
+            // ConditionOrderTextbox
+            // 
+            this.ConditionOrderTextbox.Location = new System.Drawing.Point(128, 13);
+            this.ConditionOrderTextbox.Name = "ConditionOrderTextbox";
+            this.ConditionOrderTextbox.Size = new System.Drawing.Size(57, 20);
+            this.ConditionOrderTextbox.TabIndex = 48;
+            this.ConditionOrderTextbox.Text = "0, 1, 2";
+            this.ConditionOrderTextbox.TextChanged += new System.EventHandler(this.ConditionOrderTextbox_TextChanged);
+            // 
             // TestingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(194, 373);
+            this.ClientSize = new System.Drawing.Size(391, 254);
+            this.Controls.Add(this.ConditionOrderTextbox);
+            this.Controls.Add(this.PhaseLabel);
+            this.Controls.Add(this.NextPhaseButton);
+            this.Controls.Add(this.PrevPhaseButton);
             this.Controls.Add(this.RandomizeCheckbox);
             this.Controls.Add(this.StartStopTaskButton);
             this.Controls.Add(this.ResetMenusButton);
@@ -279,5 +327,9 @@
         private System.Windows.Forms.Button ResetMenusButton;
         private System.Windows.Forms.Button StartStopTaskButton;
         private System.Windows.Forms.CheckBox RandomizeCheckbox;
+        private System.Windows.Forms.Button PrevPhaseButton;
+        private System.Windows.Forms.Button NextPhaseButton;
+        private System.Windows.Forms.Label PhaseLabel;
+        private System.Windows.Forms.TextBox ConditionOrderTextbox;
     }
 }

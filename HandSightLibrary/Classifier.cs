@@ -38,6 +38,7 @@ namespace HandSightLibrary
         private ClassifierType type;
         private KernelType kernelType;
 
+        private int numPretrainedExamples = 0;
         private Matrix<float> trainData;
         private Matrix<int> trainLabels;
         private Matrix<int> sampleImportance;
@@ -45,6 +46,8 @@ namespace HandSightLibrary
         private KMeans kmeans;
         private Dictionary<int, Dictionary<int, int>> clusterClasses;
         private MulticlassSupportVectorMachine svm;
+
+        public int GetNumClasses() { return nameForID.Count; }
 
         public Classifier(ClassifierType type, KernelType kernelType = KernelType.Auto)
         {
@@ -434,20 +437,28 @@ namespace HandSightLibrary
             List<string> classList = new List<string>();
             for (int index = 0; index < nameForID.Count; index++)
                 classList.Add(nameForID[index]);
-            File.WriteAllLines(Path.ChangeExtension(path, "dat"), classList.ToArray());
+            List<string> lines = new List<string>();
+            lines.Add((trainData.Rows + numPretrainedExamples).ToString());
+            lines.AddRange(classList);
+            File.WriteAllLines(Path.ChangeExtension(path, "dat"), lines.ToArray());
         }
 
-        public void LoadSVM(string path)
+        public int LoadSVM(string path)
         {
             svm = MulticlassSupportVectorMachine.Load(path);
 
-            string[] classList = File.ReadAllLines(Path.ChangeExtension(path, "dat"));
-            for(int index = 0; index < classList.Length; index++)
+            List<string> lines = new List<string>(File.ReadAllLines(Path.ChangeExtension(path, "dat")));
+            numPretrainedExamples = 0;
+            if (int.TryParse(lines[0], out numPretrainedExamples)) lines.RemoveAt(0);
+
+            for(int index = 0; index < lines.Count; index++)
             {
-                string className = classList[index];
-                nameForID.Add(className);
-                idForName.Add(className, index);
+                string className = lines[index];
+                if(!nameForID.Contains(className)) nameForID.Add(className);
+                if (!idForName.ContainsKey(className)) idForName.Add(className, index); else; idForName[className] = index;
             }
+
+            return numPretrainedExamples;
         }
 
         /*

@@ -6,6 +6,9 @@ using System.Timers;
 using System.Threading.Tasks;
 
 using Newtonsoft.Json;
+using System.Threading;
+
+using Timer = System.Timers.Timer;
 
 namespace HandSightLibrary
 {
@@ -435,6 +438,13 @@ namespace HandSightLibrary
                 device.Dispose();
                 device = null;
             }
+        }
+
+        public void Reconnect()
+        {
+            Disconnect();
+            Thread.Sleep(100);
+            Connect();
         }
     }
 }
