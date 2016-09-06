@@ -23,7 +23,8 @@ namespace HandSightLibrary
         float GYRO_UNIT = 0.01750f; // deg / s
         float IR_UNIT = 1.0f / 1024.0f; // % max intensity
 
-        string PORT_ID = "COM7"; // TODO: provide an interface to select the port, and save to user preference
+        const string DEFAULT_PORT_ID = "COM7";
+        string PORT_ID = DEFAULT_PORT_ID; // TODO: provide an interface to select the port, and save to user preference
         int BAUD_RATE = 250000;
 
         //Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
@@ -313,7 +314,11 @@ namespace HandSightLibrary
                 device.Open();
                 Task.Factory.StartNew(() =>
                 {
-                    while (device == null || !device.IsOpen || device.BytesToRead == 0) ;
+                    try
+                    {
+                        while (device == null || !device.IsOpen || device.BytesToRead == 0) ;
+                    }
+                    catch { }
 
                     while (IsConnected)
                     {
@@ -442,6 +447,7 @@ namespace HandSightLibrary
 
         public void Reconnect()
         {
+            PORT_ID = DEFAULT_PORT_ID;
             Disconnect();
             Thread.Sleep(100);
             Connect();
