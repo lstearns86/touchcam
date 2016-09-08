@@ -8,10 +8,18 @@ namespace HandSightLibrary
 {
     public static class CustomExtensions
     {
-        private static Random rng = new Random();
-
-        public static void Shuffle<T>(this IList<T> list)
+        private static Dictionary<int, Random> randoms = new Dictionary<int, Random>();
+        
+        private static Random GetRandom(int seed)
         {
+            if (!randoms.ContainsKey(seed)) randoms.Add(seed, seed > 0 ? new Random(seed) : new Random());
+            return randoms[seed];
+        }
+
+        public static void Shuffle<T>(this IList<T> list, int seed = -1)
+        {
+            Random rng = new Random(seed);
+
             int n = list.Count;
             while (n > 1)
             {
@@ -23,8 +31,10 @@ namespace HandSightLibrary
             }
         }
 
-        public static void ShuffleAfterFirst<T>(this IList<T> list)
+        public static void ShuffleAfterFirst<T>(this IList<T> list, int seed = -1)
         {
+            Random rng = new Random(seed);
+
             int n = list.Count - 1;
             while (n > 1)
             {

@@ -43,6 +43,11 @@
             this.label3 = new System.Windows.Forms.Label();
             this.ReconnectCameraButton = new System.Windows.Forms.Button();
             this.ReconnectIMUButton = new System.Windows.Forms.Button();
+            this.FlushIMUButton = new System.Windows.Forms.Button();
+            this.EnableSwipeDownCheckbox = new System.Windows.Forms.CheckBox();
+            this.EnableSingleTapCheckbox = new System.Windows.Forms.CheckBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.PortChooser = new System.Windows.Forms.ComboBox();
             ((System.ComponentModel.ISupportInitialize)(this.PredictionSmoothingChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.BrightnessChooser)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.HoverTimeThresholdChooser)).BeginInit();
@@ -131,7 +136,7 @@
             // 
             // CalibrationButton
             // 
-            this.CalibrationButton.Location = new System.Drawing.Point(12, 151);
+            this.CalibrationButton.Location = new System.Drawing.Point(12, 188);
             this.CalibrationButton.Name = "CalibrationButton";
             this.CalibrationButton.Size = new System.Drawing.Size(170, 23);
             this.CalibrationButton.TabIndex = 23;
@@ -141,7 +146,7 @@
             // 
             // IMUCalibrationButton
             // 
-            this.IMUCalibrationButton.Location = new System.Drawing.Point(12, 180);
+            this.IMUCalibrationButton.Location = new System.Drawing.Point(12, 258);
             this.IMUCalibrationButton.Name = "IMUCalibrationButton";
             this.IMUCalibrationButton.Size = new System.Drawing.Size(170, 23);
             this.IMUCalibrationButton.TabIndex = 24;
@@ -163,7 +168,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(12, 119);
+            this.label2.Location = new System.Drawing.Point(12, 164);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(89, 13);
             this.label2.TabIndex = 31;
@@ -176,7 +181,7 @@
             0,
             0,
             0});
-            this.HoverTimeThresholdChooser.Location = new System.Drawing.Point(105, 117);
+            this.HoverTimeThresholdChooser.Location = new System.Drawing.Point(105, 162);
             this.HoverTimeThresholdChooser.Maximum = new decimal(new int[] {
             3000,
             0,
@@ -200,7 +205,7 @@
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(164, 119);
+            this.label3.Location = new System.Drawing.Point(164, 164);
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(20, 13);
             this.label3.TabIndex = 33;
@@ -208,9 +213,10 @@
             // 
             // ReconnectCameraButton
             // 
-            this.ReconnectCameraButton.Location = new System.Drawing.Point(12, 209);
+            this.ReconnectCameraButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ReconnectCameraButton.Location = new System.Drawing.Point(12, 287);
             this.ReconnectCameraButton.Name = "ReconnectCameraButton";
-            this.ReconnectCameraButton.Size = new System.Drawing.Size(80, 35);
+            this.ReconnectCameraButton.Size = new System.Drawing.Size(59, 35);
             this.ReconnectCameraButton.TabIndex = 34;
             this.ReconnectCameraButton.Text = "Reconnect Camera";
             this.ReconnectCameraButton.UseVisualStyleBackColor = true;
@@ -218,19 +224,76 @@
             // 
             // ReconnectIMUButton
             // 
-            this.ReconnectIMUButton.Location = new System.Drawing.Point(102, 209);
+            this.ReconnectIMUButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ReconnectIMUButton.Location = new System.Drawing.Point(77, 287);
             this.ReconnectIMUButton.Name = "ReconnectIMUButton";
-            this.ReconnectIMUButton.Size = new System.Drawing.Size(80, 35);
+            this.ReconnectIMUButton.Size = new System.Drawing.Size(58, 35);
             this.ReconnectIMUButton.TabIndex = 35;
             this.ReconnectIMUButton.Text = "Reconnect IMU";
             this.ReconnectIMUButton.UseVisualStyleBackColor = true;
             this.ReconnectIMUButton.Click += new System.EventHandler(this.ReconnectIMUButton_Click);
             // 
+            // FlushIMUButton
+            // 
+            this.FlushIMUButton.Font = new System.Drawing.Font("Microsoft Sans Serif", 6F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.FlushIMUButton.Location = new System.Drawing.Point(141, 287);
+            this.FlushIMUButton.Name = "FlushIMUButton";
+            this.FlushIMUButton.Size = new System.Drawing.Size(41, 35);
+            this.FlushIMUButton.TabIndex = 36;
+            this.FlushIMUButton.Text = "Flush IMU";
+            this.FlushIMUButton.UseVisualStyleBackColor = true;
+            this.FlushIMUButton.Click += new System.EventHandler(this.FlushIMUButton_Click);
+            // 
+            // EnableSwipeDownCheckbox
+            // 
+            this.EnableSwipeDownCheckbox.AutoSize = true;
+            this.EnableSwipeDownCheckbox.Location = new System.Drawing.Point(15, 109);
+            this.EnableSwipeDownCheckbox.Name = "EnableSwipeDownCheckbox";
+            this.EnableSwipeDownCheckbox.Size = new System.Drawing.Size(122, 17);
+            this.EnableSwipeDownCheckbox.TabIndex = 37;
+            this.EnableSwipeDownCheckbox.Text = "Enable Swipe Down";
+            this.EnableSwipeDownCheckbox.UseVisualStyleBackColor = true;
+            this.EnableSwipeDownCheckbox.CheckedChanged += new System.EventHandler(this.EnableSwipeDownCheckbox_CheckedChanged);
+            // 
+            // EnableSingleTapCheckbox
+            // 
+            this.EnableSingleTapCheckbox.AutoSize = true;
+            this.EnableSingleTapCheckbox.Location = new System.Drawing.Point(15, 132);
+            this.EnableSingleTapCheckbox.Name = "EnableSingleTapCheckbox";
+            this.EnableSingleTapCheckbox.Size = new System.Drawing.Size(113, 17);
+            this.EnableSingleTapCheckbox.TabIndex = 38;
+            this.EnableSingleTapCheckbox.Text = "Enable Single Tap";
+            this.EnableSingleTapCheckbox.UseVisualStyleBackColor = true;
+            this.EnableSingleTapCheckbox.CheckedChanged += new System.EventHandler(this.EnableSingleTapCheckbox_CheckedChanged);
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(12, 234);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(56, 13);
+            this.label1.TabIndex = 39;
+            this.label1.Text = "COM Port:";
+            // 
+            // PortChooser
+            // 
+            this.PortChooser.FormattingEnabled = true;
+            this.PortChooser.Location = new System.Drawing.Point(77, 231);
+            this.PortChooser.Name = "PortChooser";
+            this.PortChooser.Size = new System.Drawing.Size(105, 21);
+            this.PortChooser.TabIndex = 40;
+            this.PortChooser.SelectedIndexChanged += new System.EventHandler(this.PortChooser_SelectedIndexChanged);
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(194, 256);
+            this.ClientSize = new System.Drawing.Size(194, 334);
+            this.Controls.Add(this.PortChooser);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.EnableSingleTapCheckbox);
+            this.Controls.Add(this.EnableSwipeDownCheckbox);
+            this.Controls.Add(this.FlushIMUButton);
             this.Controls.Add(this.ReconnectIMUButton);
             this.Controls.Add(this.ReconnectCameraButton);
             this.Controls.Add(this.HoverTimeThresholdChooser);
@@ -276,5 +339,10 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button ReconnectCameraButton;
         private System.Windows.Forms.Button ReconnectIMUButton;
+        private System.Windows.Forms.Button FlushIMUButton;
+        private System.Windows.Forms.CheckBox EnableSwipeDownCheckbox;
+        private System.Windows.Forms.CheckBox EnableSingleTapCheckbox;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.ComboBox PortChooser;
     }
 }

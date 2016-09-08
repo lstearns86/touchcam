@@ -23,8 +23,7 @@ namespace HandSightLibrary
         float GYRO_UNIT = 0.01750f; // deg / s
         float IR_UNIT = 1.0f / 1024.0f; // % max intensity
 
-        const string DEFAULT_PORT_ID = "COM7";
-        string PORT_ID = DEFAULT_PORT_ID; // TODO: provide an interface to select the port, and save to user preference
+        const string DEFAULT_PORT = "COM4";
         int BAUD_RATE = 250000;
 
         //Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
@@ -283,24 +282,28 @@ namespace HandSightLibrary
             }
         }
 
-        public bool Connect()
+        public bool Connect(string portName = null)
         {
             if (IsConnected) return true;
+
+            disconnecting = false;
+
+            if (portName == null) portName = DEFAULT_PORT;
 
             try
             {
                 string[] connectedPorts = SerialPort.GetPortNames();
-                if (!connectedPorts.Contains<string>(PORT_ID))
+                if (!connectedPorts.Contains<string>(portName))
                 {
                     if (connectedPorts.Length == 1)
                     {
-                        string message = "Warning: specified port " + PORT_ID + " not detected. Attempting to use " + connectedPorts[0] + " instead.";
+                        string message = "Warning: specified port " + portName + " not detected. Attempting to use " + connectedPorts[0] + " instead.";
                         Debug.WriteLine(message);
-                        PORT_ID = connectedPorts[0];
+                        portName = connectedPorts[0];
                     }
                     else
                     {
-                        string message = "Error: specified port " + PORT_ID + " not detected. Available ports are: ";
+                        string message = "Error: specified port " + portName + " not detected. Available ports are: ";
                         foreach (string port in connectedPorts) message += port + ", ";
                         message = message.TrimEnd(',', ' ');
                         Debug.WriteLine(message);
@@ -308,7 +311,7 @@ namespace HandSightLibrary
                     }
                 }
 
-                device = new SerialPort(PORT_ID, BAUD_RATE);
+                device = new SerialPort(portName, BAUD_RATE);
                 device.DtrEnable = true;
                 device.RtsEnable = true;
                 device.Open();
@@ -316,11 +319,11 @@ namespace HandSightLibrary
                 {
                     try
                     {
-                        while (device == null || !device.IsOpen || device.BytesToRead == 0) ;
+                        while ((device == null || !device.IsOpen || device.BytesToRead == 0) && !disconnecting) ;
                     }
                     catch { }
 
-                    while (IsConnected)
+                    while (IsConnected && !disconnecting)
                     {
                         //try
                         //{
@@ -422,22 +425,24 @@ namespace HandSightLibrary
                     }
                 });
                 
-                if(!IsConnected) 
-                    Debug.WriteLine("Error: could not connect to port " + PORT_ID + ". No exceptions were thrown.");
+                if(!IsConnected && !disconnecting) 
+                    Debug.WriteLine("Error: could not connect to port " + portName + ". No exceptions were thrown.");
                 return IsConnected;
             }
             catch (Exception ex)
             {
-                Debug.WriteLine("Error: could not connect to port " + PORT_ID + ". Exception: " + ex.Message);
+                Debug.WriteLine("Error: could not connect to port " + portName + ". Exception: " + ex.Message);
                 device = null;
                 return false;
             }
         }
 
+        private bool disconnecting = false;
         public void Disconnect()
         {
             if (IsConnected)
             {
+                disconnecting = true;
                 Brightness = 0;
                 device.Close();
                 device.Dispose();
@@ -445,12 +450,17 @@ namespace HandSightLibrary
             }
         }
 
-        public void Reconnect()
+        public void Reconnect(string portName = null)
         {
-            PORT_ID = DEFAULT_PORT_ID;
             Disconnect();
             Thread.Sleep(100);
-            Connect();
+            Connect(portName);
+            device.DiscardInBuffer();
+        }
+
+        public void Flush()
+        {
+            device.DiscardInBuffer();
         }
     }
 }

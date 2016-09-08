@@ -381,8 +381,6 @@ namespace HandSightOnBodyInteractionGPU
                         if (fineLocation == "")
                             Debug.WriteLine("Error");
 
-                        string actionResult = GestureActionMap.PerformAction(gesture.ClassName, coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses);
-
                         Invoke(new MethodInvoker(delegate
                         {
                             CoarsePredictionLabel.Text = "= " + coarseLocation;
@@ -392,15 +390,19 @@ namespace HandSightOnBodyInteractionGPU
                             GesturePredictionLabel.Text = gesture.ClassName;
                             if (Properties.Settings.Default.EnableSpeechOutput)
                             {
-                                if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
+                                if (Properties.Settings.Default.EnableApplicationDemos)
                                 {
-                                    speech.SpeakAsyncCancelAll();
-                                    speech.SelectVoice(MenuVoice);
-                                    //speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
-                                    speech.SpeakAsync(actionResult);
-                                    Logging.LogAudioEvent(actionResult);
+                                    string actionResult = GestureActionMap.PerformAction(gesture.ClassName, coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses, lockToCurrentTask: Properties.Settings.Default.LockToCurrentTask);
+                                    if (actionResult != null && actionResult.Length > 0)
+                                    {
+                                        speech.SpeakAsyncCancelAll();
+                                        speech.SelectVoice(MenuVoice);
+                                        //speech.SpeakAsync(gesture.ClassName + " " + coarseLocation + " " + fineLocation);
+                                        speech.SpeakAsync(actionResult);
+                                        Logging.LogAudioEvent(actionResult);
+                                    }
                                 }
-                                else if(!Properties.Settings.Default.EnableApplicationDemos)
+                                else
                                 {
                                     speech.SpeakAsyncCancelAll();
                                     speech.SelectVoice(MenuVoice);
@@ -426,7 +428,7 @@ namespace HandSightOnBodyInteractionGPU
                 Sensors.Instance.ReadingAvailable += Sensors_ReadingAvailable;
 
                 Camera.Instance.Connect(); Logging.LogOtherEvent("camera_connected");
-                Sensors.Instance.Connect(); Logging.LogOtherEvent("sensors_connected");
+                Sensors.Instance.Connect(Properties.Settings.Default.SensorPort); Logging.LogOtherEvent("sensors_connected");
 
                 Sensors.Instance.NumSensors = Properties.Settings.Default.SingleIMU ? 1 : 2;
 
@@ -809,7 +811,7 @@ namespace HandSightOnBodyInteractionGPU
                                 return;
                             }
 
-                            if ((DateTime.Now - touchStart).TotalMilliseconds > Properties.Settings.Default.HoverTimeThreshold && Properties.Settings.Default.EnableSpeechOutput)
+                            if ((DateTime.Now - touchStart).TotalMilliseconds > Properties.Settings.Default.HoverTimeThreshold)
                             {
                                 hovering = true;
                                 //if (hoverCoarseLocation == null || coarseLocation == hoverCoarseLocation) // make sure we have the same coarse location, to help prevent jumping around
@@ -819,20 +821,27 @@ namespace HandSightOnBodyInteractionGPU
                                     {
                                         hoverFineLocation = fineLocation;
                                         Debug.WriteLine(hoverCoarseLocation + " " + hoverFineLocation);
-                                        string actionResult = GestureActionMap.PerformAction("Hover", coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses);
-                                        if (Properties.Settings.Default.EnableApplicationDemos && actionResult != null && actionResult.Length > 0)
+                                        Invoke(new MethodInvoker(delegate { GesturePredictionLabel.Text = "Hover"; }));
+                                        if (Properties.Settings.Default.EnableSpeechOutput)
                                         {
-                                            speech.SpeakAsyncCancelAll();
-                                            speech.SelectVoice(MenuVoice);
-                                            speech.SpeakAsync(actionResult);
-                                            Logging.LogAudioEvent(actionResult);
-                                        }
-                                        else if (!Properties.Settings.Default.EnableApplicationDemos)
-                                        {
-                                            speech.SpeakAsyncCancelAll();
-                                            speech.SelectVoice(MenuVoice);
-                                            speech.SpeakAsync("Hover " + coarseLocation + " " + fineLocation);
-                                            Logging.LogAudioEvent("Hover " + coarseLocation + " " + fineLocation);
+                                            if (Properties.Settings.Default.EnableApplicationDemos)
+                                            {
+                                                string actionResult = GestureActionMap.PerformAction("Hover", coarseLocation, fineLocation, Properties.Settings.Default.GestureMode, Properties.Settings.Default.FixedApplicationResponses);
+                                                if (actionResult != null && actionResult.Length > 0)
+                                                {
+                                                    speech.SpeakAsyncCancelAll();
+                                                    speech.SelectVoice(MenuVoice);
+                                                    speech.SpeakAsync(actionResult);
+                                                    Logging.LogAudioEvent(actionResult);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                speech.SpeakAsyncCancelAll();
+                                                speech.SelectVoice(MenuVoice);
+                                                speech.SpeakAsync("Hover " + coarseLocation + " " + fineLocation);
+                                                Logging.LogAudioEvent("Hover " + coarseLocation + " " + fineLocation);
+                                            }
                                         }
                                     }
                                 }

@@ -358,5 +358,65 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["OverwriteExistingSamples"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0, 1, 2")]
+        public string ConditionOrder {
+            get {
+                return ((string)(this["ConditionOrder"]));
+            }
+            set {
+                this["ConditionOrder"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EnableSingleTap {
+            get {
+                return ((bool)(this["EnableSingleTap"]));
+            }
+            set {
+                this["EnableSingleTap"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool EnableSwipeDown {
+            get {
+                return ((bool)(this["EnableSwipeDown"]));
+            }
+            set {
+                this["EnableSwipeDown"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("COM4")]
+        public string SensorPort {
+            get {
+                return ((string)(this["SensorPort"]));
+            }
+            set {
+                this["SensorPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool LockToCurrentTask {
+            get {
+                return ((bool)(this["LockToCurrentTask"]));
+            }
+            set {
+                this["LockToCurrentTask"] = value;
+            }
+        }
     }
 }

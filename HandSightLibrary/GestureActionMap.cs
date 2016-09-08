@@ -148,7 +148,7 @@ namespace HandSightLibrary
             return "";
         }
 
-        public static string PerformAction(string gesture, string coarseLocation, string fineLocation, string mode = null, bool fixedResponses = true)
+        public static string PerformAction(string gesture, string coarseLocation, string fineLocation, string mode = null, bool fixedResponses = true, bool lockToCurrentTask = false)
         {
             if (mode == null || !Modes.Contains(mode)) mode = Modes[0];
 
@@ -181,6 +181,18 @@ namespace HandSightLibrary
                         {
                             if (menus.ContainsKey(menus[currMenu].Items[currMenuIndex].Submenu))
                             {
+                                // check to see if the current menu item's submenu items contains the target task
+                                if (lockToCurrentTask)
+                                {
+                                    string submenu = menus[currMenu].Items[currMenuIndex].Submenu;
+                                    bool submenuContainsCurrentTask = menus[currMenu].Items[currMenuIndex].Name == currentTask;
+                                    if (currMenu != submenu)
+                                        foreach (MenuItem item in menus[submenu].Items)
+                                            if (item.Name == currentTask)
+                                                submenuContainsCurrentTask = true;
+                                    if (!submenuContainsCurrentTask) return "";
+                                }
+
                                 string prevMenu = currMenu;
                                 responseText = menus[currMenu].Items[currMenuIndex].ExpandText;
                                 currMenu = menus[currMenu].Items[currMenuIndex].Submenu;

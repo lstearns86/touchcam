@@ -3,6 +3,7 @@ using System.Windows.Forms;
 
 using HandSightLibrary;
 using HandSightLibrary.ImageProcessing;
+using System.IO.Ports;
 
 namespace HandSightOnBodyInteractionGPU
 {
@@ -22,6 +23,10 @@ namespace HandSightOnBodyInteractionGPU
             SingleIMUCheckbox.Checked = Properties.Settings.Default.SingleIMU;
             EnableSoundEffectsCheckbox.Checked = Properties.Settings.Default.EnableSoundEffects;
             HoverTimeThresholdChooser.Value = Properties.Settings.Default.HoverTimeThreshold;
+
+            string[] connectedPorts = SerialPort.GetPortNames();
+            PortChooser.Items.AddRange(connectedPorts);
+            if (PortChooser.Items.Contains(Properties.Settings.Default.SensorPort)) PortChooser.SelectedItem = Properties.Settings.Default.SensorPort;
         }
 
         private void BrightnessChooser_ValueChanged(object sender, EventArgs e)
@@ -106,13 +111,42 @@ namespace HandSightOnBodyInteractionGPU
         private void ReconnectCameraButton_Click(object sender, EventArgs e)
         {
             Camera.Instance.Reconnect();
-            Logging.LogUIEvent("Camera Reconnected");
+            Logging.LogHardwareEvent("Camera", "Reconnected");
         }
 
         private void ReconnectIMUButton_Click(object sender, EventArgs e)
         {
-            Sensors.Instance.Reconnect();
-            Logging.LogUIEvent("Sensors Reconnected");
+            Sensors.Instance.Reconnect((string)PortChooser.SelectedItem);
+            Logging.LogHardwareEvent("Sensors", "Reconnected");
+
+            string[] connectedPorts = SerialPort.GetPortNames();
+            PortChooser.Items.Clear();
+            PortChooser.Items.AddRange(connectedPorts);
+            if (PortChooser.Items.Contains(Properties.Settings.Default.SensorPort)) PortChooser.SelectedItem = Properties.Settings.Default.SensorPort;
+        }
+
+        private void FlushIMUButton_Click(object sender, EventArgs e)
+        {
+            Sensors.Instance.Flush();
+            Logging.LogHardwareEvent("Sensors", "Flushed");
+        }
+
+        private void EnableSwipeDownCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.EnableSwipeDown = EnableSwipeDownCheckbox.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void EnableSingleTapCheckbox_CheckedChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.EnableSingleTap = EnableSingleTapCheckbox.Checked;
+            Properties.Settings.Default.Save();
+        }
+
+        private void PortChooser_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.SensorPort = (string)PortChooser.SelectedItem;
+            Properties.Settings.Default.Save();
         }
     }
 }

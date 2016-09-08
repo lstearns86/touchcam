@@ -79,44 +79,75 @@ namespace HandSightOnBodyInteractionGPU
                     if (FrameProcessedCheckbox.Checked)
                         filteredEvents.Add(e);
                 }
+                else if(e is Logging.HardwareEvent)
+                {
+                    if (HardwareCheckbox.Checked)
+                        filteredEvents.Add(e);
+                }
                 else if (OtherCheckbox.Checked)
                     filteredEvents.Add(e);
             }
 
             DataBox.Items.Clear();
+            float startTime = events != null && events.Count > 0 ? events[0].timestamp : 0;
             foreach(Logging.LogEvent e in filteredEvents)
             {
-                if(DataBox.Items.Count < 1000) DataBox.Items.Add(e.ToJson());
+                if (DataBox.Items.Count < 1000)
+                {
+                    string text = e.ToJson();
+                    float t = e.timestamp;
+                    text = (t / 1000).ToString("0.0") + " s: " + text;
+                    DataBox.Items.Add(text);
+                }
             }
 
             EventCountLabel.Text = filteredEvents.Count + " / " + events.Count;
         }
 
+        private void LoadFile(string path)
+        {
+            Progress.Value = 0;
+            Progress.Maximum = 100;
+            int prevProgress = 0;
+
+            Task.Factory.StartNew(() =>
+            {
+                Action<float> progressAction = (float progress) =>
+                {
+                    if ((int)(progress * 100) == prevProgress) return;
+                    Invoke(new MethodInvoker(delegate { Progress.Value = (int)(progress * 100); }));
+                    prevProgress = (int)(progress * 100);
+                };
+                events = Logging.ReadLog(path, progressAction);
+
+                Invoke(new MethodInvoker(delegate { Progress.Value = 0; }));
+
+                FilterEvents();
+            });
+        }
+
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Title = "Select Log File to Open";
             dialog.InitialDirectory = Path.GetFullPath("logs");
             dialog.Filter = "Log Files|*.log";
             if(dialog.ShowDialog(this) == DialogResult.OK)
             {
                 events.Clear();
-                Progress.Value = 0;
-                Progress.Maximum = 100;
-                int prevProgress = 0;
+                LoadFile(dialog.FileName);
+            }
+        }
 
-                Task.Factory.StartNew(() =>
-                {
-                    events = Logging.ReadLog(dialog.FileName, (float progress) =>
-                    {
-                        if ((int)(progress * 100) == prevProgress) return;
-                        Invoke(new MethodInvoker(delegate { Progress.Value = (int)(progress * 100); }));
-                        prevProgress = (int)(progress * 100);
-                    });
-
-                    Invoke(new MethodInvoker(delegate { Progress.Value = 0; }));
-
-                    FilterEvents();
-                });
+        private void appendToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Title = "Select Log File to Append";
+            dialog.InitialDirectory = Path.GetFullPath("logs");
+            dialog.Filter = "Log Files|*.log";
+            if (dialog.ShowDialog(this) == DialogResult.OK)
+            {
+                LoadFile(dialog.FileName);
             }
         }
     }

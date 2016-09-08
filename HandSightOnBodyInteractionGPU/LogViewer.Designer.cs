@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
+            this.FrameProcessedCheckbox = new System.Windows.Forms.CheckBox();
             this.OtherCheckbox = new System.Windows.Forms.CheckBox();
             this.MenuCheckbox = new System.Windows.Forms.CheckBox();
             this.UICheckbox = new System.Windows.Forms.CheckBox();
@@ -44,13 +45,15 @@
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DataBox = new System.Windows.Forms.ListBox();
-            this.FrameProcessedCheckbox = new System.Windows.Forms.CheckBox();
+            this.HardwareCheckbox = new System.Windows.Forms.CheckBox();
+            this.appendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.HardwareCheckbox);
             this.panel1.Controls.Add(this.FrameProcessedCheckbox);
             this.panel1.Controls.Add(this.OtherCheckbox);
             this.panel1.Controls.Add(this.MenuCheckbox);
@@ -68,10 +71,21 @@
             this.panel1.Size = new System.Drawing.Size(123, 437);
             this.panel1.TabIndex = 0;
             // 
+            // FrameProcessedCheckbox
+            // 
+            this.FrameProcessedCheckbox.AutoSize = true;
+            this.FrameProcessedCheckbox.Location = new System.Drawing.Point(13, 196);
+            this.FrameProcessedCheckbox.Name = "FrameProcessedCheckbox";
+            this.FrameProcessedCheckbox.Size = new System.Drawing.Size(108, 17);
+            this.FrameProcessedCheckbox.TabIndex = 10;
+            this.FrameProcessedCheckbox.Text = "Frame Processed";
+            this.FrameProcessedCheckbox.UseVisualStyleBackColor = true;
+            this.FrameProcessedCheckbox.CheckedChanged += new System.EventHandler(this.Checkbox_CheckedChanged);
+            // 
             // OtherCheckbox
             // 
             this.OtherCheckbox.AutoSize = true;
-            this.OtherCheckbox.Location = new System.Drawing.Point(13, 219);
+            this.OtherCheckbox.Location = new System.Drawing.Point(13, 242);
             this.OtherCheckbox.Name = "OtherCheckbox";
             this.OtherCheckbox.Size = new System.Drawing.Size(52, 17);
             this.OtherCheckbox.TabIndex = 9;
@@ -199,7 +213,8 @@
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.openToolStripMenuItem});
+            this.openToolStripMenuItem,
+            this.appendToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
@@ -208,7 +223,7 @@
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
             this.openToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
@@ -221,16 +236,24 @@
             this.DataBox.Size = new System.Drawing.Size(598, 427);
             this.DataBox.TabIndex = 3;
             // 
-            // FrameProcessedCheckbox
+            // HardwareCheckbox
             // 
-            this.FrameProcessedCheckbox.AutoSize = true;
-            this.FrameProcessedCheckbox.Location = new System.Drawing.Point(13, 196);
-            this.FrameProcessedCheckbox.Name = "FrameProcessedCheckbox";
-            this.FrameProcessedCheckbox.Size = new System.Drawing.Size(108, 17);
-            this.FrameProcessedCheckbox.TabIndex = 10;
-            this.FrameProcessedCheckbox.Text = "Frame Processed";
-            this.FrameProcessedCheckbox.UseVisualStyleBackColor = true;
-            this.FrameProcessedCheckbox.CheckedChanged += new System.EventHandler(this.Checkbox_CheckedChanged);
+            this.HardwareCheckbox.AutoSize = true;
+            this.HardwareCheckbox.Location = new System.Drawing.Point(13, 219);
+            this.HardwareCheckbox.Name = "HardwareCheckbox";
+            this.HardwareCheckbox.Size = new System.Drawing.Size(72, 17);
+            this.HardwareCheckbox.TabIndex = 11;
+            this.HardwareCheckbox.Text = "Hardware";
+            this.HardwareCheckbox.UseVisualStyleBackColor = true;
+            this.HardwareCheckbox.CheckedChanged += new System.EventHandler(this.Checkbox_CheckedChanged);
+            // 
+            // appendToolStripMenuItem
+            // 
+            this.appendToolStripMenuItem.Name = "appendToolStripMenuItem";
+            this.appendToolStripMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.appendToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.appendToolStripMenuItem.Text = "Append";
+            this.appendToolStripMenuItem.Click += new System.EventHandler(this.appendToolStripMenuItem_Click);
             // 
             // LogViewer
             // 
@@ -272,5 +295,7 @@
         private System.Windows.Forms.CheckBox MenuCheckbox;
         private System.Windows.Forms.ListBox DataBox;
         private System.Windows.Forms.CheckBox FrameProcessedCheckbox;
+        private System.Windows.Forms.CheckBox HardwareCheckbox;
+        private System.Windows.Forms.ToolStripMenuItem appendToolStripMenuItem;
     }
 }

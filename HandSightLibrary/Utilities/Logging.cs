@@ -154,6 +154,18 @@ namespace HandSightLibrary
             }
         }
 
+        public class HardwareEvent : LogEvent
+        {
+            public string component;
+
+            public HardwareEvent(string component, string message)
+            {
+                this.component = component;
+                this.message = message;
+                type = "hardware";
+            }
+        }
+
         #endregion
 
         #region Constants and Variables
@@ -341,6 +353,13 @@ namespace HandSightLibrary
             eventQueue.Add(new FrameProcessedEvent());
         }
 
+        public static void LogHardwareEvent(string component, string message)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new HardwareEvent(component, message));
+        }
+
         public static void LogOtherEvent(string message)
         {
             if (!Running) return;
@@ -407,6 +426,10 @@ namespace HandSightLibrary
                     else if (logEvent.type == "menu")
                     {
                         logEvent = (MenuEvent)JsonConvert.DeserializeObject(line, typeof(MenuEvent));
+                    }
+                    else if (logEvent.type == "hardware")
+                    {
+                        logEvent = (HardwareEvent)JsonConvert.DeserializeObject(line, typeof(HardwareEvent));
                     }
                     events.Add(logEvent);
                 }

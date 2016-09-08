@@ -89,7 +89,7 @@ namespace HandSightLibrary
             }
         }
 
-        public static void Load(string name, bool retrain = true, bool isDefault = false)
+        public static void Load(string name, bool retrain = true, bool isDefault = false, bool enableSwipeDown = true, bool enableSingleTap = true)
         {
             string dir = Path.Combine("savedProfiles", name);
             if (!Directory.Exists(dir))
@@ -99,6 +99,7 @@ namespace HandSightLibrary
 
             string[] filenames = Directory.GetFiles(dir, "*.gest");
             Gesture.InitNoVisualization();
+            Debug.WriteLine("Loading gesture files in directory \"" + dir + "\"");
             Parallel.ForEach(filenames, (string filename) =>
             //foreach (string filename in )
             {
@@ -131,6 +132,7 @@ namespace HandSightLibrary
                     Gesture template = JsonConvert.DeserializeObject<Gesture>(json);
                     template.DefaultGesture = isDefault;
                     template.IsTrainingData = true;
+                    if ((template.ClassName == "Swipe Down" && !enableSwipeDown) || (template.ClassName == "Tap" && !enableSingleTap)) return;
                     //string className = template.ClassName;
 
                     //AddTrainingExample(template, className);
@@ -142,9 +144,16 @@ namespace HandSightLibrary
                 }
             });
 
+            Debug.WriteLine("Adding templates");
             foreach (Gesture template in tempTemplates) AddTrainingExample(template, template.ClassName);
 
-            if(retrain) Train();
+            if (retrain)
+            {
+                Debug.WriteLine("Training");
+                Train();
+            }
+
+            Debug.WriteLine("Finished Loading Gestures");
         }
 
         public static void PreprocessGesture(Gesture gesture, bool useSecondSensor = false)

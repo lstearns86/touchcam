@@ -49,6 +49,8 @@
             this.NextPhaseButton = new System.Windows.Forms.Button();
             this.PhaseLabel = new System.Windows.Forms.Label();
             this.ConditionOrderTextbox = new System.Windows.Forms.TextBox();
+            this.NextPhaseLabel = new System.Windows.Forms.Label();
+            this.LockToCurrentTaskCheckbox = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // EnableApplicationDemoCheckbox
@@ -99,9 +101,9 @@
             this.TaskLabel.AutoSize = true;
             this.TaskLabel.Location = new System.Drawing.Point(12, 88);
             this.TaskLabel.Name = "TaskLabel";
-            this.TaskLabel.Size = new System.Drawing.Size(34, 13);
+            this.TaskLabel.Size = new System.Drawing.Size(66, 13);
             this.TaskLabel.TabIndex = 30;
-            this.TaskLabel.Text = "Task:";
+            this.TaskLabel.Text = "Task: (1/10)";
             // 
             // ResetMenuLocationButton
             // 
@@ -137,9 +139,9 @@
             // 
             // StartStopLoggingButton
             // 
-            this.StartStopLoggingButton.Location = new System.Drawing.Point(213, 165);
+            this.StartStopLoggingButton.Location = new System.Drawing.Point(213, 188);
             this.StartStopLoggingButton.Name = "StartStopLoggingButton";
-            this.StartStopLoggingButton.Size = new System.Drawing.Size(109, 49);
+            this.StartStopLoggingButton.Size = new System.Drawing.Size(82, 34);
             this.StartStopLoggingButton.TabIndex = 37;
             this.StartStopLoggingButton.Text = "Start Logging";
             this.StartStopLoggingButton.UseVisualStyleBackColor = true;
@@ -147,9 +149,9 @@
             // 
             // ResetLoggingButton
             // 
-            this.ResetLoggingButton.Location = new System.Drawing.Point(328, 165);
+            this.ResetLoggingButton.Location = new System.Drawing.Point(301, 188);
             this.ResetLoggingButton.Name = "ResetLoggingButton";
-            this.ResetLoggingButton.Size = new System.Drawing.Size(55, 49);
+            this.ResetLoggingButton.Size = new System.Drawing.Size(82, 34);
             this.ResetLoggingButton.TabIndex = 38;
             this.ResetLoggingButton.Text = "Reset Logging";
             this.ResetLoggingButton.UseVisualStyleBackColor = true;
@@ -157,7 +159,7 @@
             // 
             // SetLoggingLocationButton
             // 
-            this.SetLoggingLocationButton.Location = new System.Drawing.Point(213, 220);
+            this.SetLoggingLocationButton.Location = new System.Drawing.Point(213, 228);
             this.SetLoggingLocationButton.Name = "SetLoggingLocationButton";
             this.SetLoggingLocationButton.Size = new System.Drawing.Size(170, 23);
             this.SetLoggingLocationButton.TabIndex = 39;
@@ -173,6 +175,8 @@
             "pilot2",
             "pilot3",
             "pilot4",
+            "pilot5",
+            "pilot6",
             "p01",
             "p02",
             "p03",
@@ -236,9 +240,9 @@
             // PrevPhaseButton
             // 
             this.PrevPhaseButton.Enabled = false;
-            this.PrevPhaseButton.Location = new System.Drawing.Point(15, 194);
+            this.PrevPhaseButton.Location = new System.Drawing.Point(15, 189);
             this.PrevPhaseButton.Name = "PrevPhaseButton";
-            this.PrevPhaseButton.Size = new System.Drawing.Size(80, 49);
+            this.PrevPhaseButton.Size = new System.Drawing.Size(80, 45);
             this.PrevPhaseButton.TabIndex = 45;
             this.PrevPhaseButton.Text = "Prev";
             this.PrevPhaseButton.UseVisualStyleBackColor = true;
@@ -246,9 +250,9 @@
             // 
             // NextPhaseButton
             // 
-            this.NextPhaseButton.Location = new System.Drawing.Point(105, 194);
+            this.NextPhaseButton.Location = new System.Drawing.Point(105, 189);
             this.NextPhaseButton.Name = "NextPhaseButton";
-            this.NextPhaseButton.Size = new System.Drawing.Size(80, 49);
+            this.NextPhaseButton.Size = new System.Drawing.Size(80, 45);
             this.NextPhaseButton.TabIndex = 46;
             this.NextPhaseButton.Text = "Next";
             this.NextPhaseButton.UseVisualStyleBackColor = true;
@@ -257,9 +261,9 @@
             // PhaseLabel
             // 
             this.PhaseLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 14F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.PhaseLabel.Location = new System.Drawing.Point(13, 129);
+            this.PhaseLabel.Location = new System.Drawing.Point(13, 137);
             this.PhaseLabel.Name = "PhaseLabel";
-            this.PhaseLabel.Size = new System.Drawing.Size(172, 62);
+            this.PhaseLabel.Size = new System.Drawing.Size(172, 49);
             this.PhaseLabel.TabIndex = 47;
             this.PhaseLabel.Text = "Beginning";
             this.PhaseLabel.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
@@ -273,11 +277,34 @@
             this.ConditionOrderTextbox.Text = "0, 1, 2";
             this.ConditionOrderTextbox.TextChanged += new System.EventHandler(this.ConditionOrderTextbox_TextChanged);
             // 
+            // NextPhaseLabel
+            // 
+            this.NextPhaseLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.NextPhaseLabel.Location = new System.Drawing.Point(13, 237);
+            this.NextPhaseLabel.Name = "NextPhaseLabel";
+            this.NextPhaseLabel.Size = new System.Drawing.Size(172, 16);
+            this.NextPhaseLabel.TabIndex = 49;
+            this.NextPhaseLabel.Text = "Next: Intro";
+            this.NextPhaseLabel.TextAlign = System.Drawing.ContentAlignment.TopCenter;
+            // 
+            // LockToCurrentTaskCheckbox
+            // 
+            this.LockToCurrentTaskCheckbox.AutoSize = true;
+            this.LockToCurrentTaskCheckbox.Location = new System.Drawing.Point(213, 165);
+            this.LockToCurrentTaskCheckbox.Name = "LockToCurrentTaskCheckbox";
+            this.LockToCurrentTaskCheckbox.Size = new System.Drawing.Size(126, 17);
+            this.LockToCurrentTaskCheckbox.TabIndex = 50;
+            this.LockToCurrentTaskCheckbox.Text = "Lock to Current Task";
+            this.LockToCurrentTaskCheckbox.UseVisualStyleBackColor = true;
+            this.LockToCurrentTaskCheckbox.CheckedChanged += new System.EventHandler(this.LockToCurrentTaskButton_CheckedChanged);
+            // 
             // TestingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(391, 254);
+            this.ClientSize = new System.Drawing.Size(391, 263);
+            this.Controls.Add(this.LockToCurrentTaskCheckbox);
+            this.Controls.Add(this.NextPhaseLabel);
             this.Controls.Add(this.ConditionOrderTextbox);
             this.Controls.Add(this.PhaseLabel);
             this.Controls.Add(this.NextPhaseButton);
@@ -331,5 +358,7 @@
         private System.Windows.Forms.Button NextPhaseButton;
         private System.Windows.Forms.Label PhaseLabel;
         private System.Windows.Forms.TextBox ConditionOrderTextbox;
+        private System.Windows.Forms.Label NextPhaseLabel;
+        private System.Windows.Forms.CheckBox LockToCurrentTaskCheckbox;
     }
 }

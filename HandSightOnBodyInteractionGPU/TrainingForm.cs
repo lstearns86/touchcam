@@ -273,7 +273,7 @@ namespace HandSightOnBodyInteractionGPU
 
                     Bitmap img = template.Visualization;
 
-                    GestureView.LargeImageList.Images.Add(img);
+                    if(img != null) GestureView.LargeImageList.Images.Add(img);
                     ListViewItem item = new ListViewItem() { Text = gestureName + " " + (templateIndex++) + " (" + duration.ToString("0.0") + "s)", ImageIndex = (imageIndex++), Tag = template };
                     GestureView.Items.Add(item);
                     item.Group = group;
@@ -426,9 +426,13 @@ namespace HandSightOnBodyInteractionGPU
             Task.Factory.StartNew(() =>
             {
                 Localization.Instance.Save(profileName);
+                Logging.LogOtherEvent("Save Location Profile");
 
                 if (Properties.Settings.Default.IncludeGesturesInProfile)
+                {
                     GestureRecognition.Save(profileName);
+                    Logging.LogOtherEvent("Save Gesture Profile");
+                }
 
                 Debug.WriteLine("Finished Saving");
 
@@ -458,11 +462,13 @@ namespace HandSightOnBodyInteractionGPU
                 {
                     if (Properties.Settings.Default.OverwriteExistingSamples) Localization.Instance.Reset();
                     Localization.Instance.Load(dialog.SelectedItem);
+                    Logging.LogOtherEvent("Load Location Profile: " + dialog.SelectedItem);
 
                     //if (Properties.Settings.Default.IncludeGesturesInProfile)
                     {
                         if (Properties.Settings.Default.OverwriteExistingSamples) GestureRecognition.Reset();
-                        GestureRecognition.Load(dialog.SelectedItem);
+                        GestureRecognition.Load(dialog.SelectedItem, enableSingleTap: Properties.Settings.Default.EnableSingleTap, enableSwipeDown: Properties.Settings.Default.EnableSwipeDown, isDefault: true);
+                        Logging.LogOtherEvent("Load Gesture Profile: " + dialog.SelectedItem);
                     }
                     training = false;
 
@@ -475,7 +481,7 @@ namespace HandSightOnBodyInteractionGPU
 
         private void OverwriteExistingSamplesCheckbox_CheckedChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default.IncludeGesturesInProfile = OverwriteExistingSamplesCheckbox.Checked;
+            Properties.Settings.Default.OverwriteExistingSamples = OverwriteExistingSamplesCheckbox.Checked;
             Properties.Settings.Default.Save();
         }
 
@@ -549,6 +555,7 @@ namespace HandSightOnBodyInteractionGPU
                         //Debug.WriteLine("Training classifier");
                         //GestureRecognition.Train(fullRetrain: false);
                         GestureRecognition.LoadClassifier(dialog.FileName);
+                        Logging.LogOtherEvent("Load Gesture SVM: " + dialog.FileName);
 
                         //GestureRecognition.Load("default");
 
@@ -570,6 +577,7 @@ namespace HandSightOnBodyInteractionGPU
             Localization.Instance.Reset();
             training = false;
             UpdateLocationList();
+            Logging.LogOtherEvent("Reset Locations");
         }
 
         private void TrainingForm_Move(object sender, EventArgs e)
@@ -590,11 +598,13 @@ namespace HandSightOnBodyInteractionGPU
             autoGesture = !autoGesture;
             if (autoGesture)
             {
+                Logging.LogOtherEvent("Start Autocapturing Gesture");
                 OnAutoCaptureGesture((string)GestureChooser.SelectedItem);
                 AutoCaptureGestureButton.Text = "Stop";
             }
             else
             {
+                Logging.LogOtherEvent("Stop Autocapturing Gesture");
                 OnStopAutoCapturingGestures();
                 AutoCaptureGestureButton.Text = "Auto";
             }
@@ -605,11 +615,13 @@ namespace HandSightOnBodyInteractionGPU
             autoLocation = !autoLocation;
             if (autoLocation)
             {
+                Logging.LogOtherEvent("Start Autocapturing Location");
                 OnAutoCaptureLocation((string)CoarseLocationChooser.SelectedItem, (string)FineLocationChooser.SelectedItem);
                 AutoCaptureLocationButton.Text = "Stop";
             }
             else
             {
+                Logging.LogOtherEvent("Stop Autocapturing Location");
                 OnStopAutoCapturingLocation();
                 AutoCaptureLocationButton.Text = "Auto";
             }
@@ -617,6 +629,7 @@ namespace HandSightOnBodyInteractionGPU
 
         private void ResetGesturesButton_Click(object sender, EventArgs e)
         {
+            Logging.LogOtherEvent("Reset Gestures");
             training = true;
             GestureRecognition.Reset();
             training = false;
@@ -633,6 +646,7 @@ namespace HandSightOnBodyInteractionGPU
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
                 GestureRecognition.SaveClassifier(dialog.FileName);
+                Logging.LogOtherEvent("Save Gesture SVM: " + dialog.FileName);
             }
         }
 
@@ -642,6 +656,7 @@ namespace HandSightOnBodyInteractionGPU
             autoGesture = false;
             AutoCaptureGestureButton.Text = "Auto";
             AutoCaptureLocationButton.Text = "Auto";
+            Logging.LogOtherEvent("External Stop Autocapture");
         }
     }
 }
