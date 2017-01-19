@@ -33,7 +33,18 @@ namespace HandSightLibrary
 
         public static bool HasTouchedDown { get { return touchDown; } }
 
-        public static void UpdateWithReading(Sensors.Reading reading)
+        public static void Reset()
+        {
+            frameRate = 200;
+            timestamps.Clear();
+            irReadings1.Clear();
+            irReadings2.Clear();
+            movingAverage1 = 0;
+            movingAverage2 = 0;
+            touchDown = false;
+        }
+
+        public static bool UpdateWithReading(Sensors.Reading reading)
         {
             FPS.Sensors.Update();
             frameRate = FPS.Sensors.Average;
@@ -59,6 +70,8 @@ namespace HandSightLibrary
                     //readings.Enqueue(reading);
                 }
             }
+
+            return touchDown;
         }
 
         static float windowSize = 1.0f / 8.0f; // in seconds

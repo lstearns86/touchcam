@@ -1,6 +1,6 @@
 ﻿namespace HandSightOnBodyInteractionGPU
 {
-    partial class EvaluateOldData
+    partial class OfflineExperiments
     {
         /// <summary>
         /// Required designer variable.
@@ -50,16 +50,16 @@
             this.StatusLabel.TabIndex = 1;
             this.StatusLabel.Text = "label1";
             // 
-            // EvaluateOldData
+            // OfflineExperiments
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 82);
             this.Controls.Add(this.StatusLabel);
             this.Controls.Add(this.Progress);
-            this.Name = "EvaluateOldData";
-            this.Text = "Evaluating Old Data";
-            this.Load += new System.EventHandler(this.EvaluateOldData_Load);
+            this.Name = "OfflineExperiments";
+            this.Text = "Performing Offline Experiments";
+            this.Load += new System.EventHandler(this.OfflineExperiments_Load);
             this.ResumeLayout(false);
 
         }

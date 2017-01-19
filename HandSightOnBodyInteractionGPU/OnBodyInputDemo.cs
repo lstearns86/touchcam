@@ -494,7 +494,8 @@ namespace HandSightOnBodyInteractionGPU
 
             TouchSegmentation.UpdateWithReading(reading);
 
-            Logging.LogSensorReading(reading);
+            if(testingForm.RecordSensors)
+                Logging.LogSensorReading(reading);
 
             sensorReadingHistory.Add(reading);
             while(sensorReadingHistory.Count > sensorReadingPreBuffer) sensorReadingHistory.Take();
@@ -678,7 +679,8 @@ namespace HandSightOnBodyInteractionGPU
             {
                 try
                 {
-                    Logging.LogVideoFrame(frame.Image.Bitmap);
+                    if (testingForm.RecordSensors)
+                        Logging.LogVideoFrame(frame.Image.Bitmap);
 
                     float focus = 0;
                     //lock (processingLock)
@@ -686,7 +688,8 @@ namespace HandSightOnBodyInteractionGPU
                     {
                         ImageProcessing.ProcessTemplate(template, false);
                         focus = ImageProcessing.ImageFocus(template);
-                        Logging.LogFrameProcessed();
+                        if (testingForm.RecordSensors)
+                            Logging.LogFrameProcessed();
                         currTemplate = template;
                         FPS.Instance("processing").Update();
                         Monitor.Exit(preprocessingLock);

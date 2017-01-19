@@ -29,6 +29,9 @@
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
+            this.TasksCheckbox = new System.Windows.Forms.CheckBox();
+            this.PhasesCheckbox = new System.Windows.Forms.CheckBox();
+            this.HardwareCheckbox = new System.Windows.Forms.CheckBox();
             this.FrameProcessedCheckbox = new System.Windows.Forms.CheckBox();
             this.OtherCheckbox = new System.Windows.Forms.CheckBox();
             this.MenuCheckbox = new System.Windows.Forms.CheckBox();
@@ -44,15 +47,21 @@
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.DataBox = new System.Windows.Forms.ListBox();
-            this.HardwareCheckbox = new System.Windows.Forms.CheckBox();
             this.appendToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.displayModeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.rawLogEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.phaseDurationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.taskDurationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.menuNavigationEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.DataBox = new System.Windows.Forms.ListBox();
             this.panel1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.TasksCheckbox);
+            this.panel1.Controls.Add(this.PhasesCheckbox);
             this.panel1.Controls.Add(this.HardwareCheckbox);
             this.panel1.Controls.Add(this.FrameProcessedCheckbox);
             this.panel1.Controls.Add(this.OtherCheckbox);
@@ -71,10 +80,47 @@
             this.panel1.Size = new System.Drawing.Size(123, 437);
             this.panel1.TabIndex = 0;
             // 
+            // TasksCheckbox
+            // 
+            this.TasksCheckbox.AutoSize = true;
+            this.TasksCheckbox.Checked = true;
+            this.TasksCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.TasksCheckbox.Location = new System.Drawing.Point(13, 219);
+            this.TasksCheckbox.Name = "TasksCheckbox";
+            this.TasksCheckbox.Size = new System.Drawing.Size(55, 17);
+            this.TasksCheckbox.TabIndex = 13;
+            this.TasksCheckbox.Text = "Tasks";
+            this.TasksCheckbox.UseVisualStyleBackColor = true;
+            this.TasksCheckbox.CheckedChanged += new System.EventHandler(this.Checkbox_CheckedChanged);
+            // 
+            // PhasesCheckbox
+            // 
+            this.PhasesCheckbox.AutoSize = true;
+            this.PhasesCheckbox.Checked = true;
+            this.PhasesCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.PhasesCheckbox.Location = new System.Drawing.Point(13, 196);
+            this.PhasesCheckbox.Name = "PhasesCheckbox";
+            this.PhasesCheckbox.Size = new System.Drawing.Size(61, 17);
+            this.PhasesCheckbox.TabIndex = 12;
+            this.PhasesCheckbox.Text = "Phases";
+            this.PhasesCheckbox.UseVisualStyleBackColor = true;
+            this.PhasesCheckbox.CheckedChanged += new System.EventHandler(this.Checkbox_CheckedChanged);
+            // 
+            // HardwareCheckbox
+            // 
+            this.HardwareCheckbox.AutoSize = true;
+            this.HardwareCheckbox.Location = new System.Drawing.Point(13, 265);
+            this.HardwareCheckbox.Name = "HardwareCheckbox";
+            this.HardwareCheckbox.Size = new System.Drawing.Size(72, 17);
+            this.HardwareCheckbox.TabIndex = 11;
+            this.HardwareCheckbox.Text = "Hardware";
+            this.HardwareCheckbox.UseVisualStyleBackColor = true;
+            this.HardwareCheckbox.CheckedChanged += new System.EventHandler(this.Checkbox_CheckedChanged);
+            // 
             // FrameProcessedCheckbox
             // 
             this.FrameProcessedCheckbox.AutoSize = true;
-            this.FrameProcessedCheckbox.Location = new System.Drawing.Point(13, 196);
+            this.FrameProcessedCheckbox.Location = new System.Drawing.Point(13, 242);
             this.FrameProcessedCheckbox.Name = "FrameProcessedCheckbox";
             this.FrameProcessedCheckbox.Size = new System.Drawing.Size(108, 17);
             this.FrameProcessedCheckbox.TabIndex = 10;
@@ -85,7 +131,7 @@
             // OtherCheckbox
             // 
             this.OtherCheckbox.AutoSize = true;
-            this.OtherCheckbox.Location = new System.Drawing.Point(13, 242);
+            this.OtherCheckbox.Location = new System.Drawing.Point(13, 288);
             this.OtherCheckbox.Name = "OtherCheckbox";
             this.OtherCheckbox.Size = new System.Drawing.Size(52, 17);
             this.OtherCheckbox.TabIndex = 9;
@@ -202,7 +248,8 @@
             // menuStrip1
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileToolStripMenuItem});
+            this.fileToolStripMenuItem,
+            this.displayModeToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -227,26 +274,6 @@
             this.openToolStripMenuItem.Text = "Open";
             this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
-            // DataBox
-            // 
-            this.DataBox.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.DataBox.FormattingEnabled = true;
-            this.DataBox.Location = new System.Drawing.Point(0, 24);
-            this.DataBox.Name = "DataBox";
-            this.DataBox.Size = new System.Drawing.Size(598, 427);
-            this.DataBox.TabIndex = 3;
-            // 
-            // HardwareCheckbox
-            // 
-            this.HardwareCheckbox.AutoSize = true;
-            this.HardwareCheckbox.Location = new System.Drawing.Point(13, 219);
-            this.HardwareCheckbox.Name = "HardwareCheckbox";
-            this.HardwareCheckbox.Size = new System.Drawing.Size(72, 17);
-            this.HardwareCheckbox.TabIndex = 11;
-            this.HardwareCheckbox.Text = "Hardware";
-            this.HardwareCheckbox.UseVisualStyleBackColor = true;
-            this.HardwareCheckbox.CheckedChanged += new System.EventHandler(this.Checkbox_CheckedChanged);
-            // 
             // appendToolStripMenuItem
             // 
             this.appendToolStripMenuItem.Name = "appendToolStripMenuItem";
@@ -254,6 +281,61 @@
             this.appendToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
             this.appendToolStripMenuItem.Text = "Append";
             this.appendToolStripMenuItem.Click += new System.EventHandler(this.appendToolStripMenuItem_Click);
+            // 
+            // displayModeToolStripMenuItem
+            // 
+            this.displayModeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.rawLogEventsToolStripMenuItem,
+            this.phaseDurationsToolStripMenuItem,
+            this.taskDurationsToolStripMenuItem,
+            this.menuNavigationEventsToolStripMenuItem});
+            this.displayModeToolStripMenuItem.Name = "displayModeToolStripMenuItem";
+            this.displayModeToolStripMenuItem.Size = new System.Drawing.Size(91, 20);
+            this.displayModeToolStripMenuItem.Text = "Display Mode";
+            // 
+            // rawLogEventsToolStripMenuItem
+            // 
+            this.rawLogEventsToolStripMenuItem.Checked = true;
+            this.rawLogEventsToolStripMenuItem.CheckOnClick = true;
+            this.rawLogEventsToolStripMenuItem.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.rawLogEventsToolStripMenuItem.Name = "rawLogEventsToolStripMenuItem";
+            this.rawLogEventsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.rawLogEventsToolStripMenuItem.Text = "Raw Log Events";
+            this.rawLogEventsToolStripMenuItem.Click += new System.EventHandler(this.displayModeToolStripMenuItem_Click);
+            // 
+            // phaseDurationsToolStripMenuItem
+            // 
+            this.phaseDurationsToolStripMenuItem.CheckOnClick = true;
+            this.phaseDurationsToolStripMenuItem.Name = "phaseDurationsToolStripMenuItem";
+            this.phaseDurationsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.phaseDurationsToolStripMenuItem.Text = "Phase Durations";
+            this.phaseDurationsToolStripMenuItem.Click += new System.EventHandler(this.displayModeToolStripMenuItem_Click);
+            // 
+            // taskDurationsToolStripMenuItem
+            // 
+            this.taskDurationsToolStripMenuItem.CheckOnClick = true;
+            this.taskDurationsToolStripMenuItem.Name = "taskDurationsToolStripMenuItem";
+            this.taskDurationsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.taskDurationsToolStripMenuItem.Text = "Task Durations";
+            this.taskDurationsToolStripMenuItem.Click += new System.EventHandler(this.displayModeToolStripMenuItem_Click);
+            // 
+            // menuNavigationEventsToolStripMenuItem
+            // 
+            this.menuNavigationEventsToolStripMenuItem.CheckOnClick = true;
+            this.menuNavigationEventsToolStripMenuItem.Name = "menuNavigationEventsToolStripMenuItem";
+            this.menuNavigationEventsToolStripMenuItem.Size = new System.Drawing.Size(203, 22);
+            this.menuNavigationEventsToolStripMenuItem.Text = "Menu Navigation Events";
+            this.menuNavigationEventsToolStripMenuItem.Click += new System.EventHandler(this.displayModeToolStripMenuItem_Click);
+            // 
+            // DataBox
+            // 
+            this.DataBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.DataBox.FormattingEnabled = true;
+            this.DataBox.Location = new System.Drawing.Point(0, 24);
+            this.DataBox.Name = "DataBox";
+            this.DataBox.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
+            this.DataBox.Size = new System.Drawing.Size(598, 427);
+            this.DataBox.TabIndex = 3;
             // 
             // LogViewer
             // 
@@ -264,9 +346,11 @@
             this.Controls.Add(this.Progress);
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.menuStrip1);
+            this.KeyPreview = true;
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "LogViewer";
             this.Text = "LogViewer";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.LogViewer_KeyDown);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
@@ -297,5 +381,12 @@
         private System.Windows.Forms.CheckBox FrameProcessedCheckbox;
         private System.Windows.Forms.CheckBox HardwareCheckbox;
         private System.Windows.Forms.ToolStripMenuItem appendToolStripMenuItem;
+        private System.Windows.Forms.CheckBox TasksCheckbox;
+        private System.Windows.Forms.CheckBox PhasesCheckbox;
+        private System.Windows.Forms.ToolStripMenuItem displayModeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem rawLogEventsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem phaseDurationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem taskDurationsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem menuNavigationEventsToolStripMenuItem;
     }
 }

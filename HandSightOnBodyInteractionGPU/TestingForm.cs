@@ -11,10 +11,42 @@ namespace HandSightOnBodyInteractionGPU
 {
     public partial class TestingForm : Form
     {
-        private List<string> phases = new List<string>(new string[] { "Intro", "Consent", "Demographics", "Smartphone Questions", "Smartwatch Questions", "On-body Questions", "Break", "Prototype Setup", "Location Training", "Gesture Training", "Training Condition 1", "Testing Condition 1", "Questions Condition 1", "Training Condition 2", "Testing Condition 2", "Questions Condition 2", "Training Condition 3", "Testing Condition 3", "Questions Condition 3", "Final Questions", "Conclusion" });
+        private List<string> phases = new List<string>(new string[] { "Intro", "Consent", "Demographics", "Smartphone Questions", "Smartwatch Questions", "On-body Questions", "Break", "Prototype Setup", "Location Training", "Gesture Training", "Explaining Condition 1", "Practicing Condition 1", "Testing Condition 1", "Questions Condition 1", "Explaining Condition 2", "Practicing Condition 2", "Testing Condition 2", "Questions Condition 2", "Explaining Condition 3", "Practicing Condition 3", "Testing Condition 3", "Questions Condition 3", "Final Questions", "Conclusion" });
         private int currPhase = -1;
         private int[] conditionOrder = { 0, 1, 2 };
         private List<string> tasks = new List<string>(new string[] { "Timer", "Next Event", "Steps", "Message 3", "Voice Input", "Alarm", "Weather", "Heart Rate", "Message 1", "Voice Input" });
+
+        private int tempPhase = -1;
+        private bool recordSensors = false;
+        public bool RecordSensors
+        {
+            get
+            {
+                //Invoke(new MethodInvoker(delegate
+                //{
+                    if (tempPhase != currPhase)
+                    {
+                        recordSensors = currPhase >= phases.IndexOf("Prototype Setup") && currPhase < phases.IndexOf("Final Questions");
+                        tempPhase = currPhase;
+                    }
+                //}));
+
+                return recordSensors;
+            }
+        }
+        public string CurrentPhase { get { if (currPhase >= 0 && currPhase < phases.Count) return phases[currPhase]; else return "N/A"; } }
+
+        private Dictionary<string, string> taskInstructions = new Dictionary<string, string> {
+            { "Timer", "Please open the \"Clock\" app, and then find and double-tap the \"Timer\" item." },
+            { "Next Event", "Please open the \"Daily Summary\" app, and then find and double-tap the \"Next Event\" item." },
+            { "Steps", "Please open the \"Health and Activities\" app, and then find and double-tap the \"Steps\" item." },
+            { "Message 3", "Please open the \"Notifications\" app, and then find and double-tap the \"message from Charlie\"." },
+            { "Alarm", "Please open the \"Clock\" app, and then find and double-tap the \"Alarm\" item." },
+            { "Weather", "Please open the \"Daily Summary\" app, and then find and double-tap the \"Weather\" item." },
+            { "Heart Rate", "Please open the \"Health and Activities\" app, and then find and double-tap the \"Heart Rate\" item." },
+            { "Message 1", "Please open the \"Notifications\" app, and then find and double-tap the \"missed phone call from Alice\"." },
+            { "Voice Input", "Please find and double-tap the \"voice input\" app." },
+        };
 
         public bool HideFromList { get { return true; } }
 
@@ -139,6 +171,7 @@ namespace HandSightOnBodyInteractionGPU
         {
             Properties.Settings.Default.CurrentTask = (string)TaskChooser.SelectedItem;
             TaskLabel.Text = "Task: (" + (TaskChooser.SelectedIndex + 1) + " / " + TaskChooser.Items.Count + ")";
+            if (taskInstructions.ContainsKey((string)TaskChooser.SelectedItem)) TaskInstructionsLabel.Text = taskInstructions[(string)TaskChooser.SelectedItem];
         }
 
         private void TestingForm_Move(object sender, EventArgs e)
@@ -373,10 +406,11 @@ namespace HandSightOnBodyInteractionGPU
                 if (newPhase) Logging.LogUIEvent("Phase: Beginning");
             }
 
-            if((phases[currPhase].Contains("Training") || phases[currPhase].Contains("Testing")) && !(phases[currPhase].Contains("Location") || phases[currPhase].Contains("Gesture")))
+            if((phases[currPhase].Contains("Practicing") || phases[currPhase].Contains("Testing")) && !(phases[currPhase].Contains("Location") || phases[currPhase].Contains("Gesture")))
             {
                 EnableApplicationDemoCheckbox.Checked = true;
                 EnableSpeechCheckbox.Checked = true;
+                if (taskInstructions.ContainsKey((string)TaskChooser.SelectedItem)) TaskInstructionsLabel.Text = taskInstructions[(string)TaskChooser.SelectedItem];
             }
             else
             {

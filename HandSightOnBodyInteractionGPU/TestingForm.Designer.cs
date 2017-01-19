@@ -51,6 +51,7 @@
             this.ConditionOrderTextbox = new System.Windows.Forms.TextBox();
             this.NextPhaseLabel = new System.Windows.Forms.Label();
             this.LockToCurrentTaskCheckbox = new System.Windows.Forms.CheckBox();
+            this.TaskInstructionsLabel = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // EnableApplicationDemoCheckbox
@@ -298,11 +299,22 @@
             this.LockToCurrentTaskCheckbox.UseVisualStyleBackColor = true;
             this.LockToCurrentTaskCheckbox.CheckedChanged += new System.EventHandler(this.LockToCurrentTaskButton_CheckedChanged);
             // 
+            // TaskInstructionsLabel
+            // 
+            this.TaskInstructionsLabel.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.TaskInstructionsLabel.Location = new System.Drawing.Point(16, 254);
+            this.TaskInstructionsLabel.Name = "TaskInstructionsLabel";
+            this.TaskInstructionsLabel.Size = new System.Drawing.Size(367, 54);
+            this.TaskInstructionsLabel.TabIndex = 51;
+            this.TaskInstructionsLabel.Text = "Task Instructions";
+            this.TaskInstructionsLabel.TextAlign = System.Drawing.ContentAlignment.BottomCenter;
+            // 
             // TestingForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(391, 263);
+            this.ClientSize = new System.Drawing.Size(391, 317);
+            this.Controls.Add(this.TaskInstructionsLabel);
             this.Controls.Add(this.LockToCurrentTaskCheckbox);
             this.Controls.Add(this.NextPhaseLabel);
             this.Controls.Add(this.ConditionOrderTextbox);
@@ -360,5 +372,6 @@
         private System.Windows.Forms.TextBox ConditionOrderTextbox;
         private System.Windows.Forms.Label NextPhaseLabel;
         private System.Windows.Forms.CheckBox LockToCurrentTaskCheckbox;
+        private System.Windows.Forms.Label TaskInstructionsLabel;
     }
 }

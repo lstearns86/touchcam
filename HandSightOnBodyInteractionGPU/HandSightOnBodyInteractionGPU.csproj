@@ -54,6 +54,7 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AForge.Video.FFMPEG, Version=2.2.5.0, Culture=neutral, PublicKeyToken=03563089b1be05dd, processorArchitecture=AMD64" />
     <Reference Include="Alea.CUDA, Version=2.2.0.3307, Culture=neutral, PublicKeyToken=ba52afc3c2e933d6, processorArchitecture=MSIL">
       <HintPath>..\packages\Alea.CUDA.2.2.0.3307\lib\net40\Alea.CUDA.dll</HintPath>
       <Private>True</Private>
@@ -131,11 +132,11 @@
       <DependentUpon>ProgramSelectionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="EvaluateOldData.cs">
+    <Compile Include="OfflineExperiments.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="EvaluateOldData.Designer.cs">
-      <DependentUpon>EvaluateOldData.cs</DependentUpon>
+    <Compile Include="OfflineExperiments.Designer.cs">
+      <DependentUpon>OfflineExperiments.cs</DependentUpon>
     </Compile>
     <Compile Include="TestingForm.cs">
       <SubType>Form</SubType>
@@ -180,8 +181,8 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="EvaluateOldData.resx">
-      <DependentUpon>EvaluateOldData.cs</DependentUpon>
+    <EmbeddedResource Include="OfflineExperiments.resx">
+      <DependentUpon>OfflineExperiments.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="TestingForm.resx">
       <DependentUpon>TestingForm.cs</DependentUpon>
