@@ -166,6 +166,15 @@ namespace HandSightLibrary
             }
         }
 
+        public class TouchEvent : LogEvent
+        {
+            public TouchEvent(string message)
+            {
+                this.message = message;
+                type = "touch";
+            }
+        }
+
         #endregion
 
         #region Constants and Variables
@@ -374,6 +383,13 @@ namespace HandSightLibrary
             eventQueue.Add(logEvent);
         }
 
+        public static void LogTouchEvent(string message)
+        {
+            if (!Running) return;
+
+            eventQueue.Add(new TouchEvent(message));
+        }
+
         public static List<LogEvent> ReadLog(string path, Action<float> progressReport = null)
         {
             List<LogEvent> events = new List<LogEvent>();
@@ -430,6 +446,10 @@ namespace HandSightLibrary
                     else if (logEvent.type == "hardware")
                     {
                         logEvent = (HardwareEvent)JsonConvert.DeserializeObject(line, typeof(HardwareEvent));
+                    }
+                    else if (logEvent.type == "touch")
+                    {
+                        logEvent = (TouchEvent)JsonConvert.DeserializeObject(line, typeof(TouchEvent));
                     }
                     events.Add(logEvent);
                 }

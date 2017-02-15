@@ -124,5 +124,50 @@ namespace HandSightLibrary.ImageProcessing
             template.Image.ROI = new Rectangle(0, 0, 640, 640);
             return (float)(sum / 255.0);
         }
+
+        public static float ImageFocus(Image<Gray, byte> img)
+        {
+            Rectangle prevROI = img.ROI;
+            img.ROI = new Rectangle(20, 20, 600, 600);
+            Image<Gray, float> tempImg = img.Convert<Gray, float>();
+            Image<Gray, float> Gx = new Image<Gray, float>(img.Size), Gy = new Image<Gray, float>(img.Size);
+            CvInvoke.Sobel(tempImg, Gx, DepthType.Cv32F, 1, 0, 7);
+            CvInvoke.Sobel(tempImg, Gy, DepthType.Cv32F, 0, 1, 7);
+
+            Image<Gray, float> FM = Gx.Mul(Gx).Add(Gy.Mul(Gy));
+            double focusMeasure = FM.GetAverage().Intensity;
+
+            img.ROI = prevROI;
+
+            return (float)focusMeasure;
+        }
+
+        public static float ImageVariance(ImageTemplate template)
+        {
+            MCvScalar mean = new MCvScalar(), std = new MCvScalar();
+            CvInvoke.MeanStdDev(template.Image, ref mean, ref std);
+            return (float)(std.V0 * std.V0);
+        }
+
+        public static float ImageVariance(Image<Gray, byte> img)
+        {
+            MCvScalar mean = new MCvScalar(), std = new MCvScalar();
+            CvInvoke.MeanStdDev(img, ref mean, ref std);
+            return (float)(std.V0 * std.V0);
+        }
+
+        public static float ImageBrightness(ImageTemplate template)
+        {
+            MCvScalar mean = new MCvScalar(), std = new MCvScalar();
+            CvInvoke.MeanStdDev(template.Image, ref mean, ref std);
+            return (float)mean.V0;
+        }
+
+        public static float ImageBrightness(Image<Gray, byte> img)
+        {
+            MCvScalar mean = new MCvScalar(), std = new MCvScalar();
+            CvInvoke.MeanStdDev(img, ref mean, ref std);
+            return (float)mean.V0;
+        }
     }
 }

@@ -17,7 +17,7 @@ namespace HandSightLibrary
         string location;
 
         bool trainingData = false;
-        [JsonIgnore] public bool IsTrainingData { get { return trainingData; } set { trainingData = false; } }
+        [JsonIgnore] public bool IsTrainingData { get { return trainingData; } set { trainingData = value; } }
 
         List<Sensors.Reading> sensorReadings, correctedSensorReadings;
         float[] features;
@@ -30,6 +30,8 @@ namespace HandSightLibrary
         public float[] Features { get { return features; } set { features = value; } }
 
         public bool DefaultGesture = false;
+
+        public string Path = "";
 
         private Bitmap visualization = null;
         public Bitmap Visualization

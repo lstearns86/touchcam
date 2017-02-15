@@ -54,12 +54,18 @@
             this.taskDurationsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuNavigationEventsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.DataBox = new System.Windows.Forms.ListBox();
+            this.filteringToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setStartLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.setEndLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetStartEndFiltersToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.TouchEventsCheckbox = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.TouchEventsCheckbox);
             this.panel1.Controls.Add(this.TasksCheckbox);
             this.panel1.Controls.Add(this.PhasesCheckbox);
             this.panel1.Controls.Add(this.HardwareCheckbox);
@@ -85,7 +91,7 @@
             this.TasksCheckbox.AutoSize = true;
             this.TasksCheckbox.Checked = true;
             this.TasksCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.TasksCheckbox.Location = new System.Drawing.Point(13, 219);
+            this.TasksCheckbox.Location = new System.Drawing.Point(13, 242);
             this.TasksCheckbox.Name = "TasksCheckbox";
             this.TasksCheckbox.Size = new System.Drawing.Size(55, 17);
             this.TasksCheckbox.TabIndex = 13;
@@ -98,7 +104,7 @@
             this.PhasesCheckbox.AutoSize = true;
             this.PhasesCheckbox.Checked = true;
             this.PhasesCheckbox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.PhasesCheckbox.Location = new System.Drawing.Point(13, 196);
+            this.PhasesCheckbox.Location = new System.Drawing.Point(13, 219);
             this.PhasesCheckbox.Name = "PhasesCheckbox";
             this.PhasesCheckbox.Size = new System.Drawing.Size(61, 17);
             this.PhasesCheckbox.TabIndex = 12;
@@ -109,7 +115,7 @@
             // HardwareCheckbox
             // 
             this.HardwareCheckbox.AutoSize = true;
-            this.HardwareCheckbox.Location = new System.Drawing.Point(13, 265);
+            this.HardwareCheckbox.Location = new System.Drawing.Point(13, 288);
             this.HardwareCheckbox.Name = "HardwareCheckbox";
             this.HardwareCheckbox.Size = new System.Drawing.Size(72, 17);
             this.HardwareCheckbox.TabIndex = 11;
@@ -120,7 +126,7 @@
             // FrameProcessedCheckbox
             // 
             this.FrameProcessedCheckbox.AutoSize = true;
-            this.FrameProcessedCheckbox.Location = new System.Drawing.Point(13, 242);
+            this.FrameProcessedCheckbox.Location = new System.Drawing.Point(13, 265);
             this.FrameProcessedCheckbox.Name = "FrameProcessedCheckbox";
             this.FrameProcessedCheckbox.Size = new System.Drawing.Size(108, 17);
             this.FrameProcessedCheckbox.TabIndex = 10;
@@ -131,7 +137,7 @@
             // OtherCheckbox
             // 
             this.OtherCheckbox.AutoSize = true;
-            this.OtherCheckbox.Location = new System.Drawing.Point(13, 288);
+            this.OtherCheckbox.Location = new System.Drawing.Point(13, 311);
             this.OtherCheckbox.Name = "OtherCheckbox";
             this.OtherCheckbox.Size = new System.Drawing.Size(52, 17);
             this.OtherCheckbox.TabIndex = 9;
@@ -142,7 +148,7 @@
             // MenuCheckbox
             // 
             this.MenuCheckbox.AutoSize = true;
-            this.MenuCheckbox.Location = new System.Drawing.Point(13, 173);
+            this.MenuCheckbox.Location = new System.Drawing.Point(13, 196);
             this.MenuCheckbox.Name = "MenuCheckbox";
             this.MenuCheckbox.Size = new System.Drawing.Size(53, 17);
             this.MenuCheckbox.TabIndex = 8;
@@ -153,7 +159,7 @@
             // UICheckbox
             // 
             this.UICheckbox.AutoSize = true;
-            this.UICheckbox.Location = new System.Drawing.Point(13, 150);
+            this.UICheckbox.Location = new System.Drawing.Point(13, 173);
             this.UICheckbox.Name = "UICheckbox";
             this.UICheckbox.Size = new System.Drawing.Size(37, 17);
             this.UICheckbox.TabIndex = 7;
@@ -164,7 +170,7 @@
             // TrainingCheckbox
             // 
             this.TrainingCheckbox.AutoSize = true;
-            this.TrainingCheckbox.Location = new System.Drawing.Point(13, 127);
+            this.TrainingCheckbox.Location = new System.Drawing.Point(13, 150);
             this.TrainingCheckbox.Name = "TrainingCheckbox";
             this.TrainingCheckbox.Size = new System.Drawing.Size(64, 17);
             this.TrainingCheckbox.TabIndex = 6;
@@ -175,7 +181,7 @@
             // AudioCheckbox
             // 
             this.AudioCheckbox.AutoSize = true;
-            this.AudioCheckbox.Location = new System.Drawing.Point(13, 104);
+            this.AudioCheckbox.Location = new System.Drawing.Point(13, 127);
             this.AudioCheckbox.Name = "AudioCheckbox";
             this.AudioCheckbox.Size = new System.Drawing.Size(53, 17);
             this.AudioCheckbox.TabIndex = 5;
@@ -186,7 +192,7 @@
             // GestureCheckbox
             // 
             this.GestureCheckbox.AutoSize = true;
-            this.GestureCheckbox.Location = new System.Drawing.Point(13, 81);
+            this.GestureCheckbox.Location = new System.Drawing.Point(13, 104);
             this.GestureCheckbox.Name = "GestureCheckbox";
             this.GestureCheckbox.Size = new System.Drawing.Size(63, 17);
             this.GestureCheckbox.TabIndex = 4;
@@ -197,7 +203,7 @@
             // LocationCheckbox
             // 
             this.LocationCheckbox.AutoSize = true;
-            this.LocationCheckbox.Location = new System.Drawing.Point(13, 58);
+            this.LocationCheckbox.Location = new System.Drawing.Point(13, 81);
             this.LocationCheckbox.Name = "LocationCheckbox";
             this.LocationCheckbox.Size = new System.Drawing.Size(67, 17);
             this.LocationCheckbox.TabIndex = 3;
@@ -249,7 +255,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.displayModeToolStripMenuItem});
+            this.displayModeToolStripMenuItem,
+            this.filteringToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
@@ -337,6 +344,47 @@
             this.DataBox.Size = new System.Drawing.Size(598, 427);
             this.DataBox.TabIndex = 3;
             // 
+            // filteringToolStripMenuItem
+            // 
+            this.filteringToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.setStartLocationToolStripMenuItem,
+            this.setEndLocationToolStripMenuItem,
+            this.resetStartEndFiltersToolStripMenuItem});
+            this.filteringToolStripMenuItem.Name = "filteringToolStripMenuItem";
+            this.filteringToolStripMenuItem.Size = new System.Drawing.Size(62, 20);
+            this.filteringToolStripMenuItem.Text = "Filtering";
+            // 
+            // setStartLocationToolStripMenuItem
+            // 
+            this.setStartLocationToolStripMenuItem.Name = "setStartLocationToolStripMenuItem";
+            this.setStartLocationToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.setStartLocationToolStripMenuItem.Text = "Set Start Timestamp";
+            this.setStartLocationToolStripMenuItem.Click += new System.EventHandler(this.setStartLocationToolStripMenuItem_Click);
+            // 
+            // setEndLocationToolStripMenuItem
+            // 
+            this.setEndLocationToolStripMenuItem.Name = "setEndLocationToolStripMenuItem";
+            this.setEndLocationToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.setEndLocationToolStripMenuItem.Text = "Set End Timestamp";
+            this.setEndLocationToolStripMenuItem.Click += new System.EventHandler(this.setEndLocationToolStripMenuItem_Click);
+            // 
+            // resetStartEndFiltersToolStripMenuItem
+            // 
+            this.resetStartEndFiltersToolStripMenuItem.Name = "resetStartEndFiltersToolStripMenuItem";
+            this.resetStartEndFiltersToolStripMenuItem.Size = new System.Drawing.Size(188, 22);
+            this.resetStartEndFiltersToolStripMenuItem.Text = "Reset Start/End Filters";
+            this.resetStartEndFiltersToolStripMenuItem.Click += new System.EventHandler(this.resetStartEndFiltersToolStripMenuItem_Click);
+            // 
+            // TouchEventsCheckbox
+            // 
+            this.TouchEventsCheckbox.AutoSize = true;
+            this.TouchEventsCheckbox.Location = new System.Drawing.Point(13, 58);
+            this.TouchEventsCheckbox.Name = "TouchEventsCheckbox";
+            this.TouchEventsCheckbox.Size = new System.Drawing.Size(93, 17);
+            this.TouchEventsCheckbox.TabIndex = 14;
+            this.TouchEventsCheckbox.Text = "Touch Events";
+            this.TouchEventsCheckbox.UseVisualStyleBackColor = true;
+            // 
             // LogViewer
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -388,5 +436,10 @@
         private System.Windows.Forms.ToolStripMenuItem phaseDurationsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem taskDurationsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem menuNavigationEventsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem filteringToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setStartLocationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem setEndLocationToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem resetStartEndFiltersToolStripMenuItem;
+        private System.Windows.Forms.CheckBox TouchEventsCheckbox;
     }
 }

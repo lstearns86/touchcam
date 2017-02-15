@@ -45,6 +45,8 @@ namespace HandSightOnBodyInteractionGPU
         const string TestingVoice = "Microsoft Zira Desktop";
         const string MenuVoice = "Microsoft David Desktop";
 
+        const float ledMaxBrightness = 1f;
+
         [DllImport("user32.dll")]
         public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 
@@ -167,7 +169,8 @@ namespace HandSightOnBodyInteractionGPU
                 else
                 {
                     if (Properties.Settings.Default.EnableSoundEffects) captureSound.Play();
-                    AddTemplate();
+                    ImageTemplate newTemplate = AddTemplate();
+                    Logging.LogTrainingEvent("Added template: " + newTemplate["coarse"] + " " + newTemplate["fine"]);
                     //trainingForm.UpdateLocationList();
                 }
             };
@@ -227,7 +230,7 @@ namespace HandSightOnBodyInteractionGPU
                 hoverCoarseLocation = null;
                 hoverFineLocation = null;
                 touchStart = DateTime.Now;
-                Sensors.Instance.Brightness = 1;
+                Sensors.Instance.Brightness = ledMaxBrightness;
 
                 Logging.LogOtherEvent("touch_down");
 
@@ -494,7 +497,7 @@ namespace HandSightOnBodyInteractionGPU
 
             TouchSegmentation.UpdateWithReading(reading);
 
-            if(testingForm.RecordSensors)
+            //if(testingForm.RecordSensors)
                 Logging.LogSensorReading(reading);
 
             sensorReadingHistory.Add(reading);
@@ -679,7 +682,7 @@ namespace HandSightOnBodyInteractionGPU
             {
                 try
                 {
-                    if (testingForm.RecordSensors)
+                    //if (testingForm.RecordSensors)
                         Logging.LogVideoFrame(frame.Image.Bitmap);
 
                     float focus = 0;
@@ -688,7 +691,7 @@ namespace HandSightOnBodyInteractionGPU
                     {
                         ImageProcessing.ProcessTemplate(template, false);
                         focus = ImageProcessing.ImageFocus(template);
-                        if (testingForm.RecordSensors)
+                        //if (testingForm.RecordSensors)
                             Logging.LogFrameProcessed();
                         currTemplate = template;
                         FPS.Instance("processing").Update();

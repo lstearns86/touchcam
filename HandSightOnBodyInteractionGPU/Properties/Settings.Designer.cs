@@ -418,5 +418,53 @@ namespace HandSightOnBodyInteractionGPU.Properties {
                 this["LockToCurrentTask"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("25")]
+        public int NumAutoGestureSamples {
+            get {
+                return ((int)(this["NumAutoGestureSamples"]));
+            }
+            set {
+                this["NumAutoGestureSamples"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string OpenDirectory {
+            get {
+                return ((string)(this["OpenDirectory"]));
+            }
+            set {
+                this["OpenDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SaveDirectory {
+            get {
+                return ((string)(this["SaveDirectory"]));
+            }
+            set {
+                this["SaveDirectory"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string LogOpenDirectory {
+            get {
+                return ((string)(this["LogOpenDirectory"]));
+            }
+            set {
+                this["LogOpenDirectory"] = value;
+            }
+        }
     }
 }

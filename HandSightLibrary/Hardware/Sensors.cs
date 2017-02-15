@@ -23,7 +23,7 @@ namespace HandSightLibrary
         float GYRO_UNIT = 0.01750f; // deg / s
         float IR_UNIT = 1.0f / 1024.0f; // % max intensity
 
-        const string DEFAULT_PORT = "COM3";
+        const string DEFAULT_PORT = "COM6";
         int BAUD_RATE = 250000;
 
         //Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
@@ -131,7 +131,7 @@ namespace HandSightLibrary
             set
             {
                 float percent = value;
-                percent = (int)Math.Round(percent);
+                //percent = (int)Math.Round(percent);
                 if (percent < 0) percent = 0;
                 if (percent > 1) percent = 1;
                 if (IsConnected && brightness != percent)
@@ -456,12 +456,12 @@ namespace HandSightLibrary
             Disconnect();
             Thread.Sleep(100);
             Connect(portName);
-            device.DiscardInBuffer();
+            Flush();
         }
 
         public void Flush()
         {
-            device.DiscardInBuffer();
+            if(device != null) device.DiscardInBuffer();
         }
     }
 }

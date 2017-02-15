@@ -18,8 +18,9 @@ namespace HandSightOnBodyInteractionGPU
         public bool HideFromList { get { return true; } }
 
         string profileName = null;
-        bool unsaved = false;
+        public bool IsSaved = true;
 
+        int numLocations = 0;
         Dictionary<string, string[]> locations;
         string[] gestures;
 
@@ -106,16 +107,35 @@ namespace HandSightOnBodyInteractionGPU
                 string[] fineLocations = parts[1].Split(',');
                 for (int i = 0; i < fineLocations.Length; i++) fineLocations[i] = fineLocations[i].Trim();
                 locations.Add(coarseLocation, fineLocations);
+                numLocations += fineLocations.Length;
                 CoarseLocationChooser.Items.Add(coarseLocation);
             }
             gestures = File.ReadAllLines("defaults/gestures.txt");
             GestureChooser.Items.Clear();
             GestureChooser.Items.AddRange(gestures);
 
+            {
+                List<Tuple<string, string>> list = new List<Tuple<string, string>>();
+                foreach (string coarseLocation in locations.Keys)
+                    foreach (string fineLocation in locations[coarseLocation])
+                        list.Add(new Tuple<string, string>(coarseLocation, fineLocation));
+                list.Shuffle(rand.Next());
+                while (randomLocations.Count > 0 && list[0] == randomLocations[randomLocations.Count - 1]) list.Shuffle(rand.Next());
+                randomLocations.AddRange(list);
+                RandomLocationLabel.Text = "Next: " + randomLocations[0].Item1 + " " + randomLocations[0].Item2 + " (0 / " + (numLocations * 4) + ")";
+            }
+            {
+                List<string> list = new List<string>(gestures);
+                list.Shuffle(rand.Next());
+                randomGestures.AddRange(list);
+                RandomGestureLabel.Text = "Next: " + randomGestures[0] + " (0 / " + Properties.Settings.Default.NumAutoGestureSamples * gestures.Length + ")";
+            }
+
             CoarseLocationChooser.SelectedIndex = 0;
             GestureChooser.SelectedIndex = 0;
 
             OverwriteExistingSamplesCheckbox.Checked = Properties.Settings.Default.OverwriteExistingSamples;
+            NumAutoGestureSamples.Value = Properties.Settings.Default.NumAutoGestureSamples;
 
             UpdateLists();
         }
@@ -201,8 +221,6 @@ namespace HandSightOnBodyInteractionGPU
             }
             catch
             { }
-
-            unsaved = true;
         }
 
         public void AddGesture(Gesture template)
@@ -289,8 +307,6 @@ namespace HandSightOnBodyInteractionGPU
                 GestureView.Items[gestureTopItemIndex].EnsureVisible();
             }
             catch { }
-
-            unsaved = true;
         }
         
         public void UpdateLists()
@@ -324,6 +340,7 @@ namespace HandSightOnBodyInteractionGPU
                     int imageIndex = removeItem.ImageIndex;
                     ImageTemplate template = (ImageTemplate)removeItem.Tag;
                     Localization.Instance.RemoveTrainingExample(template);
+                    Logging.LogOtherEvent("Removed location example: " + (string)template["path"]);
                     LocationView.LargeImageList.Images.RemoveAt(imageIndex);
                     foreach(ListViewItem updateItem in LocationView.Items)
                     {
@@ -347,8 +364,9 @@ namespace HandSightOnBodyInteractionGPU
                 {
                     int imageIndex = removeItem.ImageIndex;
                     Gesture template = (Gesture)removeItem.Tag;
-                    
+                    Logging.LogOtherEvent("Removed gesture example: " + template.Path);
                     GestureRecognition.RemoveTrainingExample(template);
+
                     GestureView.LargeImageList.Images.RemoveAt(imageIndex);
                     foreach (ListViewItem updateItem in GestureView.Items)
                     {
@@ -436,7 +454,7 @@ namespace HandSightOnBodyInteractionGPU
 
                 Debug.WriteLine("Finished Saving");
 
-                unsaved = false;
+                IsSaved = true;
             });
         }
 
@@ -474,7 +492,7 @@ namespace HandSightOnBodyInteractionGPU
 
                     UpdateLists();
 
-                    unsaved = false;
+                    IsSaved = true;
                 });
             }
         }
@@ -648,6 +666,104 @@ namespace HandSightOnBodyInteractionGPU
                 GestureRecognition.SaveClassifier(dialog.FileName);
                 Logging.LogOtherEvent("Save Gesture SVM: " + dialog.FileName);
             }
+        }
+
+        private void NumAutoGestureSamples_ValueChanged(object sender, EventArgs e)
+        {
+            Properties.Settings.Default.NumAutoGestureSamples = (int)NumAutoGestureSamples.Value;
+            Properties.Settings.Default.Save();
+        }
+
+        private List<Tuple<string, string>> randomLocations = new List<Tuple<string, string>>();
+        private int randomLocationIndex = -1;
+        Random rand = new Random();
+        private void NextRandomLocationButton_Click(object sender, EventArgs e)
+        {
+            randomLocationIndex++;
+
+            if(randomLocationIndex + 1 >= randomLocations.Count)
+            {
+                List<Tuple<string, string>> list = new List<Tuple<string, string>>();
+                foreach (string coarseLocation in locations.Keys)
+                    foreach (string fineLocation in locations[coarseLocation])
+                        list.Add(new Tuple<string, string>(coarseLocation, fineLocation));
+                list.Shuffle(rand.Next());
+                while (randomLocations.Count > 0 && list[0] == randomLocations[randomLocations.Count - 1]) list.Shuffle(rand.Next());
+                randomLocations.AddRange(list);
+            }
+
+            Tuple<string, string> nextLocation = randomLocations[randomLocationIndex];
+            CoarseLocationChooser.SelectedIndex = CoarseLocationChooser.Items.IndexOf(nextLocation.Item1);
+            FineLocationChooser.SelectedIndex = FineLocationChooser.Items.IndexOf(nextLocation.Item2);
+            RandomLocationLabel.Text = "Next: " + randomLocations[randomLocationIndex+1].Item1 + " " + randomLocations[randomLocationIndex+1].Item2 + " (" + (randomLocationIndex+1) + " / " + (numLocations * 3) + ")";
+            if (randomLocationIndex % numLocations == 0 && randomLocationIndex > 0)
+            {
+                if (randomLocationIndex < 3 * numLocations)
+                {
+                    MessageBox.Show("Begin next round of location training");
+                    Logging.LogOtherEvent("Begin next round of location training");
+                }
+                else
+                {
+                    MessageBox.Show("Finished gathering location samples");
+                    Logging.LogOtherEvent("Finished gathering location samples");
+                }
+            }
+        }
+
+        private void PrevRandomLocationButton_Click(object sender, EventArgs e)
+        {
+            if (randomLocationIndex <= 0 || randomLocationIndex - 1 >= randomLocations.Count) return;
+
+            randomLocationIndex--;
+            Tuple<string, string> nextLocation = randomLocations[randomLocationIndex];
+            CoarseLocationChooser.SelectedIndex = CoarseLocationChooser.Items.IndexOf(nextLocation.Item1);
+            FineLocationChooser.SelectedIndex = FineLocationChooser.Items.IndexOf(nextLocation.Item2);
+            RandomLocationLabel.Text = "Next: " + randomLocations[randomLocationIndex+1].Item1 + " " + randomLocations[randomLocationIndex+1].Item2 + " (" + (randomLocationIndex+1) + " / " + (numLocations * 3) + ")";
+        }
+
+        string[] gestureLocations = { "Palm", "Outer Wrist", "Inner Wrist", "Thigh" };
+        private List<string> randomGestures = new List<string>();
+        private int randomGestureIndex = -1;
+        private void NextRandomGestureButton_Click(object sender, EventArgs e)
+        {
+            randomGestureIndex++;
+
+            if (randomGestureIndex + 1 >= randomGestures.Count)
+            {
+                List<string> list = new List<string>(gestures);
+                list.Shuffle(rand.Next());
+                randomGestures.AddRange(list);
+            }
+
+            string nextGesture = randomGestures[randomGestureIndex];
+            GestureChooser.SelectedIndex = GestureChooser.Items.IndexOf(nextGesture);
+            RandomGestureLabel.Text = "Next: " + randomGestures[randomGestureIndex+1] + " (" + (randomGestureIndex+1) + " / " + Properties.Settings.Default.NumAutoGestureSamples * gestures.Length + ")";
+
+            if (randomGestureIndex % (Properties.Settings.Default.NumAutoGestureSamples * gestures.Length) == 0)
+            {
+                if (randomGestureIndex >= Properties.Settings.Default.NumAutoGestureSamples * gestures.Length * gestureLocations.Length)
+                {
+                    MessageBox.Show("Finished gathering gesture samples");
+                    Logging.LogOtherEvent("Finished gathering gesture samples");
+                }
+                else
+                {
+                    int index = randomGestureIndex / (Properties.Settings.Default.NumAutoGestureSamples * gestures.Length);
+                    MessageBox.Show("Begin location: " + gestureLocations[index]);
+                    Logging.LogOtherEvent("Begin gathering gestures: " + gestureLocations[index]);
+                }
+            }
+        }
+
+        private void PrevRandomGestureButton_Click(object sender, EventArgs e)
+        {
+            if (randomGestureIndex <= 0 || randomGestureIndex - 1 >= randomGestures.Count) return;
+
+            randomGestureIndex--;
+            string nextGesture = randomGestures[randomGestureIndex];
+            GestureChooser.SelectedIndex = GestureChooser.Items.IndexOf(nextGesture);
+            RandomGestureLabel.Text = "Next: " + randomGestures[randomGestureIndex+1] + " (" + (randomGestureIndex+1) + " / " + Properties.Settings.Default.NumAutoGestureSamples * gestures.Length * gestureLocations.Length + ")";
         }
 
         public void StopAutoCapture()

@@ -87,6 +87,10 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>refLib\IduleProvidercs.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>bin\x64\Debug\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Speech" />
@@ -106,6 +110,12 @@
     <Compile Include="CameraViewer.Designer.cs">
       <DependentUpon>CameraViewer.cs</DependentUpon>
     </Compile>
+    <Compile Include="ImageQualityAnnotationTool.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImageQualityAnnotationTool.designer.cs">
+      <DependentUpon>ImageQualityAnnotationTool.cs</DependentUpon>
+    </Compile>
     <Compile Include="IMUTest.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -117,6 +127,12 @@
     </Compile>
     <Compile Include="LogViewer.Designer.cs">
       <DependentUpon>LogViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="LocationAndGestureDataCollectionTool.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="LocationAndGestureDataCollectionTool.Designer.cs">
+      <DependentUpon>LocationAndGestureDataCollectionTool.cs</DependentUpon>
     </Compile>
     <Compile Include="OnBodyInputDemo.cs">
       <SubType>Form</SubType>
@@ -159,11 +175,17 @@
     <EmbeddedResource Include="CameraViewer.resx">
       <DependentUpon>CameraViewer.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="ImageQualityAnnotationTool.resx">
+      <DependentUpon>ImageQualityAnnotationTool.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="IMUTest.resx">
       <DependentUpon>IMUTest.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="LogViewer.resx">
       <DependentUpon>LogViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="LocationAndGestureDataCollectionTool.resx">
+      <DependentUpon>LocationAndGestureDataCollectionTool.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="OnBodyInputDemo.resx">
       <DependentUpon>OnBodyInputDemo.cs</DependentUpon>

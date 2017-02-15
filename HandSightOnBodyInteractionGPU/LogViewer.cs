@@ -11,6 +11,7 @@ using System.Windows.Forms;
 
 using HandSightLibrary;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace HandSightOnBodyInteractionGPU
 {
@@ -43,6 +44,11 @@ namespace HandSightOnBodyInteractionGPU
                 else if (e is Logging.SensorReadingEvent)
                 {
                     if (SensorReadingsCheckbox.Checked)
+                        filteredEvents.Add(e);
+                }
+                else if(e is Logging.TouchEvent)
+                {
+                    if (TouchEventsCheckbox.Checked)
                         filteredEvents.Add(e);
                 }
                 else if (e is Logging.LocationEvent)
@@ -117,12 +123,15 @@ namespace HandSightOnBodyInteractionGPU
                 List<Logging.LogEvent> filteredEvents = FilterEvents();
                 foreach (Logging.LogEvent e in filteredEvents)
                 {
-                    if (DataBox.Items.Count < MAX_EVENTS_TO_DISPLAY)
+                    if (e.timestamp >= startTimestamp && e.timestamp <= endTimestamp && DataBox.Items.Count <= MAX_EVENTS_TO_DISPLAY)
                     {
                         string text = e.ToJson();
                         float t = e.timestamp;
                         text = (t / 1000).ToString("0.0") + " s" + ": " + text;
-                        DataBox.Items.Add(text);
+                        ListViewItem item = new ListViewItem(text);
+                        item.Tag = e;
+                        DataBox.Items.Add(item);
+                        //DataBox.Items.Add(text);
                     }
                 }
                 EventCountLabel.Text = filteredEvents.Count + " / " + events.Count;
@@ -231,7 +240,49 @@ namespace HandSightOnBodyInteractionGPU
             }
             else if(menuNavigationEventsToolStripMenuItem.Checked)
             {
-                
+                bool startedTask = false, openedMenu = false;
+                int numMainMenuItemsNavigated = 0, numSubMenuItemsNavigated = 0;
+                foreach (Logging.LogEvent e in events)
+                {
+                    if (DataBox.Items.Count < MAX_EVENTS_TO_DISPLAY)
+                    {
+                        if ((e is Logging.UIEvent) && (((Logging.UIEvent)e).action.Contains("Mode Set")))
+                        {
+                            DataBox.Items.Add(((Logging.UIEvent)e).action);
+                        }
+                        else if ((e is Logging.UIEvent) && (((Logging.UIEvent)e).action.Contains("Task started")))
+                        {
+                            startedTask = true;
+                            openedMenu = false;
+                            numMainMenuItemsNavigated = 0;
+                            numSubMenuItemsNavigated = 0;
+                        }
+                        else if ((e is Logging.UIEvent) && (((Logging.UIEvent)e).action.Contains("Task finished")))
+                        {
+                            startedTask = false;
+                            openedMenu = false;
+
+                            DataBox.Items.Add("Navigated " + numMainMenuItemsNavigated + " apps and " + numSubMenuItemsNavigated + " submenu items to complete task " + ((Logging.UIEvent)e).action);
+                        }
+                        else if (e is Logging.MenuEvent)
+                        {
+                            Logging.MenuEvent me = (Logging.MenuEvent)e;
+                            if(me.menu != "Main Menu" && startedTask && !openedMenu)
+                            {
+                                openedMenu = true;
+                            }
+
+                            if(me.menu == "Main Menu")
+                            {
+                                numMainMenuItemsNavigated++;
+                            }
+                            else
+                            {
+                                numSubMenuItemsNavigated++;
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -276,12 +327,20 @@ namespace HandSightOnBodyInteractionGPU
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if(!Directory.Exists(Properties.Settings.Default.LogOpenDirectory))
+            {
+                Properties.Settings.Default.LogDirectory = Path.GetFullPath("logs");
+                Properties.Settings.Default.Save();
+            }
+
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Title = "Select Log File to Open";
-            dialog.InitialDirectory = Path.GetFullPath("logs");
+            dialog.InitialDirectory = Properties.Settings.Default.LogOpenDirectory;
             dialog.Filter = "Log Files|*.log";
             if(dialog.ShowDialog(this) == DialogResult.OK)
             {
+                Properties.Settings.Default.LogOpenDirectory = Path.GetDirectoryName(dialog.FileName);
+                Properties.Settings.Default.Save();
                 events.Clear();
                 LoadFile(dialog.FileName);
             }
@@ -291,12 +350,20 @@ namespace HandSightOnBodyInteractionGPU
         {
             if (events == null || events.Count == 0) { openToolStripMenuItem.PerformClick(); return; }
 
+            if (!Directory.Exists(Properties.Settings.Default.LogOpenDirectory))
+            {
+                Properties.Settings.Default.LogDirectory = Path.GetFullPath("logs");
+                Properties.Settings.Default.Save();
+            }
+
             OpenFileDialog dialog = new OpenFileDialog();
             dialog.Title = "Select Log File to Append";
-            dialog.InitialDirectory = Path.GetFullPath("logs");
+            dialog.InitialDirectory = Properties.Settings.Default.LogOpenDirectory;
             dialog.Filter = "Log Files|*.log";
             if (dialog.ShowDialog(this) == DialogResult.OK)
             {
+                Properties.Settings.Default.LogOpenDirectory = Path.GetDirectoryName(dialog.FileName);
+                Properties.Settings.Default.Save();
                 LoadFile(dialog.FileName);
             }
         }
@@ -308,23 +375,66 @@ namespace HandSightOnBodyInteractionGPU
                 string text = "";
                 foreach (string item in DataBox.SelectedItems)
                 {
-                    if (item.Contains("to complete task"))
+                    if (taskDurationsToolStripMenuItem.Checked)
                     {
-                        string task = item.Substring(item.IndexOf("to complete task ") + "to complete task".Length).Replace(" Task finished: ", "").Replace("Message 1", "Missed Phone Call").Replace("Message 3", "Text Message");
-                        string time = item.Substring(0, item.IndexOf("seconds") - 1);
-                        if (task == "Voice Input")
-                            text += task + "\t" + time + "\t";
-                        text += task + "\t" + time + Environment.NewLine;
+                        if (item.Contains("to complete task"))
+                        {
+                            string task = item.Substring(item.IndexOf("to complete task ") + "to complete task".Length).Replace(" Task finished: ", "").Replace("Message 1", "Missed Phone Call").Replace("Message 3", "Text Message");
+                            string time = item.Substring(0, item.IndexOf("seconds") - 1);
+                            if (task == "Voice Input")
+                                text += task + "\t" + time + "\t";
+                            text += task + "\t" + time + Environment.NewLine;
+                        }
+                        else if (item.Contains("to open"))
+                        {
+                            string app = item.Substring(item.IndexOf("to open ") + "to open ".Length).Replace(" Menu", "");
+                            string time = item.Substring(0, item.IndexOf("seconds") - 1);
+                            text += app + "\t" + time + "\t";
+                        }
                     }
-                    else if (item.Contains("to open"))
+                    else if (menuNavigationEventsToolStripMenuItem.Checked)
                     {
-                        string app = item.Substring(item.IndexOf("to open ") + "to open ".Length).Replace(" Menu", "");
-                        string time = item.Substring(0, item.IndexOf("seconds") - 1);
-                        text += app + "\t" + time + "\t";
+                        if(item.Contains("Navigated"))
+                        {
+                            Match match = Regex.Match(item, @"Navigated (\d+) apps and (\d+) submenu items to complete task (.*)");
+                            if(match.Success)
+                            {
+                                text += match.Groups[1] + "\t" + match.Groups[2] + "\t" + match.Groups[3] + Environment.NewLine;
+                            }
+                        }
                     }
                 }
                 Clipboard.SetText(text);
             }
+        }
+
+        float startTimestamp = float.MinValue;
+        float endTimestamp = float.MaxValue;
+        private void setStartLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if(DataBox.SelectedItem is ListViewItem)
+            {
+                Logging.LogEvent ev = (Logging.LogEvent)((ListViewItem)DataBox.SelectedItem).Tag;
+                startTimestamp = ev.timestamp;
+                UpdateDisplay();
+            }
+        }
+
+        private void setEndLocationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (DataBox.SelectedItem is ListViewItem)
+            {
+                Logging.LogEvent ev = (Logging.LogEvent)((ListViewItem)DataBox.SelectedItem).Tag;
+                endTimestamp = ev.timestamp;
+                UpdateDisplay();
+            }
+        }
+
+        private void resetStartEndFiltersToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            startTimestamp = float.MinValue;
+            endTimestamp = float.MaxValue;
+            UpdateDisplay();
         }
 
         private void displayModeToolStripMenuItem_Click(object sender, EventArgs e)
