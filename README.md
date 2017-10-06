@@ -1,5 +1,5 @@
 # HandSight On-Body Interaction
-This is the code repository for the HandSight On-Body Interaction Project, from the University of Maryland's Human Computer Interaction Lab. *(TODO: add a link to our related papers once they're publicly available)*
+This is the code repository for the HandSight On-Body Interaction Project, from the University of Maryland's Human Computer Interaction Lab. *(TODO: add a link to our related papers once they're publicly available; JEF: probably best just to poin to the HandSight project site at makeabilitylab.io)*
 
 # Requirements:
 ## Hardware
