@@ -14,7 +14,7 @@
       },
       {
         "Context": "Phone",
-        "Gesture": "Swipe .*",
+        "Gesture": "Swipe Down",
         "CoarseLocation": ".*",
         "FineLocation": ".*",
         "Text": "{{PHONE_REJECT}}",

@@ -62,6 +62,12 @@
       <DependentUpon>PromptDialog.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VideoPlaybackForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="VideoPlaybackForm.Designer.cs">
+      <DependentUpon>VideoPlaybackForm.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="ExpandContractButton.resx">
@@ -72,6 +78,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="PromptDialog.resx">
       <DependentUpon>PromptDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="VideoPlaybackForm.resx">
+      <DependentUpon>VideoPlaybackForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

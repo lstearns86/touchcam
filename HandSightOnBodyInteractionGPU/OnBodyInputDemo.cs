@@ -880,7 +880,7 @@ namespace HandSightOnBodyInteractionGPU
                         //    FineProbabilityLabel.Text = "";
                         //}
                         //focus = (int)(focus / 100) * 100;
-                        Text = FPS.Camera.Average.ToString("0") + " fps camera / " + (Sensors.Instance.IsConnected ? FPS.Sensors.Average.ToString("0") + " fps sensors / " + FPS.Instance("processing").Average.ToString("0") + " fps processing" : "Waiting for Sensors") /*+ " / focus = " + focus.ToString("0")*/;
+                        Text = FPS.Camera.Average.ToString("0") + " fps camera / " + (Sensors.Instance.IsConnected ? FPS.Sensors.Average.ToString("0") + " fps sensors / " + FPS.Instance("processing").Average.ToString("0") + " fps processing / " + FPS.Instance("matching").Average.ToString("0") + " fps matching" : "Waiting for Sensors") /*+ " / focus = " + focus.ToString("0")*/;
                     }));
                 }
                 catch { }

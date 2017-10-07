@@ -136,7 +136,7 @@ namespace HandSightOnBodyInteractionGPU
 
             //CrossValidate(@"D:\UserStudies\UIST2016\PalmData\", new string[] { "p1", "p2", "p3", "p4", "p5", "p6", "p7", "new_p8", "p9", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17", "p18", "p19", "p20", "p21", "p22", "p23", "p24" }, "processed", "*Gesture*.png", @"p\d+_Gesture_.*?_");
 
-            EvaluateVideoPredictions2(@"D:\UserStudies\Ubicomp2017\", new string[] { "p05" }, "Samples", Path.Combine("Logs", "LocationVideoFrames"));
+            //EvaluateVideoPredictions2(@"D:\UserStudies\Ubicomp2017\", new string[] { "p05" }, "Samples", Path.Combine("Logs", "LocationVideoFrames"));
             //EvaluateVideoPredictions2(@"D:\UserStudies\Ubicomp2017\", new string[] { "p01", "p02b", "p03", "p04", "p05", "p07", "p08", "p09b", "p10", "p11", "p12" }, "Samples", Path.Combine("Logs", "LocationVideoFrames"));
 
             //TestLocalizationAccuracyWithVideoPredictions(new string[] { @"D:\UserStudies\Ubicomp2017\p12\Samples" }, @"D:\UserStudies\Ubicomp2017\p12\Logs", 20);
@@ -187,6 +187,1020 @@ namespace HandSightOnBodyInteractionGPU
             //                                                    @"D:\UserStudies\Ubicomp2017\TimeAndGestureStudy\lee\day5_A\Logs",
             //                                                    @"D:\UserStudies\Ubicomp2017\TimeAndGestureStudy\lee\day6_A\Logs"},
             //                                                    1, 1);
+
+            ConvertSensorReadingsToVideo(@"C:\Users\lstearns\Dropbox\_Research\HandSight\SharedFolders\ProjectHandSight_OnHandLocalization\Videos\2017_03_08 - TouchCamSingling\SensorVisualizations\RawSensorReadings\video_reading_visualizations_2.log", @"C:\Users\lstearns\Dropbox\_Research\HandSight\SharedFolders\ProjectHandSight_OnHandLocalization\Videos\2017_03_08 - TouchCamSingling\SensorVisualizations\sensor_visualizations_2_v5.avi", 60);
+
+            //SaveSpeechSamples(@"C:\Users\lstearns\Dropbox\_Research\HandSight\SharedFolders\ProjectHandSight_OnHandLocalization\Videos\2017_03_11 - Applications & Scenarios\SpeechSamples");
+
+            //TestImageMetrics(@"D:\UserStudies\Ubicomp2017\", new string[] { "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12" }, "Samples" );
+            //TestImageMetricsVideo(@"D:\UserStudies\Ubicomp2017\", new string[] { "p01" }, "Logs");
+            //TestVideoFrames(@"D:\UserStudies\Ubicomp2017\", new string[] { "p01", "p02", "p03", "p04", "p05", "p06", "p07", "p08", "p09", "p10", "p11", "p12" }, "Logs", "Samples");
+        }
+
+        private void TestImageMetrics(string root, string[] participants, string subfolder)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                string data = "";
+                SetStatus("Initializing");
+                SetProgress(0);
+                SetProgressMax(participants.Length);
+                foreach (string pid in participants)
+                {
+                    SetStatus("Processing " + pid);
+                    string dir = Path.Combine(root, pid, subfolder);
+                    string[] files = Directory.GetFiles(dir, "*.png");
+                    foreach (string filename in files)
+                    {
+                        SetStatus("Processing " + pid + ": " + Path.GetFileNameWithoutExtension(filename));
+                        Image<Gray, byte> img = new Image<Gray, byte>(filename);
+                        double signal = img.GetAverage().Intensity;
+                        Image<Gray, float> laplacian = img.Laplace(1);
+                        MCvScalar mean = new MCvScalar(), std = new MCvScalar();
+                        CvInvoke.MeanStdDev(img, ref mean, ref std);
+                        double contrast = mean.V0;
+                        double noise = std.V0;
+
+                        double SNR = signal / noise;
+                        double CNR = contrast / noise;
+
+                        float focus = ImageProcessing.ImageFocus(img);
+
+                        float directionalVariance = ImageProcessing.EstimateMotionBlur(img);
+
+                        data += Utils.CSV(pid, Path.GetFileNameWithoutExtension(filename), signal, contrast, noise, SNR, CNR, focus, directionalVariance) + Environment.NewLine;
+                    }
+                    IncrementProgress();
+                }
+                File.WriteAllText("results.txt", data);
+                Invoke(new MethodInvoker(delegate
+                {
+                    Clipboard.SetText(data);
+                }));
+                SetStatus("Done");
+            });
+        }
+
+        private void TestImageMetricsVideo(string root, string[] participants, string subfolder)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                string data = "";
+
+                foreach (string pid in participants)
+                {
+                    float numBadFrames = 0, numFrames = 0;
+                    string dir = Path.Combine(root, pid, subfolder);
+                    List<string> jsonFiles = new List<string>(Directory.GetFiles(dir, "*.log"));
+
+                    foreach (string fileName in jsonFiles)
+                    {
+                        SetStatus("Loading Log File: " + Path.GetFileNameWithoutExtension(fileName));
+                        SetProgress(0);
+                        List<Logging.LogEvent> events = Logging.ReadLog(fileName);
+                        events.Sort((a, b) => { return a.timestamp.CompareTo(b.timestamp); });
+                        SetStatus("Processing Log File: " + Path.GetFileNameWithoutExtension(fileName));
+                        SetProgressMax(events.Count);
+
+                        bool isTraining = false;
+
+                        // read the log and look for the autocapture training events, which will have labeled video frames in between
+                        // identify all video indices for which we can determine a label
+                        HashSet<int> isVideoTrainingSample = new HashSet<int>();
+                        HashSet<int> isTrainingSample = new HashSet<int>();
+                        List<int> currIndices = new List<int>();
+                        string currClass = null;
+                        int mostRecentIndex = 0;
+                        foreach (Logging.LogEvent e in events)
+                        {
+                            if (e.message == "start_autocapture_location")
+                                isTraining = true;
+                            else if (e.message == "stop_autocapture_location" || e.message == "External Stop Autocapture" || e.message == "touch_up_timeout")
+                            {
+                                isTraining = false;
+                            }
+                            else if (e.message.StartsWith("Added template: "))
+                            {
+                                isTrainingSample.Add(mostRecentIndex);
+                            }
+                            else if (e is Logging.VideoFrameEvent)
+                            {
+                                mostRecentIndex = (e as Logging.VideoFrameEvent).frameIndex;
+                                if (isTraining) isVideoTrainingSample.Add(mostRecentIndex);
+                            }
+                            IncrementProgress();
+                        }
+
+                        SetStatus("Reading Video File");
+                        SetProgressMax(isVideoTrainingSample.Count);
+                        SetProgress(0);
+
+                        // extract video frames
+                        string videoFileName = Path.ChangeExtension(fileName, "avi");
+                        VideoFileReader videoReader = new VideoFileReader();
+                        videoReader.Open(videoFileName);
+                        Dictionary<string, int> countsForClass = new Dictionary<string, int>();
+                        try
+                        {
+                            bool hasFramesToRead = true;
+                            int frameIndex = 0;
+                            while (hasFramesToRead)
+                            {
+                                Bitmap frame = videoReader.ReadVideoFrame();
+                                if (frame == null) hasFramesToRead = false;
+                                else if (isVideoTrainingSample.Contains(frameIndex))
+                                {
+                                    Image<Gray, byte> img = new Image<Gray, byte>(frame);
+                                    float focus = ImageProcessing.ImageFocus(img);
+                                    float directionalVariance = ImageProcessing.EstimateMotionBlur(img);
+
+                                    if (focus < 1400 || directionalVariance > 20000)
+                                        numBadFrames++;
+                                    numFrames++;
+
+                                    IncrementProgress();
+                                }
+                                frameIndex++;
+                            }
+                        }
+                        catch { }
+                        videoReader.Close();
+                    }
+
+                    data += Utils.CSV(pid, numFrames, numBadFrames, numBadFrames / numFrames) + Environment.NewLine;
+                }
+                File.WriteAllText("results.txt", data);
+                Invoke(new MethodInvoker(delegate
+                {
+                    Clipboard.SetText(data);
+                }));
+                SetProgress(0);
+                SetStatus("Done");
+            });
+        }
+
+        private void TestVideoFrames(string root, string[] participants, string logSubfolder, string sampleSubfolder)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                string data = "";
+
+                foreach (string pid in participants)
+                {
+                    string trainingDir = Path.Combine(root, pid, sampleSubfolder);
+                    string[] trainFiles = Directory.GetFiles(trainingDir);
+                    SetProgress(0);
+                    SetStatus("Loading Training Files");
+                    SetProgressMax(trainFiles.Length);
+
+                    var samples = new Dictionary<string, List<ImageTemplate>>();
+                    Worker worker = Worker.Default;
+
+                    Localization.Instance.Reset();
+                    foreach (string filename in trainFiles)
+                    {
+                        Match match = Regex.Match(Path.GetFileNameWithoutExtension(filename), @"([a-zA-Z]+)_([a-zA-Z]+)_(\d+)");
+                        string coarseLocation = match.Groups[1].Value;
+                        string fineLocation = match.Groups[2].Value;
+                        int index = int.Parse(match.Groups[3].Value);
+
+                        Bitmap bmp = (Bitmap)Bitmap.FromFile(filename);
+                        VideoFrame frame = new VideoFrame() { Image = new Image<Gray, byte>(bmp) };
+                        frame.ImageGPU = worker.Malloc<byte>(640 * 640);
+                        frame.ImageGPU.Scatter(frame.Image.Bytes);
+                        ImageTemplate template = new ImageTemplate(frame);
+                        template["frameIndex"] = index;
+                        template["Path"] = Path.GetFileNameWithoutExtension(filename);
+                        template["CoarseLocation"] = coarseLocation;
+                        template["FineLocation"] = fineLocation;
+                        if (!samples.ContainsKey(fineLocation)) samples.Add(fineLocation, new List<ImageTemplate>());
+                        samples[fineLocation].Add(template);
+
+                        ImageProcessing.ProcessTemplate(template, false);
+                        Localization.Instance.AddTrainingExample(template, coarseLocation, fineLocation);
+
+                        IncrementProgress();
+                    }
+
+                    SetStatus("Training Classifier");
+                    Localization.Instance.Train();
+
+                    float numBadFrames = 0, numFrames = 0;
+                    Dictionary<string, float> coarseClassCorrect = new Dictionary<string, float>();
+                    Dictionary<string, float> coarseClassCount = new Dictionary<string, float>();
+                    Dictionary<string, float> coarseClassCorrectGoodFrames = new Dictionary<string, float>();
+                    Dictionary<string, float> coarseClassCountGoodFrames = new Dictionary<string, float>();
+                    Dictionary<string, float> fineClassCorrect = new Dictionary<string, float>();
+                    Dictionary<string, float> fineClassCount = new Dictionary<string, float>();
+                    Dictionary<string, float> fineClassCorrectGoodFrames = new Dictionary<string, float>();
+                    Dictionary<string, float> fineClassCountGoodFrames = new Dictionary<string, float>();
+                    string dir = Path.Combine(root, pid, logSubfolder);
+                    List<string> jsonFiles = new List<string>(Directory.GetFiles(dir, "*.log"));
+
+                    foreach (string fileName in jsonFiles)
+                    {
+                        SetStatus("Loading Log File: " + Path.GetFileNameWithoutExtension(fileName));
+                        SetProgress(0);
+                        List<Logging.LogEvent> events = Logging.ReadLog(fileName);
+                        events.Sort((a, b) => { return a.timestamp.CompareTo(b.timestamp); });
+                        SetStatus("Processing Log File: " + Path.GetFileNameWithoutExtension(fileName));
+                        SetProgressMax(events.Count);
+
+                        bool isTraining = false;
+
+                        // read the log and look for the autocapture training events, which will have labeled video frames in between
+                        // identify all video indices for which we can determine a label
+                        Dictionary<int, string> frameClasses = new Dictionary<int, string>();
+                        HashSet<int> isTrainingSample = new HashSet<int>();
+                        List<int> currIndices = new List<int>();
+                        string currClass = null;
+                        int mostRecentIndex = 0;
+                        foreach (Logging.LogEvent e in events)
+                        {
+                            if (e.message == "start_autocapture_location")
+                                isTraining = true;
+                            else if (e.message == "stop_autocapture_location" || e.message == "External Stop Autocapture" || e.message == "touch_up_timeout")
+                            {
+                                isTraining = false;
+                                if(currClass != null)
+                                {
+                                    foreach (int index in currIndices) frameClasses.Add(index, currClass);
+                                }
+                                currIndices.Clear();
+                                currClass = null;
+                            }
+                            else if (e.message.StartsWith("Added template: "))
+                            {
+                                isTrainingSample.Add(mostRecentIndex);
+                                currClass = e.message.Replace("Added template: ", "").Replace(" ", "_");
+                            }
+                            else if (e is Logging.VideoFrameEvent)
+                            {
+                                mostRecentIndex = (e as Logging.VideoFrameEvent).frameIndex;
+                                if (isTraining) currIndices.Add(mostRecentIndex);
+                            }
+                            IncrementProgress();
+                        }
+
+                        SetStatus("Reading Video File");
+                        SetProgressMax(frameClasses.Count);
+                        SetProgress(0);
+
+                        // extract video frames
+                        string videoFileName = Path.ChangeExtension(fileName, "avi");
+                        VideoFileReader videoReader = new VideoFileReader();
+                        videoReader.Open(videoFileName);
+                        Dictionary<string, int> countsForClass = new Dictionary<string, int>();
+                        try
+                        {
+                            bool hasFramesToRead = true;
+                            int frameIndex = 0;
+                            while (hasFramesToRead)
+                            {
+                                Bitmap frame = videoReader.ReadVideoFrame();
+                                if (frame == null) hasFramesToRead = false;
+                                else if (frameClasses.ContainsKey(frameIndex))
+                                {
+                                    string className = frameClasses[frameIndex];
+                                    string[] parts = className.Split('_');
+                                    string coarseClass = parts[0];
+                                    string fineClass = parts[1];
+                                    if (!coarseClassCorrect.ContainsKey(coarseClass)) coarseClassCorrect.Add(coarseClass, 0);
+                                    if (!coarseClassCorrectGoodFrames.ContainsKey(coarseClass)) coarseClassCorrectGoodFrames.Add(coarseClass, 0);
+                                    if (!coarseClassCount.ContainsKey(coarseClass)) coarseClassCount.Add(coarseClass, 0);
+                                    if (!coarseClassCountGoodFrames.ContainsKey(coarseClass)) coarseClassCountGoodFrames.Add(coarseClass, 0);
+                                    if (!fineClassCorrect.ContainsKey(fineClass)) fineClassCorrect.Add(fineClass, 0);
+                                    if (!fineClassCorrectGoodFrames.ContainsKey(fineClass)) fineClassCorrectGoodFrames.Add(fineClass, 0);
+                                    if (!fineClassCount.ContainsKey(fineClass)) fineClassCount.Add(fineClass, 0);
+                                    if (!fineClassCountGoodFrames.ContainsKey(fineClass)) fineClassCountGoodFrames.Add(fineClass, 0);
+
+                                    coarseClassCount[coarseClass]++;
+                                    fineClassCount[fineClass]++;
+
+                                    Image<Gray, byte> img = new Image<Gray, byte>(frame);
+                                    ImageTemplate template = new ImageTemplate(img);
+                                    float focus = ImageProcessing.ImageFocus(img);
+                                    float directionalVariance = ImageProcessing.EstimateMotionBlur(img);
+                                    ImageProcessing.ProcessTemplate(template, false);
+
+                                    string coarseLocation = Localization.Instance.PredictCoarseLocation(template);
+                                    string fineLocation = Localization.Instance.PredictFineLocation(template, true, false, false, coarseLocation);
+                                    if (coarseClass == coarseLocation) coarseClassCorrect[coarseClass]++;
+                                    if (fineClass == fineLocation) fineClassCorrect[fineClass]++;
+
+                                    if (focus < 1400 || directionalVariance > 20000)
+                                    {
+                                        numBadFrames++;
+                                    }
+                                    else
+                                    {
+                                        coarseClassCountGoodFrames[coarseClass]++;
+                                        fineClassCountGoodFrames[fineClass]++;
+                                        if (coarseClass == coarseLocation)
+                                        {
+                                            coarseClassCorrectGoodFrames[coarseClass]++;
+                                            //coarseClassCountGoodFrames[coarseClass]++;
+                                        }
+                                        if (fineClass == fineLocation)
+                                        {
+                                            fineClassCorrectGoodFrames[fineClass]++;
+                                            //fineClassCountGoodFrames[fineClass]++;
+                                        }
+                                    }
+                                    numFrames++;
+
+                                    IncrementProgress();
+                                }
+                                frameIndex++;
+                            }
+                        }
+                        catch { }
+                        videoReader.Close();
+                    }
+
+                    float accuracyCoarseTotal = 0, accuracyCoarseGoodFrames = 0;
+                    foreach(string coarseClass in coarseClassCorrect.Keys)
+                    {
+                        accuracyCoarseTotal += coarseClassCorrect[coarseClass] / coarseClassCount[coarseClass];
+                        accuracyCoarseGoodFrames += coarseClassCorrectGoodFrames[coarseClass] / coarseClassCountGoodFrames[coarseClass];
+                    }
+                    accuracyCoarseTotal /= coarseClassCorrect.Keys.Count;
+                    accuracyCoarseGoodFrames /= coarseClassCorrect.Keys.Count;
+
+                    float accuracyFineTotal = 0, accuracyFineGoodFrames = 0;
+                    foreach (string fineClass in fineClassCorrect.Keys)
+                    {
+                        accuracyFineTotal += fineClassCorrect[fineClass] / fineClassCount[fineClass];
+                        accuracyFineGoodFrames += fineClassCorrectGoodFrames[fineClass] / fineClassCountGoodFrames[fineClass];
+                    }
+                    accuracyFineTotal /= fineClassCorrect.Keys.Count;
+                    accuracyFineGoodFrames /= fineClassCorrect.Keys.Count;
+
+                    if(data == null || data.Length == 0)
+                        data += Utils.CSV("pid", "# Total Frames", "# Bad Frames", "% Bad Frames", "Overall Accuracy Coarse", "Overall Accuracy Fine", "Accuracy Coarse Good Frames", "Accuracy Fine Good Frames") + Environment.NewLine;
+
+                    data += Utils.CSV(pid, numFrames, numBadFrames, numBadFrames / numFrames, accuracyCoarseTotal, accuracyFineTotal, accuracyCoarseGoodFrames, accuracyFineGoodFrames) + Environment.NewLine;
+
+                    File.WriteAllText("results.txt", data);
+                    Invoke(new MethodInvoker(delegate
+                    {
+                        Clipboard.SetText(data);
+                    }));
+                }
+                File.WriteAllText("results.txt", data);
+                Invoke(new MethodInvoker(delegate
+                {
+                    Clipboard.SetText(data);
+                }));
+                SetProgress(0);
+                SetStatus("Done");
+            });
+        }
+
+        private void SaveSpeechSamples(string outputDir = null)
+        {
+            if (outputDir == null) outputDir = Environment.CurrentDirectory;
+
+            SetStatus("Writing Speech Samples to File");
+
+            // set up the speech synthesizer
+            System.Speech.Synthesis.SpeechSynthesizer speech = new System.Speech.Synthesis.SpeechSynthesizer();
+            speech.Rate = 2;
+            speech.SelectVoice("Microsoft David Desktop");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "mainMenu.wav"));
+            speech.Speak("Main menu, ");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "clock.wav"));
+            speech.Speak("Clock: the time is 10:25 AM.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "clock_menuOpened.wav"));
+            speech.Speak("Clock menu opened, ");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "clock_time.wav"));
+            speech.Speak("Clock: the time is 10:25 AM.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "clock_timer.wav"));
+            speech.Speak("Timer: 7 minutes and 45 seconds remaining.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "clock_stopwatch.wav"));
+            speech.Speak("Stopwatch: 9 minutes and 27 seconds elapsed.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "clock_alarm.wav"));
+            speech.Speak("Alarm: set for 8 AM.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "dailySummary.wav"));
+            speech.Speak("Daily Summary: Wednesday, August 24th, 2016.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "dailySummary_menuOpened.wav"));
+            speech.Speak("Daily Summary menu opened, ");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "dailySummary_date.wav"));
+            speech.Speak("Date: Wednesday, August 24th, 2016.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "dailySummary_weather.wav"));
+            speech.Speak("Weather: partly cloudy and 81 degrees currently and the high for today was forecast as 84 degrees.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "dailySummary_nextEvent.wav"));
+            speech.Speak("Next event: dentist appointment from 2pm to 3pm starts in 1 hour and 35 minutes.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "notifications.wav"));
+            speech.Speak("Notifications: you have 1 missed phone call and 2 new messages.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "notifications_menuOpened.wav"));
+            speech.Speak("Notifications menu opened, ");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "notifications_notifications.wav"));
+            speech.Speak("Notifications: you have 1 missed phone call and 2 new messages.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "notifications_notifications.wav"));
+            speech.Speak("You have 1 missed phone call and 2 new messages.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "notifications_message1.wav"));
+            speech.Speak("Missed phone call from Alice, just now.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "notifications_message2.wav"));
+            speech.Speak("Message from Bob 16 minutes ago. Okay, I will see you soon.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "notifications_message3.wav"));
+            speech.Speak("Message from Charlie 5 hours ago. What's up?");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "healthAndActivities.wav"));
+            speech.Speak("Health and activities: 1.8 miles traveled today.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "healthAndActivities_menuOpened.wav"));
+            speech.Speak("Health and activities menu opened, ");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "healthAndActivities_distance.wav"));
+            speech.Speak("Distance: you've traveled 1.8 miles today.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "healthAndActivities_steps.wav"));
+            speech.Speak("Steps: you've taken 2366 steps today.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "healthAndActivities_calories.wav"));
+            speech.Speak("Calories: you've burnt 497 calories today.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "healthAndActivities_heartRate.wav"));
+            speech.Speak("Heart rate: 118 bpm.");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "voiceInput.wav"));
+            speech.Speak("Voice Input");
+
+            speech.SetOutputToWaveFile(Path.Combine(outputDir, "voiceInput_selected.wav"));
+            speech.Speak("What can I help you with?");
+
+            SetStatus("Done");
+        }
+
+        bool exportCameraVideo = true, exportIRVideo = true, exportIMUVideo = true;
+        private void ConvertSensorReadingsToVideo(string path, string output = null, int fps = 30)
+        {
+            Task.Factory.StartNew(() =>
+            {
+                SetStatus("Loading Log File");
+                List<Logging.LogEvent> events = Logging.ReadLog(path);
+
+                SetStatus("Loading Video File");
+                string videoFileName = Path.ChangeExtension(path, "avi");
+                List<Bitmap> frames = new List<Bitmap>();
+                VideoFileReader videoReader = new VideoFileReader();
+                if (exportCameraVideo)
+                {
+                    videoReader.Open(videoFileName);
+
+                    Bitmap frame = null;
+                    while (true)
+                    {
+                        frame = videoReader.ReadVideoFrame();
+                        if (frame != null) frames.Add(frame);
+                        else break;
+                    }
+                    videoReader.Close();
+                }
+
+                if (output == null) output = path;
+                int videoWidth = 640, videoHeight = 640;
+                //float sensorVideoWidthFactor = 5.0f / 2.0f;
+                float sensorVideoWidthFactor = 1.0f;
+
+                VideoFileWriter videoWriter = new VideoFileWriter();
+                string videoOutputPath = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output) + "_video" + ".mp4");
+                if (exportCameraVideo) videoWriter.Open(videoOutputPath, videoWidth, videoHeight, fps, VideoCodec.MPEG4, 10 * 1024 * 1024);
+
+                VideoFileWriter irWriter = new VideoFileWriter();
+                string irOutputPath = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output) + "_ir" + ".mp4");
+                if (exportIRVideo) irWriter.Open(irOutputPath, (int)(videoWidth * sensorVideoWidthFactor), videoHeight, fps, VideoCodec.MPEG4, 10 * 1024 * 1024);
+
+                VideoFileWriter accelWriter = new VideoFileWriter();
+                string accelOutputPath = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output) + "_accel" + ".mp4");
+                if (exportIMUVideo) accelWriter.Open(accelOutputPath, (int)(videoWidth * sensorVideoWidthFactor), videoHeight, fps, VideoCodec.MPEG4, 10 * 1024 * 1024);
+
+                VideoFileWriter gyroWriter = new VideoFileWriter();
+                string gyroOutputPath = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output) + "_gyro" + ".mp4");
+                if (exportIMUVideo) gyroWriter.Open(gyroOutputPath, (int)(videoWidth * sensorVideoWidthFactor), videoHeight, fps, VideoCodec.MPEG4, 10 * 1024 * 1024);
+
+                VideoFileWriter magWriter = new VideoFileWriter();
+                string magOutputPath = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output) + "_mag" + ".mp4");
+                if (exportIMUVideo) magWriter.Open(magOutputPath, (int)(videoWidth * sensorVideoWidthFactor), videoHeight, fps, VideoCodec.MPEG4, 10 * 1024 * 1024);
+
+                //VideoFileWriter combinedWriter = new VideoFileWriter();
+                //string combinedOutputPath = Path.Combine(Path.GetDirectoryName(output), Path.GetFileNameWithoutExtension(output) + "_combined" + ".mp4");
+                //if (exportCameraVideo && exportIMUVideo && exportIRVideo) combinedWriter.Open(combinedOutputPath, 3 * videoWidth, videoHeight, fps, VideoCodec.MPEG4, 3 * 10 * 1024 * 1024);
+
+                SetStatus("Writing Video File");
+                float lastFrameTime = float.MinValue;
+                Bitmap lastFrame = null;
+                float frameDuration = 1000.0f / fps;
+                Queue<Logging.SensorReadingEvent> sensorReadings = new Queue<Logging.SensorReadingEvent>();
+                float sensorReadingBuffer = 5000.0f;
+                Queue<Logging.LogEvent> touchEvents = new Queue<Logging.LogEvent>();
+
+                Font legendFont = new Font("Segoe", 20);
+                Font graphLabelFont = new Font("Segoe", 20);
+                Font axisFont = new Font("Segoe", 18);
+                Font axisLabelFont = new Font("Segoe", 24);
+                Font axisLabelSuperscriptFont = new Font("Segoe", 18);
+
+                Pen irLeftPen = new Pen(Color.FromArgb(75, 172, 198));
+                irLeftPen.Width = 3;
+                irLeftPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                Pen irRightPen = new Pen(Color.FromArgb(247, 150, 70));
+                irRightPen.Width = 3;
+                irRightPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                Pen irThresholdPen = new Pen(Color.Red);
+                irThresholdPen.Width = 2;
+                irThresholdPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dot;
+                irThresholdPen.DashCap = System.Drawing.Drawing2D.DashCap.Round;
+                Pen irTouchEventPen = new Pen(Color.Black);
+                irTouchEventPen.Width = 2;
+                irTouchEventPen.DashStyle = System.Drawing.Drawing2D.DashStyle.Dash;
+                Brush irTouchDownBrush = new SolidBrush(Color.FromArgb(235, 235, 235));
+
+                int yAxisLeft = 10;
+                int yAxisRight = 50;
+                int graphMinX = yAxisRight + 10, graphMaxX = (int)(videoWidth * sensorVideoWidthFactor) - 10;
+                int graphMinY = 10, graphMaxY = videoHeight - 80;
+
+                int legendMargin = 10;
+                int legendLineHeight = legendFont.Height;
+                int legendColorWidth = 30;
+                int legendLabelGap = 10;
+                int legendColorOffsetY = legendLineHeight / 2;
+                int irLegendWidth = TextRenderer.MeasureText("IR Right", legendFont).Width + legendMargin + legendColorWidth + legendLabelGap + legendMargin;
+                int irLegendHeight = 2 * legendLineHeight + 2 * legendMargin;
+                int irLegendX = graphMaxX - irLegendWidth - legendMargin, irLegendY = graphMaxY - irLegendHeight - legendMargin;
+
+                int xAxisLeft = graphMinX;
+                int xAxisRight = graphMaxX;
+                int xAxisTop = graphMaxY + 5;
+                int xAxisBottom = videoHeight - 10;
+
+                int yAxisTop = graphMinY;
+                int yAxisBottom = graphMaxY;
+
+                int imuLegendWidth = TextRenderer.MeasureText("X", legendFont).Width + legendMargin + legendColorWidth + legendLabelGap + legendMargin, imuLegendHeight = 3 * legendLineHeight + 2 * legendMargin;
+                int imuLegendX = graphMaxX - imuLegendWidth - legendMargin, imuLegendY = graphMaxY - imuLegendHeight - legendMargin;
+
+                Pen imuXPen = new Pen(Color.FromArgb(192, 80, 77));
+                imuXPen.Width = 3;
+                imuXPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                Pen imuYPen = new Pen(Color.FromArgb(155, 187, 89));
+                imuYPen.Width = 3;
+                imuYPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+                Pen imuZPen = new Pen(Color.FromArgb(79, 129, 189));
+                imuZPen.Width = 3;
+                imuZPen.EndCap = System.Drawing.Drawing2D.LineCap.Round;
+
+                //float accelerometerMax = 0, gyroscopeMax = 0, magnetometerMax = 0;
+                //if(exportIMUVideo)
+                //    foreach(Logging.LogEvent e in events)
+                //        if(e is Logging.SensorReadingEvent)
+                //        {
+                //            Sensors.Reading reading = (e as Logging.SensorReadingEvent).reading;
+                //            if (Math.Abs(reading.Accelerometer1.X) > accelerometerMax) accelerometerMax = Math.Abs(reading.Accelerometer1.X);
+                //            if (Math.Abs(reading.Accelerometer1.Y) > accelerometerMax) accelerometerMax = Math.Abs(reading.Accelerometer1.Y);
+                //            if (Math.Abs(reading.Accelerometer1.Z) > accelerometerMax) accelerometerMax = Math.Abs(reading.Accelerometer1.Z);
+                //            if (Math.Abs(reading.Gyroscope1.X) > gyroscopeMax) gyroscopeMax = Math.Abs(reading.Gyroscope1.X);
+                //            if (Math.Abs(reading.Gyroscope1.Y) > gyroscopeMax) gyroscopeMax = Math.Abs(reading.Gyroscope1.Y);
+                //            if (Math.Abs(reading.Gyroscope1.Z) > gyroscopeMax) gyroscopeMax = Math.Abs(reading.Gyroscope1.Z);
+                //            if (Math.Abs(reading.Magnetometer1.X) > magnetometerMax) magnetometerMax = Math.Abs(reading.Magnetometer1.X);
+                //            if (Math.Abs(reading.Magnetometer1.Y) > magnetometerMax) magnetometerMax = Math.Abs(reading.Magnetometer1.Y);
+                //            if (Math.Abs(reading.Magnetometer1.Z) > magnetometerMax) magnetometerMax = Math.Abs(reading.Magnetometer1.Z);
+                //        }
+                float accelerometerMax = 40, gyroscopeMax = 360, magnetometerMax = 8;
+
+                int numVideos = (exportCameraVideo ? 1 : 0) + (exportIRVideo ? 1 : 0) + (exportIMUVideo ? 3 : 0);
+                HandSightCustomControls.VideoPlaybackForm videoWindow = new HandSightCustomControls.VideoPlaybackForm(numVideos, 240, (int)(240 * sensorVideoWidthFactor));
+                videoWindow.Show();
+
+                try
+                {
+                    SetProgressMax(events.Count);
+                    bool touchDown = false;
+                    foreach (Logging.LogEvent e in events)
+                    {
+                        if (e is Logging.VideoFrameEvent && exportCameraVideo)
+                        {
+                            int index = (e as Logging.VideoFrameEvent).frameIndex;
+                            if (index < frames.Count) lastFrame = frames[index];
+                        }
+                        else if (e is Logging.SensorReadingEvent && (exportIRVideo || exportIMUVideo))
+                        {
+                            sensorReadings.Enqueue(e as Logging.SensorReadingEvent);
+                            while (e.timestamp - sensorReadings.Peek().timestamp > sensorReadingBuffer) sensorReadings.Dequeue();
+                        }
+                        else if (e.message.Contains("touch"))
+                        {
+                            if (e.message != "touch_up" && !(touchDown && e.message == "touch_down")) touchEvents.Enqueue(e);
+
+                            if (e.message == "touch_down") touchDown = true;
+                            else if (e.message == "touch_up_timeout") touchDown = false;
+
+                            while (touchEvents.Count > 0 && e.timestamp - touchEvents.Peek().timestamp > sensorReadingBuffer) touchEvents.Dequeue();
+                        }
+
+                        if (e.timestamp - lastFrameTime >= frameDuration)
+                        {
+                            //Bitmap combinedFrame = new Bitmap(3 * videoWidth, videoHeight);
+                            //Graphics combinedGraphics = Graphics.FromImage(combinedFrame);
+                            // write video frame
+                            if (exportCameraVideo && lastFrame != null)
+                            {
+                                videoWriter.WriteVideoFrame(lastFrame);
+                                videoWindow.SetFrame(lastFrame, 0);
+                                //combinedGraphics.DrawImage(lastFrame, 0, 0, videoWidth, videoHeight);
+                                Application.DoEvents();
+                            }
+
+                            // write IR visualization frame
+                            if (exportIRVideo)
+                            {
+                                Bitmap irFrame = new Bitmap((int)(videoWidth * sensorVideoWidthFactor), videoHeight);
+                                Graphics g = Graphics.FromImage(irFrame);
+                                g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                g.Clear(Color.White);
+
+                                // draw background to indicate touch down/up
+                                bool tempTouchDown = false;
+                                float touchStartX = -1;
+                                foreach (Logging.LogEvent touchEvent in touchEvents)
+                                {
+                                    if (touchEvent.message == "touch_down")
+                                    {
+                                        tempTouchDown = true;
+                                        touchStartX = (sensorReadingBuffer - (e.timestamp - touchEvent.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    }
+                                    else
+                                    {
+                                        if (!tempTouchDown) touchStartX = graphMinX;
+                                        touchStartX = Math.Max(graphMinX, touchStartX);
+                                        tempTouchDown = false;
+                                        float touchEndX = (sensorReadingBuffer - (e.timestamp - touchEvent.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                        g.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, touchEndX - touchStartX, graphMaxY - graphMinY);
+                                    }
+                                }
+                                if (tempTouchDown)
+                                {
+                                    touchStartX = Math.Max(graphMinX, touchStartX);
+                                    g.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, graphMaxX - touchStartX, graphMaxY - graphMinY);
+                                }
+                                if (touchDown && touchEvents.Count == 0)
+                                {
+                                    g.FillRectangle(irTouchDownBrush, graphMinX, graphMinY, graphMaxX, graphMaxY);
+                                }
+
+                                // draw sensor readings
+                                float lastX = float.NaN;
+                                float lastYLeft = float.NaN, lastYRight = float.NaN;
+                                foreach (Logging.SensorReadingEvent reading in sensorReadings)
+                                {
+                                    float x = (sensorReadingBuffer - (e.timestamp - reading.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    //if (!float.IsNaN(lastX) && x - lastX < 5) continue;
+
+                                    float yLeft = (1 - reading.reading.InfraredReflectance1) * (graphMaxY - graphMinY) + graphMinY;
+                                    float yRight = (1 - reading.reading.InfraredReflectance2) * (graphMaxY - graphMinY) + graphMinY;
+                                    if (!float.IsNaN(lastX))
+                                    {
+                                        g.DrawLine(irLeftPen, lastX, lastYLeft, x, yLeft);
+                                        g.DrawLine(irRightPen, lastX, lastYRight, x, yRight);
+                                    }
+                                    lastX = x;
+                                    lastYLeft = yLeft;
+                                    lastYRight = yRight;
+                                }
+
+                                // mark touch events
+                                g.SetClip(new Rectangle(graphMinX, graphMinY, graphMaxX, graphMaxY));
+                                foreach (Logging.LogEvent touchEvent in touchEvents)
+                                {
+                                    float x = (sensorReadingBuffer - (e.timestamp - touchEvent.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    if (x >= graphMinX)
+                                    {
+                                        g.DrawLine(irTouchEventPen, x, graphMinY, x, graphMaxY);
+                                        bool isTouchDown = touchEvent.message.Contains("down");
+                                        string eventName = "Touch " + (isTouchDown ? "Down" : "Up");
+                                        g.DrawString(eventName, graphLabelFont, Brushes.Black, x + (isTouchDown ? -g.MeasureString(eventName, graphLabelFont).Width : 5), graphMaxY - (isTouchDown ? 10 : 10 + graphLabelFont.Height) - g.MeasureString(eventName, graphLabelFont).Height);
+                                    }
+                                }
+                                g.ResetClip();
+
+                                // draw threshold line and label
+                                g.DrawLine(irThresholdPen, graphMinX, graphMinY + 0.1f * (graphMaxY - graphMinY), graphMaxX, graphMinY + 0.1f * (graphMaxY - graphMinY));
+                                g.DrawString("Threshold", graphLabelFont, Brushes.Red, graphMaxX - 10 - g.MeasureString("Threshold", graphLabelFont).Width, graphMinY + 0.1f * (graphMaxY - graphMinY) - g.MeasureString("Threshold", graphLabelFont).Height);
+
+                                // draw legend
+                                g.FillRectangle(Brushes.White, irLegendX, irLegendY, irLegendWidth, irLegendHeight);
+                                g.DrawRectangle(Pens.Black, irLegendX, irLegendY, irLegendWidth, irLegendHeight);
+                                g.DrawLine(irLeftPen, irLegendX + legendMargin, irLegendY + legendMargin + legendColorOffsetY, irLegendX + legendMargin + legendColorWidth, irLegendY + legendMargin + legendColorOffsetY);
+                                g.DrawLine(irRightPen, irLegendX + legendMargin, irLegendY + legendMargin + legendColorOffsetY + legendLineHeight, irLegendX + legendMargin + legendColorWidth, irLegendY + legendMargin + legendColorOffsetY + legendLineHeight);
+                                g.DrawString("IR Left", legendFont, Brushes.Black, irLegendX + legendMargin + legendColorWidth + legendLabelGap, irLegendY + legendMargin);
+                                g.DrawString("IR Right", legendFont, Brushes.Black, irLegendX + legendMargin + legendColorWidth + legendLabelGap, irLegendY + legendMargin + legendLineHeight);
+
+                                // draw x axis
+                                for (float t = (float)Math.Round(e.timestamp / 1000.0) * 1000.0f; t > e.timestamp - sensorReadingBuffer; t -= 1000)
+                                {
+                                    float x = (sensorReadingBuffer - (e.timestamp - t)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    if (x >= graphMinX)
+                                    {
+                                        g.DrawLine(Pens.Black, x, graphMaxY - 3, x, graphMaxY + 3);
+                                        g.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - g.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, xAxisTop);
+                                    }
+                                }
+                                g.DrawString("Time (seconds)", axisLabelFont, Brushes.Black, xAxisLeft + (xAxisRight - xAxisLeft) / 2 - g.MeasureString("Time (seconds)", axisLabelFont).Width / 2, xAxisBottom - axisLabelFont.Height);
+
+                                // draw y axis
+                                for (int i = 0; i <= 4; i++)
+                                {
+                                    float y = graphMinY + i * (graphMaxY - graphMinY) / 4.0f;
+                                    g.DrawLine(Pens.Black, graphMinX - 3, y, graphMinX + 3, y);
+                                    g.DrawString(((4 - i) * 25).ToString("0"), axisFont, Brushes.Black, yAxisRight - g.MeasureString(((4 - i) * 25).ToString("0"), axisFont).Width, y - g.MeasureString(((4 - i) * 25).ToString("0"), axisFont).Height / 2);
+                                }
+                                //g.TranslateTransform(yAxisLeft, yAxisBottom);
+                                //g.RotateTransform(-90);
+                                //g.DrawString("IR Reading (% Max)", axisLabelFont, Brushes.Black, (yAxisBottom - yAxisTop) / 2 - g.MeasureString("IR Reading (% Max)", axisLabelFont).Width / 2, 0);
+                                //g.ResetTransform();
+
+                                irWriter.WriteVideoFrame(irFrame);
+                                videoWindow.SetFrame(irFrame, exportCameraVideo ? 1 : 0);
+                                //combinedGraphics.DrawImage(irFrame, videoWidth, 0, videoWidth, videoHeight);
+                                Application.DoEvents();
+                            }
+
+                            // write IMU visualization frames
+                            if (exportIMUVideo)
+                            {
+                                Bitmap accelFrame = new Bitmap((int)(videoWidth * sensorVideoWidthFactor), videoHeight);
+                                Bitmap gyroFrame = new Bitmap((int)(videoWidth * sensorVideoWidthFactor), videoHeight);
+                                Bitmap magFrame = new Bitmap((int)(videoWidth * sensorVideoWidthFactor), videoHeight);
+                                Graphics ga = Graphics.FromImage(accelFrame);
+                                Graphics gg = Graphics.FromImage(gyroFrame);
+                                Graphics gm = Graphics.FromImage(magFrame);
+                                ga.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                ga.Clear(Color.White);
+                                gg.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                gg.Clear(Color.White);
+                                gm.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                                gm.Clear(Color.White);
+
+                                // draw background to indicate touch down/up
+                                bool tempTouchDown = false;
+                                float touchStartX = -1;
+                                foreach (Logging.LogEvent touchEvent in touchEvents)
+                                {
+                                    if (touchEvent.message == "touch_down")
+                                    {
+                                        tempTouchDown = true;
+                                        touchStartX = (sensorReadingBuffer - (e.timestamp - touchEvent.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    }
+                                    else
+                                    {
+                                        if (!tempTouchDown) touchStartX = graphMinX;
+                                        touchStartX = Math.Max(graphMinX, touchStartX);
+                                        tempTouchDown = false;
+                                        float touchEndX = (sensorReadingBuffer - (e.timestamp - touchEvent.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                        ga.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, touchEndX - touchStartX, graphMaxY - graphMinY);
+                                        gg.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, touchEndX - touchStartX, graphMaxY - graphMinY);
+                                        gm.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, touchEndX - touchStartX, graphMaxY - graphMinY);
+                                    }
+                                }
+                                if (tempTouchDown)
+                                {
+                                    touchStartX = Math.Max(graphMinX, touchStartX);
+                                    ga.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, graphMaxX - touchStartX, graphMaxY - graphMinY);
+                                    gg.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, graphMaxX - touchStartX, graphMaxY - graphMinY);
+                                    gm.FillRectangle(irTouchDownBrush, touchStartX, graphMinY, graphMaxX - touchStartX, graphMaxY - graphMinY);
+                                }
+                                if (touchDown && touchEvents.Count == 0)
+                                {
+                                    ga.FillRectangle(irTouchDownBrush, graphMinX, graphMinY, graphMaxX, graphMaxY);
+                                    gg.FillRectangle(irTouchDownBrush, graphMinX, graphMinY, graphMaxX, graphMaxY);
+                                    gm.FillRectangle(irTouchDownBrush, graphMinX, graphMinY, graphMaxX, graphMaxY);
+                                }
+
+                                // draw axis zero lines
+                                ga.DrawLine(Pens.Black, graphMinX, graphMinY + (graphMaxY - graphMinY) / 2, graphMaxX, graphMinY + (graphMaxY - graphMinY) / 2);
+                                gg.DrawLine(Pens.Black, graphMinX, graphMinY + (graphMaxY - graphMinY) / 2, graphMaxX, graphMinY + (graphMaxY - graphMinY) / 2);
+                                gm.DrawLine(Pens.Black, graphMinX, graphMinY + (graphMaxY - graphMinY) / 2, graphMaxX, graphMinY + (graphMaxY - graphMinY) / 2);
+
+                                // draw sensor readings
+                                float lastX = float.NaN;
+                                float lastYAccelX = float.NaN, lastYAccelY = float.NaN, lastYAccelZ = float.NaN;
+                                float lastYGyroX = float.NaN, lastYGyroY = float.NaN, lastYGyroZ = float.NaN;
+                                float lastYMagX = float.NaN, lastYMagY = float.NaN, lastYMagZ = float.NaN;
+                                foreach (Logging.SensorReadingEvent reading in sensorReadings)
+                                {
+                                    float x = (sensorReadingBuffer - (e.timestamp - reading.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    //if (!float.IsNaN(lastX) && x - lastX < 5) continue;
+
+                                    float yAccelX = (-reading.reading.Accelerometer1.X) / (accelerometerMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yAccelY = (-reading.reading.Accelerometer1.Y) / (accelerometerMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yAccelZ = (-reading.reading.Accelerometer1.Z) / (accelerometerMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yGyroX = (-reading.reading.Gyroscope1.X) / (gyroscopeMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yGyroY = (-reading.reading.Gyroscope1.Y) / (gyroscopeMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yGyroZ = (-reading.reading.Gyroscope1.Z) / (gyroscopeMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yMagX = (-reading.reading.Magnetometer1.X) / (magnetometerMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yMagY = (-reading.reading.Magnetometer1.Y) / (magnetometerMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+                                    float yMagZ = (-reading.reading.Magnetometer1.Z) / (magnetometerMax * 2.0f) * (graphMaxY - graphMinY) + graphMinY + (graphMaxY - graphMinY) / 2.0f;
+
+                                    if (!float.IsNaN(lastX))
+                                    {
+                                        ga.DrawLine(imuXPen, lastX, lastYAccelX, x, yAccelX);
+                                        ga.DrawLine(imuYPen, lastX, lastYAccelY, x, yAccelY);
+                                        ga.DrawLine(imuZPen, lastX, lastYAccelZ, x, yAccelZ);
+                                        gg.DrawLine(imuXPen, lastX, lastYGyroX, x, yGyroX);
+                                        gg.DrawLine(imuYPen, lastX, lastYGyroY, x, yGyroY);
+                                        gg.DrawLine(imuZPen, lastX, lastYGyroZ, x, yGyroZ);
+                                        gm.DrawLine(imuXPen, lastX, lastYMagX, x, yMagX);
+                                        gm.DrawLine(imuYPen, lastX, lastYMagY, x, yMagY);
+                                        gm.DrawLine(imuZPen, lastX, lastYMagZ, x, yMagZ);
+                                    }
+                                    lastX = x;
+                                    lastYAccelX = yAccelX;
+                                    lastYAccelY = yAccelY;
+                                    lastYAccelZ = yAccelZ;
+                                    lastYGyroX = yGyroX;
+                                    lastYGyroY = yGyroY;
+                                    lastYGyroZ = yGyroZ;
+                                    lastYMagX = yMagX;
+                                    lastYMagY = yMagY;
+                                    lastYMagZ = yMagZ;
+                                }
+
+                                // mark touch events
+                                ga.SetClip(new Rectangle(graphMinX, graphMinY, graphMaxX, graphMaxY));
+                                gg.SetClip(new Rectangle(graphMinX, graphMinY, graphMaxX, graphMaxY));
+                                gm.SetClip(new Rectangle(graphMinX, graphMinY, graphMaxX, graphMaxY));
+                                foreach (Logging.LogEvent touchEvent in touchEvents)
+                                {
+                                    float x = (sensorReadingBuffer - (e.timestamp - touchEvent.timestamp)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    if (x >= graphMinX)
+                                    {
+                                        ga.DrawLine(irTouchEventPen, x, graphMinY, x, graphMaxY);
+                                        gg.DrawLine(irTouchEventPen, x, graphMinY, x, graphMaxY);
+                                        gm.DrawLine(irTouchEventPen, x, graphMinY, x, graphMaxY);
+                                        bool isTouchDown = touchEvent.message.Contains("down");
+                                        string eventName = "Gesture " + (isTouchDown ? "Start" : "End");
+                                        ga.DrawString(eventName, graphLabelFont, Brushes.Black, x + (isTouchDown ? -ga.MeasureString(eventName, graphLabelFont).Width : 5), graphMaxY - (isTouchDown ? 10 + graphLabelFont.Height : 10) - ga.MeasureString(eventName, graphLabelFont).Height);
+                                        gg.DrawString(eventName, graphLabelFont, Brushes.Black, x + (isTouchDown ? -gg.MeasureString(eventName, graphLabelFont).Width : 5), graphMaxY - (isTouchDown ? 10 + graphLabelFont.Height : 10) - gg.MeasureString(eventName, graphLabelFont).Height);
+                                        gm.DrawString(eventName, graphLabelFont, Brushes.Black, x + (isTouchDown ? -gm.MeasureString(eventName, graphLabelFont).Width : 5), graphMaxY - (isTouchDown ? 10 + graphLabelFont.Height : 10) - gm.MeasureString(eventName, graphLabelFont).Height);
+                                        //g.DrawString(eventName, graphLabelFont, Brushes.Black, x + (isTouchDown ? -g.MeasureString(eventName, graphLabelFont).Width : 5), irGraphMaxY - (isTouchDown ? 10 : 25) - g.MeasureString(eventName, graphLabelFont).Height);
+                                    }
+                                }
+                                ga.ResetClip();
+                                gg.ResetClip();
+                                gm.ResetClip();
+
+                                // draw x axes
+                                for (float t = (float)Math.Round(e.timestamp / 1000.0) * 1000.0f; t > e.timestamp - sensorReadingBuffer; t -= 1000)
+                                {
+                                    float x = (sensorReadingBuffer - (e.timestamp - t)) / sensorReadingBuffer * (graphMaxX - graphMinX) + graphMinX;
+                                    if (x >= graphMinX)
+                                    {
+                                        ga.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        ga.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - ga.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+                                        ga.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        ga.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - ga.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+                                        ga.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        ga.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - ga.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+
+                                        gg.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        gg.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - gg.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+                                        gg.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        gg.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - gg.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+                                        gg.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        gg.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - gg.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+
+                                        gm.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        gm.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - gm.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+                                        gm.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        gm.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - gm.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+                                        gm.DrawLine(Pens.Black, x, (graphMinY + graphMaxY) / 2.0f - 3, x, (graphMinY + graphMaxY) / 2.0f + 3);
+                                        gm.DrawString((t / 1000).ToString("0"), axisFont, Brushes.Black, x - gm.MeasureString((t / 1000).ToString("0"), axisFont).Width / 2, (graphMinY + graphMaxY) / 2.0f + 5);
+                                    }
+                                }
+                                ga.DrawString("Time (seconds)", axisLabelFont, Brushes.Black, xAxisLeft + (xAxisRight - xAxisLeft) / 2 - ga.MeasureString("Time (seconds)", axisLabelFont).Width / 2, xAxisBottom - axisLabelFont.Height);
+                                gg.DrawString("Time (seconds)", axisLabelFont, Brushes.Black, xAxisLeft + (xAxisRight - xAxisLeft) / 2 - gg.MeasureString("Time (seconds)", axisLabelFont).Width / 2, xAxisBottom - axisLabelFont.Height);
+                                gm.DrawString("Time (seconds)", axisLabelFont, Brushes.Black, xAxisLeft + (xAxisRight - xAxisLeft) / 2 - gm.MeasureString("Time (seconds)", axisLabelFont).Width / 2, xAxisBottom - axisLabelFont.Height);
+
+                                // draw y axes
+                                for (int i = -4; i <= 4; i++)
+                                {
+                                    float y = graphMinY + -i * (graphMaxY - graphMinY) / 9.0f + (graphMaxY - graphMinY) / 2;
+                                    float accel = i * accelerometerMax / 4.0f;
+                                    ga.DrawLine(Pens.Black, graphMinX - 3, y, graphMinX + 3, y);
+                                    ga.DrawString((accel).ToString("0"), axisFont, Brushes.Black, yAxisRight - ga.MeasureString((accel).ToString("0"), axisFont).Width, y - ga.MeasureString((accel).ToString("0"), axisFont).Height / 2);
+
+                                    y = graphMinY + -i * (graphMaxY - graphMinY) / 9.0f + (graphMaxY - graphMinY) / 2;
+                                    float gyro = i * gyroscopeMax / 4.0f;
+                                    gg.DrawLine(Pens.Black, graphMinX - 3, y, graphMinX + 3, y);
+                                    gg.DrawString((gyro).ToString("0"), axisFont, Brushes.Black, yAxisRight - gg.MeasureString((gyro).ToString("0"), axisFont).Width, y - gg.MeasureString((gyro).ToString("0"), axisFont).Height / 2);
+
+                                    y = graphMinY + -i * (graphMaxY - graphMinY) / 9.0f + (graphMaxY - graphMinY) / 2;
+                                    float mag = i * magnetometerMax / 4.0f;
+                                    gm.DrawLine(Pens.Black, graphMinX - 3, y, graphMinX + 3, y);
+                                    gm.DrawString((mag).ToString("0"), axisFont, Brushes.Black, yAxisRight - gm.MeasureString((mag).ToString("0"), axisFont).Width, y - gm.MeasureString((mag).ToString("0"), axisFont).Height / 2);
+                                }
+                                //ga.TranslateTransform(yAxisLeft, graphMaxY);
+                                //ga.RotateTransform(-90);
+                                //ga.DrawString("Accelerometer (m/s   )", axisLabelFont, Brushes.Black, (graphMaxY - graphMinY) / 2 - ga.MeasureString("Accelerometer (m/s   )", axisLabelFont).Width / 2, 0);
+                                //ga.DrawString("2", axisLabelSuperscriptFont, Brushes.Black, (graphMaxY - graphMinY) / 2 - ga.MeasureString("Accelerometer (m/s   )", axisLabelFont).Width / 2 + ga.MeasureString("Accelerometer (m/s", axisLabelFont).Width - 8, -2);
+                                //ga.ResetTransform();
+
+                                //gg.TranslateTransform(yAxisLeft, graphMaxY);
+                                //gg.RotateTransform(-90);
+                                //gg.DrawString("Gyroscope (°/s)", axisLabelFont, Brushes.Black, (graphMaxY - graphMinY) / 2 - gg.MeasureString("Gyroscope (°/s)", axisLabelFont).Width / 2, 0);
+                                //gg.ResetTransform();
+
+                                //gm.TranslateTransform(yAxisLeft, graphMaxY);
+                                //gm.RotateTransform(-90);
+                                //gm.DrawString("Magnetometer (gauss)", axisLabelFont, Brushes.Black, (graphMaxY - graphMinY) / 2 - gm.MeasureString("Magnetometer (gauss)", axisLabelFont).Width / 2, 0);
+                                //gm.ResetTransform();
+
+                                // draw legend
+                                ga.FillRectangle(Brushes.White, imuLegendX, imuLegendY, imuLegendWidth, imuLegendHeight);
+                                ga.DrawRectangle(Pens.Black, imuLegendX, imuLegendY, imuLegendWidth, imuLegendHeight);
+                                ga.DrawLine(imuXPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY);
+                                ga.DrawLine(imuYPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY + legendLineHeight, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY + legendLineHeight);
+                                ga.DrawLine(imuZPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY + 2 * legendLineHeight, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY + 2 * legendLineHeight);
+                                ga.DrawString("X", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin);
+                                ga.DrawString("Y", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin + legendLineHeight);
+                                ga.DrawString("Z", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin + 2 * legendLineHeight);
+
+                                gg.FillRectangle(Brushes.White, imuLegendX, imuLegendY, imuLegendWidth, imuLegendHeight);
+                                gg.DrawRectangle(Pens.Black, imuLegendX, imuLegendY, imuLegendWidth, imuLegendHeight);
+                                gg.DrawLine(imuXPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY);
+                                gg.DrawLine(imuYPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY + legendLineHeight, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY + legendLineHeight);
+                                gg.DrawLine(imuZPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY + 2 * legendLineHeight, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY + 2 * legendLineHeight);
+                                gg.DrawString("X", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin);
+                                gg.DrawString("Y", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin + legendLineHeight);
+                                gg.DrawString("Z", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin + 2 * legendLineHeight);
+
+                                gm.FillRectangle(Brushes.White, imuLegendX, imuLegendY, imuLegendWidth, imuLegendHeight);
+                                gm.DrawRectangle(Pens.Black, imuLegendX, imuLegendY, imuLegendWidth, imuLegendHeight);
+                                gm.DrawLine(imuXPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY);
+                                gm.DrawLine(imuYPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY + legendLineHeight, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY + legendLineHeight);
+                                gm.DrawLine(imuZPen, imuLegendX + legendMargin, imuLegendY + legendMargin + legendColorOffsetY + 2 * legendLineHeight, imuLegendX + legendMargin + legendColorWidth, imuLegendY + legendMargin + legendColorOffsetY + 2 * legendLineHeight);
+                                gm.DrawString("X", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin);
+                                gm.DrawString("Y", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin + legendLineHeight);
+                                gm.DrawString("Z", legendFont, Brushes.Black, imuLegendX + legendMargin + legendColorWidth + legendLabelGap, imuLegendY + legendMargin + 2 * legendLineHeight);
+
+                                accelWriter.WriteVideoFrame(accelFrame);
+                                gyroWriter.WriteVideoFrame(gyroFrame);
+                                magWriter.WriteVideoFrame(magFrame);
+                                videoWindow.SetFrame(accelFrame, exportCameraVideo ? (exportIRVideo ? 2 : 1) : (exportIRVideo ? 1 : 0));
+                                videoWindow.SetFrame(gyroFrame, exportCameraVideo ? (exportIRVideo ? 3 : 2) : (exportIRVideo ? 2 : 1));
+                                videoWindow.SetFrame(magFrame, exportCameraVideo ? (exportIRVideo ? 4 : 3) : (exportIRVideo ? 3 : 2));
+                                //combinedGraphics.DrawImage(imuFrame, 2 * videoWidth, 0, videoWidth, videoHeight);
+                                Application.DoEvents();
+                            }
+
+                            //if (exportCameraVideo && exportIRVideo && exportIMUVideo)
+                            //    combinedWriter.WriteVideoFrame(combinedFrame);
+
+                            // update frame timestamp
+                            if (lastFrameTime < 0) lastFrameTime = e.timestamp;
+                            else lastFrameTime += frameDuration;
+                        }
+
+                        IncrementProgress();
+                    }
+                }
+                finally
+                {
+                    //if (exportCameraVideo && exportIRVideo && exportIMUVideo) combinedWriter.Close();
+                    if (exportIMUVideo)
+                    {
+                        accelWriter.Close();
+                        gyroWriter.Close();
+                        magWriter.Close();
+                    }
+                    if (exportIRVideo) irWriter.Close();
+                    if (exportCameraVideo) videoWriter.Close();
+                }
+
+                SetStatus("Done");
+                SetProgress(0);
+            });
         }
 
         private void ComputeImageStatistics(string dir)
@@ -1133,6 +2147,8 @@ namespace HandSightOnBodyInteractionGPU
         private void ProcessData(string rootDir, string[] pids, string subDir)
         { 
             string clipboardText = "";
+            List<string> results = new List<string>();
+            File.WriteAllText("results.txt", "");
             bool firstImage = true;
             Task.Factory.StartNew(() =>
             {
@@ -1218,8 +2234,6 @@ namespace HandSightOnBodyInteractionGPU
                     float averageMatchTime = 0, numMatches = 0;
                     float numCorrectGroup = 0, numCorrectRegion = 0, numProcessedTemplates = 0;
 
-                    List<string> results = new List<string>();
-
                     SetStatus(pid + ": Matching Templates");
                     SetProgress(0);
 
@@ -1254,7 +2268,6 @@ namespace HandSightOnBodyInteractionGPU
                             Dictionary<string, float> fineProbabilities = new Dictionary<string, float>();
                             predictedRegion = Localization.Instance.PredictFineLocation(query, out foundFeatureMatch, out fineProbabilities, true, false, false, predictedGroup);
 
-
                             bool groupCorrect = predictedGroup == groupForRegion[className];
                             bool regionCorrect = predictedRegion == className;
 
@@ -1268,6 +2281,11 @@ namespace HandSightOnBodyInteractionGPU
                             numMatches++;
 
                             int index = samples[className].IndexOf(query);
+
+                            string result = Utils.CSV(pid, groupForRegion[className], className, query["Path"], predictedGroup, predictedRegion);
+                            results.Add(result);
+                            File.AppendAllText("results.txt", result + Environment.NewLine);
+                            clipboardText += result;
                         }
 
                         IncrementProgress();
@@ -1286,14 +2304,14 @@ namespace HandSightOnBodyInteractionGPU
                     SetProgress(0);
                     SetStatus(pid + "\nAccuracy (Group): " + (accuracyGroup * 100) + "%\n" + "Accuracy (Region): " + (accuracyRegion * 100) + "%\n" + "Average Processing Time: " + averageProcessingTime + " ms\n" + "Average Matching Time: " + averageMatchTime + " ms");
 
-                    clipboardText += accuracyGroup + "\t" + accuracyRegion + "\t" + averageProcessingTime + "\t" + averageMatchTime + Environment.NewLine;
+                    //clipboardText += accuracyGroup + "\t" + accuracyRegion + "\t" + averageProcessingTime + "\t" + averageMatchTime + Environment.NewLine;
 
                     Invoke(new MethodInvoker(delegate
                     {
                         Clipboard.SetText(clipboardText);
                     }));
                 }
-                File.WriteAllText("results.txt", clipboardText);
+                //File.WriteAllText("results.txt", clipboardText);
             });
         }
 

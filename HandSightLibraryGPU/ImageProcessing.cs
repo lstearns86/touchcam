@@ -16,6 +16,7 @@ using Emgu.Util;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using Emgu.CV.XFeatures2D;
+using System.Diagnostics;
 
 namespace HandSightLibrary.ImageProcessing
 {
@@ -91,7 +92,8 @@ namespace HandSightLibrary.ImageProcessing
         //static Image<Gray, float> mean = new Image<Gray, float>(640, 640), std = new Image<Gray, float>(640, 640), temp = new Image<Gray, float>(640, 640);
         //static CudaCannyEdgeDetector canny = new CudaCannyEdgeDetector(50, 100, 3);
         //static GpuMat edges = new GpuMat(110, 110, DepthType.Cv8U, 1);
-        static Image<Gray, byte> edges = new Image<Gray, byte>(110, 110);
+        //static Image<Gray, byte> edges = new Image<Gray, byte>(110, 110);
+        static Image<Gray, byte> edges = new Image<Gray, byte>(640, 640);
         public static float ImageFocus(ImageTemplate template)
         {
             //MCvScalar mean = new MCvScalar(), std = new MCvScalar();
@@ -114,32 +116,151 @@ namespace HandSightLibrary.ImageProcessing
 
             //return (float)sum.V0;
 
-            template.Image.ROI = new Rectangle(265, 265, 110, 110);
+            //template.Image.ROI = new Rectangle(265, 265, 110, 110);
             //GpuMat img = new GpuMat(template.Image);
 
             CvInvoke.Canny(template.Image, edges, 100, 50, 3);
             //canny.Detect(img, edges);
             //double sum = CudaInvoke.AbsSum(edges).V0;
             double sum = CvInvoke.Sum(edges).V0;
-            template.Image.ROI = new Rectangle(0, 0, 640, 640);
+            //template.Image.ROI = new Rectangle(0, 0, 640, 640);
             return (float)(sum / 255.0);
         }
 
         public static float ImageFocus(Image<Gray, byte> img)
         {
+            //Rectangle initROI = img.ROI;
+            //img.ROI = new Rectangle(265, 265, 110, 110);
+            
+            CvInvoke.Canny(img, edges, 100, 50, 3);
+            edges.ROI = new Rectangle(20, 20, 600, 600);
+            double sum = CvInvoke.Sum(edges).V0;
+            edges.ROI = new Rectangle(0, 0, 640, 640);
+            //img.ROI = initROI;
+            return (float)(sum / 255.0);
+        }
+
+        public static float ImageFocus2(Image<Gray, byte> img)
+        {
             Rectangle prevROI = img.ROI;
             img.ROI = new Rectangle(20, 20, 600, 600);
             Image<Gray, float> tempImg = img.Convert<Gray, float>();
             Image<Gray, float> Gx = new Image<Gray, float>(img.Size), Gy = new Image<Gray, float>(img.Size);
-            CvInvoke.Sobel(tempImg, Gx, DepthType.Cv32F, 1, 0, 7);
-            CvInvoke.Sobel(tempImg, Gy, DepthType.Cv32F, 0, 1, 7);
+            CvInvoke.Sobel(tempImg, Gx, DepthType.Cv32F, 1, 0, 3);
+            CvInvoke.Sobel(tempImg, Gy, DepthType.Cv32F, 0, 1, 3);
 
             Image<Gray, float> FM = Gx.Mul(Gx).Add(Gy.Mul(Gy));
             double focusMeasure = FM.GetAverage().Intensity;
 
             img.ROI = prevROI;
 
-            return (float)focusMeasure;
+            return (float)focusMeasure / (img.Width * img.Height);
+        }
+
+        // using the method from http://www.cse.cuhk.edu.hk/leojia/all_final_papers/blur_detect_cvpr08.pdf
+        public static float EstimateMotionBlur(Image<Gray, byte> img)
+        {
+            try
+            {
+                Rectangle prevROI = img.ROI;
+                img.ROI = new Rectangle(20, 20, 600, 600);
+                Image<Gray, float> tempImg = img.Convert<Gray, float>();
+                Image<Gray, float> Gx = new Image<Gray, float>(img.Size), Gy = new Image<Gray, float>(img.Size);
+                CvInvoke.Sobel(tempImg, Gx, DepthType.Cv32F, 1, 0, 3);
+                CvInvoke.Sobel(tempImg, Gy, DepthType.Cv32F, 0, 1, 3);
+
+                Image<Gray, float> Gx2 = Gx.Mul(Gx);
+                Image<Gray, float> GxGy = Gx.Mul(Gy);
+                Image<Gray, float> Gy2 = Gy.Mul(Gy);
+
+                int window = 3;
+                Image<Gray, float> M11 = Gx2.SmoothBlur(window, window, false);
+                Image<Gray, float> M12 = GxGy.SmoothBlur(window, window, false);
+                Image<Gray, float> M22 = Gy2.SmoothBlur(window, window, false);
+                // define matrix M = [a,b;c,d]
+
+                // T = a+d
+                Image<Gray, float> trace = M11.Add(M22);
+
+                // D = ad-bc
+                Image<Gray, float> determinant = (M11.Mul(M22)).Sub(M12.Mul(M12));
+
+                // e1 = T/2 + sqrt(T^2/4-D)
+                Image<Gray, float> e1 = trace.Mul(0.5).Add(trace.Mul(trace).Mul(0.25).Sub(determinant).Pow(0.5));
+
+                // e2 = T/2 - sqrt(T^2/4-D)
+                Image<Gray, float> e2 = trace.Mul(0.5).Sub(trace.Mul(trace).Mul(0.25).Sub(determinant).Pow(0.5));
+
+                int numAngleBins = 18;
+                double[] angleHistogram = new double[numAngleBins];
+                int imgWidth = img.Width, imgHeight = img.Height;
+                float[,,] M11data = M11.Data, M12data = M12.Data, M22data = M22.Data, e1data = e1.Data, e2data = e2.Data;
+                for (int i = 0; i < imgHeight; i++) // TODO: optimize this part better
+                    for (int j = 0; j < imgWidth; j++)
+                    {
+                        float a = M11data[i, j, 0];
+                        float b = M12data[i, j, 0];
+                        float c = b;
+                        float d = M22data[i, j, 0];
+                        float L1 = e1data[i, j, 0];
+                        float L2 = e2data[i, j, 0];
+
+                        //if(double.IsNaN(L1) || double.IsNaN(L2) || L1 <= 0 || L2 <= 0)
+                        //{
+                        //    Debug.WriteLine("here");
+                        //}
+
+                        double v1x, v1y, v2x, v2y;
+                        if (Math.Abs(c) > 1e-5)
+                        {
+                            v1x = L1 - d;
+                            v1y = c;
+                            v2x = L2 - d;
+                            v2y = c;
+                        }
+                        else if (Math.Abs(b) > 1e-5)
+                        {
+                            v1x = b;
+                            v1y = L1 - a;
+                            v2x = b;
+                            v2y = L2 - a;
+                        }
+                        else
+                        {
+                            v1x = 1;
+                            v1y = 0;
+                            v2x = 0;
+                            v2y = 1;
+                        }
+
+                        double angle = Math.Atan2(v2y, v2x) * 180.0 / Math.PI + 180;
+                        int angleBin = (int)(angle / (2 * numAngleBins));
+                        if(L1 > 0 && L2 > 0) angleHistogram[angleBin] += Math.Sqrt(L1 / L2);
+                    }
+
+                // compute histogram mean
+                double mean = 0;
+                for (int i = 0; i < numAngleBins; i++) mean += angleHistogram[i];
+                mean /= numAngleBins;
+
+                // compute histogram variance
+                double var = 0;
+                for (int i = 0; i < numAngleBins; i++) var += (angleHistogram[i] - mean) * (angleHistogram[i] - mean);
+                var /= numAngleBins;
+
+                img.ROI = prevROI;
+
+                if(double.IsNaN(var))
+                {
+                    Debug.WriteLine("here");
+                }
+
+                return (float)var / (img.Width * img.Height);
+            }
+            catch (Exception ex)
+            {
+                return 0;
+            }
         }
 
         public static float ImageVariance(ImageTemplate template)

@@ -17,9 +17,10 @@ namespace HandSightOnBodyInteractionGPU
 {
     public partial class ImageQualityAnnotationTool : Form
     {
+        int numLevels = 3;
         private List<Bitmap> images = new List<Bitmap>();
         private int currImageIndex = 0;
-        private List<bool[]> currAnnotations = new List<bool[]>();
+        private List<int[]> currAnnotations = new List<int[]>();
 
         public ImageQualityAnnotationTool()
         {
@@ -52,7 +53,7 @@ namespace HandSightOnBodyInteractionGPU
                     Bitmap img = (Bitmap)Bitmap.FromFile(file);
                     img.Tag = Path.GetFileNameWithoutExtension(file);
                     images.Add(img);
-                    currAnnotations.Add(new bool[6]);
+                    currAnnotations.Add(new int[6]);
                 }
 
                 ShowCurrentImage();
@@ -72,16 +73,17 @@ namespace HandSightOnBodyInteractionGPU
                 InfoLabel.Text = (string)bmp.Tag + ": ";
 
                 bool hasAnnotations = false;
-                if (currAnnotations[currImageIndex][0]) { InfoLabel.Text += "out of focus, "; hasAnnotations = true; }
-                if (currAnnotations[currImageIndex][1]) { InfoLabel.Text += "too dark, "; hasAnnotations = true; }
-                if (currAnnotations[currImageIndex][2]) { InfoLabel.Text += "too light, "; hasAnnotations = true; }
-                if (currAnnotations[currImageIndex][3]) { InfoLabel.Text += "poor contrast, "; hasAnnotations = true; }
-                if (currAnnotations[currImageIndex][4]) { InfoLabel.Text += "off target, "; hasAnnotations = true; }
-                if (currAnnotations[currImageIndex][5]) { InfoLabel.Text += "artifact/object in view, "; hasAnnotations = true; }
+                int v = 0;
+                if ((v = currAnnotations[currImageIndex][0]) > 0) { InfoLabel.Text += (v == 2 ? "badly " : "a bit ") + "out of focus, "; hasAnnotations = true; } 
+                if ((v = currAnnotations[currImageIndex][1]) > 0) { InfoLabel.Text += (v == 2 ? "badly " : "a bit ") + "too dark, "; hasAnnotations = true; }
+                if ((v = currAnnotations[currImageIndex][2]) > 0) { InfoLabel.Text += (v == 2 ? "much " : "") + "too light, "; hasAnnotations = true; }
+                if ((v = currAnnotations[currImageIndex][3]) > 0) { InfoLabel.Text += (v == 2 ? "terrible " : "poor ") + "contrast, "; hasAnnotations = true; }
+                if ((v = currAnnotations[currImageIndex][4]) > 0) { InfoLabel.Text += (v == 2 ? "badly " : "a bit ") + "off target, "; hasAnnotations = true; }
+                if ((v = currAnnotations[currImageIndex][5]) > 0) { InfoLabel.Text += (v == 2 ? "major " : "minor ") + "artifact/object in view, "; hasAnnotations = true; }
                 InfoLabel.Text = InfoLabel.Text.TrimEnd(',', ' ');
                 if (!hasAnnotations) InfoLabel.Text += " (no annotations)";
 
-                InfoLabel.Text += " focus=" + focus.ToString("0.0");
+                //InfoLabel.Text += " focus=" + focus.ToString("0.0");
             }
         }
 
@@ -106,32 +108,32 @@ namespace HandSightOnBodyInteractionGPU
             }
             else if(e.KeyCode == Keys.NumPad1 || e.KeyCode == Keys.D1)
             {
-                currAnnotations[currImageIndex][0] = !currAnnotations[currImageIndex][0];
+                currAnnotations[currImageIndex][0] = (currAnnotations[currImageIndex][0] + 1) % numLevels;
                 ShowCurrentImage();
             }
             else if (e.KeyCode == Keys.NumPad2 || e.KeyCode == Keys.D2)
             {
-                currAnnotations[currImageIndex][1] = !currAnnotations[currImageIndex][1];
+                currAnnotations[currImageIndex][1] = (currAnnotations[currImageIndex][1] + 1) % numLevels;
                 ShowCurrentImage();
             }
             else if (e.KeyCode == Keys.NumPad3 || e.KeyCode == Keys.D3)
             {
-                currAnnotations[currImageIndex][2] = !currAnnotations[currImageIndex][2];
+                currAnnotations[currImageIndex][2] = (currAnnotations[currImageIndex][2] + 1) % numLevels;
                 ShowCurrentImage();
             }
             else if (e.KeyCode == Keys.NumPad4 || e.KeyCode == Keys.D4)
             {
-                currAnnotations[currImageIndex][3] = !currAnnotations[currImageIndex][3];
+                currAnnotations[currImageIndex][3] = (currAnnotations[currImageIndex][3] + 1) % numLevels;
                 ShowCurrentImage();
             }
             else if (e.KeyCode == Keys.NumPad5 || e.KeyCode == Keys.D5)
             {
-                currAnnotations[currImageIndex][4] = !currAnnotations[currImageIndex][4];
+                currAnnotations[currImageIndex][4] = (currAnnotations[currImageIndex][4] + 1) % numLevels;
                 ShowCurrentImage();
             }
             else if (e.KeyCode == Keys.NumPad6 || e.KeyCode == Keys.D6)
             {
-                currAnnotations[currImageIndex][5] = !currAnnotations[currImageIndex][5];
+                currAnnotations[currImageIndex][5] = (currAnnotations[currImageIndex][5] + 1) % numLevels;
                 ShowCurrentImage();
             }
         }
@@ -142,12 +144,12 @@ namespace HandSightOnBodyInteractionGPU
             for(int i = 0; i < images.Count; i++)
             {
                 text += (string)images[i].Tag + "\t";
-                text += (currAnnotations[i][0] ? "1" : "0") + "\t";
-                text += (currAnnotations[i][1] ? "1" : "0") + "\t";
-                text += (currAnnotations[i][2] ? "1" : "0") + "\t";
-                text += (currAnnotations[i][3] ? "1" : "0") + "\t";
-                text += (currAnnotations[i][4] ? "1" : "0") + "\t";
-                text += (currAnnotations[i][5] ? "1" : "0") + "\t";
+                text += (currAnnotations[i][0]) + "\t";
+                text += (currAnnotations[i][1]) + "\t";
+                text += (currAnnotations[i][2]) + "\t";
+                text += (currAnnotations[i][3]) + "\t";
+                text += (currAnnotations[i][4]) + "\t";
+                text += (currAnnotations[i][5]) + "\t";
                 text += Environment.NewLine;
             }
 
@@ -176,12 +178,12 @@ namespace HandSightOnBodyInteractionGPU
                 for (int i = 0; i < images.Count; i++)
                 {
                     text += (string)images[i].Tag + "\t";
-                    text += (currAnnotations[i][0] ? "1" : "0") + ",";
-                    text += (currAnnotations[i][1] ? "1" : "0") + ",";
-                    text += (currAnnotations[i][2] ? "1" : "0") + ",";
-                    text += (currAnnotations[i][3] ? "1" : "0") + ",";
-                    text += (currAnnotations[i][4] ? "1" : "0") + ",";
-                    text += (currAnnotations[i][5] ? "1" : "0") + ",";
+                    text += (currAnnotations[i][0]) + ",";
+                    text += (currAnnotations[i][1]) + ",";
+                    text += (currAnnotations[i][2]) + ",";
+                    text += (currAnnotations[i][3]) + ",";
+                    text += (currAnnotations[i][4]) + ",";
+                    text += (currAnnotations[i][5]) + ",";
                     text += Environment.NewLine;
                 }
 

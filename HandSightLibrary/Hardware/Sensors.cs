@@ -23,7 +23,7 @@ namespace HandSightLibrary
         float GYRO_UNIT = 0.01750f; // deg / s
         float IR_UNIT = 1.0f / 1024.0f; // % max intensity
 
-        const string DEFAULT_PORT = "COM6";
+        const string DEFAULT_PORT = "COM7";
         int BAUD_RATE = 250000;
 
         //Point3D minMag1 = new Point3D(), maxMag1 = new Point3D();
