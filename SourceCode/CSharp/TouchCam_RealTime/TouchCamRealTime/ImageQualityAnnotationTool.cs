@@ -15,9 +15,21 @@ using Emgu.CV.Structure;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// Simple tool for annotating image quality (e.g., focus, lighting)
+    /// 
+    /// Uses keyboard shortcuts:
+    ///     Left/Right = previous/next image
+    ///     1 = cycle focus level
+    ///     2 = cycle darkness level
+    ///     3 = cycle brightness level
+    ///     4 = cycle contrast level
+    ///     5 = cycle targeting accuracy
+    ///     6 = cycle artifact visibility
+    /// </summary>
     public partial class ImageQualityAnnotationTool : Form
     {
-        int numLevels = 3;
+        const int numLevels = 3;
         private List<Bitmap> images = new List<Bitmap>();
         private int currImageIndex = 0;
         private List<int[]> currAnnotations = new List<int[]>();
@@ -27,6 +39,11 @@ namespace TouchCam
             InitializeComponent();
         }
 
+        /// <summary>
+        /// Load images. Assumes that all images in folder are in .png format and should be annotated
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void openDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if(!Directory.Exists(Properties.Settings.Default.OpenDirectory))
@@ -60,6 +77,9 @@ namespace TouchCam
             }
         }
 
+        /// <summary>
+        /// Draw currently selected image with annotations
+        /// </summary>
         private void ShowCurrentImage()
         {
             if(currImageIndex >= 0 && currImageIndex < images.Count)
@@ -87,6 +107,11 @@ namespace TouchCam
             }
         }
 
+        /// <summary>
+        /// Keyboard shortcuts (see above)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void ImageQualityAnnotationTool_KeyDown(object sender, KeyEventArgs e)
         {
             if(e.KeyCode == Keys.Left)
@@ -138,6 +163,11 @@ namespace TouchCam
             }
         }
 
+        /// <summary>
+        /// Copies annotations to clipboard for pasting into Excel
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void copyToClipboardToolStripMenuItem_Click(object sender, EventArgs e)
         {
             string text = "";

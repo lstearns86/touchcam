@@ -14,6 +14,7 @@ namespace TouchCamLibrary
 {
     public class GestureRecognition
     {
+        // uncomment the first line and comment the second if using two IMUs
         public enum READING_TYPE
         {
             //ACCEL1_X, ACCEL1_Y, ACCEL1_Z, ACCEL2_X, ACCEL2_Y, ACCEL2_Z, GYRO1_X, GYRO1_Y, GYRO1_Z, GYRO2_X, GYRO2_Y, GYRO2_Z, MAG1_X, MAG1_Y, MAG1_Z, MAG2_X, MAG2_Y, MAG2_Z, IR1, IR2
@@ -73,15 +74,6 @@ namespace TouchCamLibrary
                 int i = 0;
                 foreach (Gesture template in samples[region])
                 {
-                    //using (FileStream stream = new FileStream(Path.Combine(dir, region + "_" + i + ".gest"), FileMode.Create))
-                    //{
-                    //    stream.Write(BitConverter.GetBytes(template.Features.Length), 0, 4);
-                    //    foreach (float v in template.Features)
-                    //    {
-                    //        stream.Write(BitConverter.GetBytes(v), 0, 4);
-                    //    }
-                    //    i++;
-                    //}
                     string json = JsonConvert.SerializeObject(template);
                     File.WriteAllText(Path.Combine(dir, region + "_" + i + ".gest"), json);
                     i++;
@@ -429,9 +421,7 @@ namespace TouchCamLibrary
                 readings[(int)READING_TYPE.IR2].Add(stream.ElementAt(i).InfraredReflectance2);
             }
 
-            //To do. Apply smoothing
-            //smoothing(ref readings);
-            //readings = lowPass(readings);
+            //Smoothing
             movingAverage(10, ref readings);
 
             //Normalization
@@ -468,7 +458,7 @@ namespace TouchCamLibrary
             //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG2_Y], readings[(int)READING_TYPE.MAG2_Z]));
             //featureAll.Add(getCorrelation(readings[(int)READING_TYPE.MAG2_Z], readings[(int)READING_TYPE.MAG2_X]));
 
-            //To do. Add zero crossings
+            //To do: experiment with zero crossings
 
             return featureAll.ToArray();
         }

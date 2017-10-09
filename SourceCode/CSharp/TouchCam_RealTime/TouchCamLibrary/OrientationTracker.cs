@@ -41,29 +41,16 @@ namespace TouchCamLibrary
         const double RADIANS_PER_DEGREE = (double)Math.PI / 180.0f;
         const double DEGREES_PER_RADIAN = 180.0f / (double)Math.PI;
 
-        //KalmanFilter filter = new KalmanFilter();
-
         public void Reset()
         {
             orientationEstimate = new Quaternion();
             sampleFreq = 360;
             beta = betaDef;
-            //filter = new KalmanFilter();
         }
 
         public static Sensors.Reading SubtractGravity(Sensors.Reading sensorReading, bool useSecondSensor = false)
         {
             Sensors.Reading newReading = sensorReading.Clone();
-
-            //// based on a formula obtained from http://www.varesano.net/blog/fabio/simple-gravity-compensation-9-dom-imus
-            //Quaternion q1 = sensorReading.Orientation1;
-            //Point3D g1 = new Point3D(
-            //        (float)(2 * (q1.X * q1.Z - q1.W * q1.Y)),
-            //        (float)(2 * (q1.W * q1.X + q1.Y * q1.Z)),
-            //        (float)(q1.W * q1.W - q1.X * q1.X - q1.Y * q1.Y - q1.Z * q1.Z)
-            //    );
-
-            //newReading.Accelerometer1 -= g1 * (float)GRAVITY;
 
             Quaternion orientation1 = sensorReading.Orientation1;
             Point3D rotatedAcceleration1 = orientation1.RotateVector(sensorReading.Accelerometer1);
@@ -72,15 +59,6 @@ namespace TouchCamLibrary
 
             //if (useSecondSensor)
             //{
-            //    //    Quaternion q2 = sensorReading.Orientation2;
-            //    //    Point3D g2 = new Point3D(
-            //    //            (float)(2 * (q2.X * q2.Z - q2.W * q2.Y)),
-            //    //            (float)(2 * (q2.W * q2.X + q2.Y * q2.Z)),
-            //    //            (float)(q2.W * q2.W - q2.X * q2.X - q2.Y * q2.Y - q2.Z * q2.Z)
-            //    //        );
-
-            //    //    newReading.Accelerometer2 -= g2 * (float)GRAVITY;
-
             //    Quaternion orientation2 = sensorReading.Orientation2;
             //    Point3D rotatedAcceleration2 = orientation2.RotateVector(sensorReading.Accelerometer2);
             //    rotatedAcceleration2.Z -= (float)GRAVITY;

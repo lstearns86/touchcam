@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// UI for recording training samples for each participant
+    /// </summary>
     public partial class TrainingForm : Form
     {
         public bool HideFromList { get { return true; } }
@@ -52,6 +55,7 @@ namespace TouchCam
         public event StopAutoCapturingGesturesDelegate StopAutoCapturingGestures;
         private void OnStopAutoCapturingGestures() { StopAutoCapturingGestures?.Invoke(); }
 
+        //Helper functions for displaying sample thumbnails cleanly
         [DllImport("user32.dll")]
         static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
 

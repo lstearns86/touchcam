@@ -19,6 +19,9 @@ using Newtonsoft.Json;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// Simplified tool for collecting training samples
+    /// </summary>
     public partial class LocationAndGestureDataCollectionTool : Form
     {
         bool calibrating = false, closing = false, recordingGesture = false;

@@ -11,6 +11,9 @@ using System.Windows.Forms;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// Helper form to easily allow multiple startup programs
+    /// </summary>
     public partial class ProgramSelectionForm : Form
     {
         public ProgramSelectionForm()
@@ -21,12 +24,10 @@ namespace TouchCam
         List<Type> forms = new List<Type>();
         private void ProgramSelectionForm_Load(object sender, EventArgs e)
         {
+            // build a list of valid startup forms
             foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.StartsWith("System.") || !a.FullName.StartsWith("Microsoft.")))
-            //foreach (Assembly a in AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.StartsWith("System.") || !a.FullName.StartsWith("Microsoft.")))
             {
                 Type[] types = a.GetTypes().Where(t => (typeof(Form).IsAssignableFrom(t)) && t.IsClass && t.FullName.StartsWith(this.GetType().Namespace) && t != this.GetType()).ToArray<Type>();
-                //Type[] types = a.GetTypes().Where(t => (typeof(Form).IsAssignableFrom(t))).ToArray<Type>();
-
                 forms.AddRange(types);
             }
 

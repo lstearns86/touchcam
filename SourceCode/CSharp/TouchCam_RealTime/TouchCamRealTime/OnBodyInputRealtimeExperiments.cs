@@ -27,8 +27,12 @@ using System.Media;
 
 namespace TouchCam
 {
-    public partial class OnBodyInputDemo : Form
+    /// <summary>
+    /// Main program used for conducting realtime experiments
+    /// </summary>
+    public partial class OnBodyInputRealtimeExperiments : Form
     {
+        // Mappings between coarse- and fine-grained classes. Note that only a few of these were actually used in our experiments.
         Dictionary<string, string[]> locations = new Dictionary<string, string[]>
         {
             { "Nothing", new string[] { "Nothing" } },
@@ -45,40 +49,16 @@ namespace TouchCam
         const string TestingVoice = "Microsoft Zira Desktop";
         const string MenuVoice = "Microsoft David Desktop";
 
-        const float ledMaxBrightness = 1f;
+        const float ledMaxBrightness = 1f; // can lower if the light is too bright (must be between 0 and 1)
+        const int touchUpDelay = 100, sensorReadingPreBuffer = 50; // in milliseconds
 
-        [DllImport("user32.dll")]
-        public static extern IntPtr SendMessage(IntPtr hWnd, uint Msg, IntPtr wParam, IntPtr lParam);
-
-        public int MakeLong(short lowPart, short highPart)
-        {
-            return (int)(((ushort)lowPart) | (uint)(highPart << 16));
-        }
-
-        public void ListView_SetSpacing(ListView listview, short cx, short cy)
-        {
-            const int LVM_FIRST = 0x1000;
-            const int LVM_SETICONSPACING = LVM_FIRST + 53;
-            // http://msdn.microsoft.com/en-us/library/bb761176(VS.85).aspx
-            // minimum spacing = 4
-            SendMessage(listview.Handle, LVM_SETICONSPACING,
-            IntPtr.Zero, (IntPtr)MakeLong(cx, cy));
-
-            // http://msdn.microsoft.com/en-us/library/bb775085(VS.85).aspx
-            // DOESN'T WORK!
-            // can't find ListView_SetIconSpacing in dll comctl32.dll
-            //ListView_SetIconSpacing(listView.Handle, 5, 5);
-        }
-
-        bool calibrating = false, closing = false, recordingGesture = false;
+        bool closing = false, recordingGesture = false;
         int countdown = -1;
         Timer timer = new Timer(1000);
         ImageTemplate currTemplate;
         string preprocessingLock = "processing lock", recognitionLock = "recognition lock", trainingLock = "training lock";
         string coarseLocationToTrain = "", fineLocationToTrain = "", gestureToTrain = "";
 
-        //BlockingCollection<string> coarseLocationPredictions = new BlockingCollection<string>();
-        //BlockingCollection<string> fineLocationPredictions = new BlockingCollection<string>();
         BlockingCollection<Dictionary<string, float>> coarseLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
         BlockingCollection<Dictionary<string, float>> fineLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
         BlockingCollection<Dictionary<string, float>> gestureCoarseLocationProbabilities = new BlockingCollection<Dictionary<string, float>>();
@@ -89,7 +69,6 @@ namespace TouchCam
         BlockingCollection<Sensors.Reading> gestureSensorReadings = new BlockingCollection<Sensors.Reading>();
         BlockingCollection<float> gestureFocusWeights = new BlockingCollection<float>();
         bool touchDown = false, recentTouchUp = false;
-        int touchUpDelay = 100, sensorReadingPreBuffer = 50;
         bool hovering = false;
         DateTime touchStart = DateTime.Now;
         string hoverCoarseLocation = null, hoverFineLocation = null;
@@ -101,14 +80,7 @@ namespace TouchCam
         TestingForm testingForm;// = new TestingForm();
         bool autoTrainGesture = false, autoTrainLocation = false, prepareToAutoTrainLocation = false;
 
-        private void testingToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            testingForm.Show();
-            Properties.Settings.Default.TestingVisible = true;
-            Properties.Settings.Default.Save();
-        }
-
-        public OnBodyInputDemo()
+        public OnBodyInputRealtimeExperiments()
         {
             InitializeComponent();
 
@@ -131,10 +103,12 @@ namespace TouchCam
 
             Text = "Connecting to Camera and Sensors...";
 
+            // set up the gestures and menus
             GestureActionMap.LoadMacros(File.ReadAllText("defaults/macros.txt"));
             GestureActionMap.LoadMenus(File.ReadAllText("defaults/menus.txt"));
             GestureActionMap.LoadActions(File.ReadAllText("defaults/actions.txt"));
 
+            // needs to be initialized after the GestureActionMap
             testingForm = new TestingForm();
 
             testingForm.TaskStarted += (string task) =>
@@ -158,6 +132,7 @@ namespace TouchCam
                 coarseLocationToTrain = coarseLocation;
                 fineLocationToTrain = fineLocation;
 
+                // change the countdown timer setting if you don't want to capture the sample immediately (useful if you're training on yourself, for example)
                 countdown = Properties.Settings.Default.CountdownTimer;
                 if (countdown > 0)
                 {
@@ -258,6 +233,8 @@ namespace TouchCam
                 Invoke(new MethodInvoker(delegate { TouchStatusLabel.Text = "Touch Up"; }));
                 Logging.LogOtherEvent("touch_up");
                 
+                // trigger an event after a short delay to prevent false positives and allow for the double-tap gesture
+                // it is cancelled if the user touches down again within that time
                 Task.Factory.StartNew(() =>
                 {
                     Thread.Sleep(touchUpDelay);
@@ -418,6 +395,7 @@ namespace TouchCam
                 });
             };
 
+            // Initialize the camera and other sensors in a background thread to avoid hanging the UI
             Task.Factory.StartNew(() =>
             {
                 Camera.Instance.FrameAvailable += Camera_FrameAvailable;
@@ -452,6 +430,13 @@ namespace TouchCam
             Properties.Settings.Default.Save();
         }
 
+        private void testingToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            testingForm.Show();
+            Properties.Settings.Default.TestingVisible = true;
+            Properties.Settings.Default.Save();
+        }
+
         private void triggerPhoneCallToolStripMenuItem_Click(object sender, EventArgs e)
         {
             GestureActionMap.Context = "Phone";
@@ -468,21 +453,15 @@ namespace TouchCam
         private void Sensors_ReadingAvailable(Sensors.Reading reading)
         {
             OrientationTracker.Primary.UpdateWithReading(reading);
-            //OrientationTracker.Secondary.UpdateWithReading(reading, -1, true);
+            //OrientationTracker.Secondary.UpdateWithReading(reading, -1, true); // uncomment if using two IMUs
 
             Quaternion quaternion = OrientationTracker.Primary.EstimateOrientation();
             EulerAngles orientation = quaternion.GetEulerAngles();
-            //OrientationTracker.EulerAngles orientation = OrientationTracker.Primary.EstimateOrientation();
-            //orientation.Roll += (float)Math.PI; if (orientation.Roll > Math.PI) orientation.Roll -= (float)(2 * Math.PI);
-            //orientation.Pitch = -orientation.Pitch;
 
             int resolution = 10;
             int yaw = resolution * (int)Math.Round(orientation.Yaw * 180 / Math.PI / resolution);
             int pitch = resolution * (int)Math.Round(orientation.Pitch * 180 / Math.PI / resolution);
             int roll = resolution * (int)Math.Round(orientation.Roll * 180 / Math.PI / resolution);
-            //int yaw = resolution * (int)Math.Round(orientation.Yaw / resolution);
-            //int pitch = resolution * (int)Math.Round(orientation.Pitch / resolution);
-            //int roll = resolution * (int)Math.Round(orientation.Roll / resolution);
             reading.Orientation1 = quaternion;
 
             if ((DateTime.Now - last).TotalMilliseconds > 30)
@@ -497,8 +476,7 @@ namespace TouchCam
 
             TouchSegmentation.UpdateWithReading(reading);
 
-            //if(testingForm.RecordSensors)
-                Logging.LogSensorReading(reading);
+            Logging.LogSensorReading(reading);
 
             sensorReadingHistory.Add(reading);
             while(sensorReadingHistory.Count > sensorReadingPreBuffer) sensorReadingHistory.Take();
@@ -580,9 +558,6 @@ namespace TouchCam
             {
 
             }
-
-            // perform cross-validation
-            //if PerformCrossValidation();
 
             return template;
         }
@@ -682,8 +657,7 @@ namespace TouchCam
             {
                 try
                 {
-                    //if (testingForm.RecordSensors)
-                        Logging.LogVideoFrame(frame.Image.Bitmap);
+                    Logging.LogVideoFrame(frame.Image.Bitmap);
 
                     float focus = 0;
                     //lock (processingLock)
@@ -691,8 +665,7 @@ namespace TouchCam
                     {
                         ImageProcessing.ProcessTemplate(template, false);
                         focus = ImageProcessing.ImageFocus(template);
-                        //if (testingForm.RecordSensors)
-                            Logging.LogFrameProcessed();
+                        Logging.LogFrameProcessed();
                         currTemplate = template;
                         FPS.Instance("processing").Update();
                         Monitor.Exit(preprocessingLock);

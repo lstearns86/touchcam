@@ -9,6 +9,9 @@ using System.Drawing;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// UI for controlling the test phase of the experiments (i.e., prompt participants to perform tasks for each condition)
+    /// </summary>
     public partial class TestingForm : Form
     {
         private List<string> phases = new List<string>(new string[] { "Intro", "Consent", "Demographics", "Smartphone Questions", "Smartwatch Questions", "On-body Questions", "Break", "Prototype Setup", "Location Training", "Gesture Training", "Explaining Condition 1", "Practicing Condition 1", "Testing Condition 1", "Questions Condition 1", "Explaining Condition 2", "Practicing Condition 2", "Testing Condition 2", "Questions Condition 2", "Explaining Condition 3", "Practicing Condition 3", "Testing Condition 3", "Questions Condition 3", "Final Questions", "Conclusion" });

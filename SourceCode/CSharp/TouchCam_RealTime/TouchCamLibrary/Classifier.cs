@@ -24,6 +24,9 @@ using System.IO;
 
 namespace TouchCamLibrary
 {
+    /// <summary>
+    /// Helper machine learning class encapsulating several different classifier types, provides a standardized way of interacting with them
+    /// </summary>
     public class Classifier
     {
         public enum ClassifierType { SVM, NeuralNet, KMeans, BruteForce }
@@ -194,28 +197,6 @@ namespace TouchCamLibrary
                     catch (Exception ex) { Debug.WriteLine("Error calibrating SVM: " + ex.Message); }
 
                     return true;
-
-                    //model = new SVM();
-                    ////model = new Boost();
-                    ////model = new KNearest();
-                    ////model.DefaultK = k;
-
-                    //model.SetKernel(SVM.SvmKernelType.Chi2);
-                    //model.Type = SVM.SvmType.NuSvc;
-                    ////model.C = 312.5;
-                    //model.Gamma = 0.0001; //0.50625;
-                    //model.Nu = 0.01;
-                    ////model.Degree = 3;
-                    ////model.Coef0 = 10;
-                    //model.TermCriteria = new MCvTermCriteria(10000, 1e-6);
-
-                    //TrainData data = new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainLabels);
-                    //new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainLabels, null, sampleImportance);
-                    ////bool trained = model.TrainAuto(data, 10);
-                    //bool trained = model.Train(data);
-                    //if (!trained) throw new Exception();
-
-                    //return trained;
                 }
                 return false;
             }
@@ -271,12 +252,6 @@ namespace TouchCamLibrary
             }
             else if (type == ClassifierType.KMeans)
             {
-                //knModel = new KNearest();
-                //knModel.DefaultK = 5;
-                //TrainData data = new TrainData(trainData, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, trainLabels);
-                //bool trained = knModel.Train(data);
-                //return trained;
-
                 List<double[]> rows = new List<double[]>();
                 float[,] data = trainData.Data;
                 for (int i = 0; i < trainData.Rows; i++)
@@ -318,12 +293,6 @@ namespace TouchCamLibrary
 
             if (type == ClassifierType.SVM)
             {
-                //if (model == null) return "null";
-
-                ////Matrix<float> results = new Matrix<float>(nameForID.Count, nameForID.Count);
-
-                //response = model.Predict(data);
-
                 if (svm == null)
                 {
                     if (nameForID.Count > 0)
@@ -353,23 +322,6 @@ namespace TouchCamLibrary
             }
             else if (type == ClassifierType.KMeans)
             {
-                //if (knModel == null) return "null";
-
-                //Matrix<float> results = new Matrix<float>(k, 1);
-
-                //response = knModel.Predict(data);
-
-                //if (trainData == null) return "error: no training data";
-
-                //List<Tuple<double, int, float>> results = new List<Tuple<double, int, float>>();
-                //for (int i = 0; i < trainData.Rows; i++)
-                //{
-                //    double dist = CvInvoke.CompareHist(trainData.GetRow(i), data, HistogramCompMethod.Chisqr);
-                //    results.Add(new Tuple<double, int, float>(dist, i, trainLabels[i, 0]));
-                //}
-                //results.Sort((Tuple<double, int, float> a, Tuple<double, int, float> b) => { return a.Item1.CompareTo(b.Item1); });
-                //response = results[0].Item3;
-
                 double[] dataRow = new double[data.Cols];
                 for (int i = 0; i < dataRow.Length; i++) dataRow[i] = data[0, i];
                 if (kmeans == null) return "null";
@@ -392,7 +344,6 @@ namespace TouchCamLibrary
                         response = classLabel;
                     }
                 }
-                //confidence = (float)mostInstances / (float)totalCount;
             }
             else
             {
@@ -408,22 +359,12 @@ namespace TouchCamLibrary
                 response = results[0].Item3;
                 if (best != null)
                 {
-                    //HashSet<float> includedClasses = new HashSet<float>();
                     int n = Math.Min(results.Count, best.Length);
                     for (int i = 0; i < n; i++) best[i] = results[i].Item2;
-                    //int index = 0;
-                    //for (int i = 0; i < results.Count && includedClasses.Count < nameForID.Count; i++)
-                    //{
-                    //    float id = results[i].Item3;
-                    //    if (includedClasses.Contains(id)) continue;
-                    //    includedClasses.Add(id);
-                    //    best[index++] = results[i].Item2;
-                    //}
                 }
             }
             
             int classID = (int)Math.Round(response);
-            //string className = (classID >= 0 && classID < trainLabels.Rows) ? nameForID[classID] : "no_match";
             string className = (classID >= 0 && classID < nameForID.Count) ? nameForID[classID] : "no_match";
             return className;
         }
@@ -458,78 +399,5 @@ namespace TouchCamLibrary
 
             return numPretrainedExamples;
         }
-
-        /*
-        public Matrix<float> runSVM(Matrix<float> trainData, Matrix<float> label, int classNum, int trainID)
-        {
-            //init SVM
-            model = new SVM();
-
-            //copying
-            Matrix<float> trainData2 = trainData.Clone();
-            Matrix<float> label2 = label.Clone();
-
-            //remove test data from the training data
-            for (int i = 0; i < classNum; i++)
-            {
-                trainData2.RemoveRows(trainID + i * trainNum, (trainID + 1) + i * trainNum);
-                label2.RemoveRows(trainID + i * trainNum, (trainID + 1) + i * trainNum);
-            }
-
-            //training data, labels, null, null, svm parameters, k-fold cross validation
-            bool trained = model.TrainAuto(trainData2, label2, null, null, p.MCvSVMParams, 5);
-
-            //testing
-            Matrix<float> predicted = new Matrix<float>(trainNum, 1);
-            for (int i = 0; i < classNum; i++)
-            {
-                //Console.WriteLine("Query from classID:" + i);
-                Matrix<float> test = trainData.GetRows(trainID + i * trainNum, (trainID + 1) + i * trainNum, 1);
-                int predictedClass = (int)model.Predict(test);
-                predicted.GetRows(i, i + 1, 1).SetValue(predictedClass);
-                //Console.WriteLine("Prediction:" + predictedClass);
-
-                confusion[i][predictedClass]++;
-            }
-
-            return predicted;
-        }*/
-
-
-        //public void printResult()
-        //{
-        //    Console.WriteLine("Confusion Matrix:");
-        //    for (int a = 0; a < nameForID.Count; a++)
-        //    {
-        //        for (int b = 0; b < nameForID.Count; b++)
-        //        {
-        //            Console.Write(confusion[a][b] + "|");
-        //        }
-        //        Console.Write("\n");
-        //    }
-
-        //    Console.WriteLine("Presion|Recall|F1-measure");
-        //    int[] rowSum = new int[3];
-        //    int[] colSum = new int[3];
-        //    float[] precision = new float[3];
-        //    float[] recall = new float[3];
-        //    float[] f1 = new float[3];
-        //    for (int a = 0; a < nameForID.Count; a++)
-        //    {
-        //        for (int b = 0; b < 3; b++)
-        //        {
-        //            rowSum[a] += confusion[a][b];
-        //            colSum[b] += confusion[a][b];
-        //        }
-        //    }
-        //    for (int a = 0; a < nameForID.Count; a++)
-        //    {
-        //        precision[a] = confusion[a][a] / rowSum[a];
-        //        recall[a] = confusion[a][a] / colSum[a];
-        //        f1[a] = 2 * precision[a] * recall[a] / (precision[a] + recall[a]);
-        //        Console.WriteLine(precision[a] + "|" + recall[a] + "|" + f1[a]);
-        //    }
-
-        //}
     }
 }

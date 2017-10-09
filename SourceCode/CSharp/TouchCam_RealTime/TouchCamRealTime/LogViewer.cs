@@ -15,6 +15,9 @@ using System.Text.RegularExpressions;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// Tool for viewing saved log data
+    /// </summary>
     public partial class LogViewer : Form
     {
         List<Logging.LogEvent> events = new List<Logging.LogEvent>();

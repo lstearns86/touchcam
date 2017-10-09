@@ -7,6 +7,9 @@ using System.IO.Ports;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// Window for managing settings and controlling sensor calibration/connection
+    /// </summary>
     public partial class SettingsForm : Form
     {
         public bool HideFromList { get { return true; } }

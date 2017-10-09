@@ -9,6 +9,10 @@ using Newtonsoft.Json;
 
 namespace TouchCamLibrary
 {
+    /// <summary>
+    /// Maps gestures to actions and menu navigation, and provides text for speech output
+    /// Controlled via xml and macros (see examples in the defaults folder of the main project in this solution)
+    /// </summary>
     public class GestureActionMap
     {
         internal class Menu

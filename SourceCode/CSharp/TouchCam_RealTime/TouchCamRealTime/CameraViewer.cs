@@ -18,6 +18,9 @@ using TouchCamLibrary.ImageProcessing;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// Test camera viewer, performs no image processing
+    /// </summary>
     public partial class CameraViewer : Form
     {
         bool calibrating = false, closing = false;
@@ -30,13 +33,11 @@ namespace TouchCam
             Camera.Instance.Connect();
         }
 
-        //void Camera_FrameAvailable(CudaImage<Gray, float> frame, uint timestamp)
         void Camera_FrameAvailable(VideoFrame frame)
         {
             if (closing) return;
 
             FPS.Camera.Update();
-            //LBP.GetInstance(frame.Image.Size).GetHistogram(frame);
             Invoke(new MethodInvoker(delegate
             {
                 Display.Image = frame.Image.Bitmap;

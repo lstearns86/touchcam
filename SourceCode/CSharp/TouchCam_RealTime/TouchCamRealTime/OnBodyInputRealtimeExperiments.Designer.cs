@@ -1,6 +1,6 @@
 ﻿namespace TouchCam
 {
-    partial class OnBodyInputDemo
+    partial class OnBodyInputRealtimeExperiments
     {
         /// <summary>
         /// Required designer variable.
@@ -29,7 +29,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OnBodyInputDemo));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(OnBodyInputRealtimeExperiments));
             this.GesturePredictionLabel = new System.Windows.Forms.Label();
             this.OrientationLabel = new System.Windows.Forms.Label();
             this.FineProbabilityLabel = new System.Windows.Forms.Label();

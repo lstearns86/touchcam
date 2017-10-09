@@ -14,6 +14,9 @@ using System.Threading;
 
 namespace TouchCam
 {
+    /// <summary>
+    /// Utility to test that IMUs working properly and check orientation estimates
+    /// </summary>
     public partial class IMUTest : Form
     {
         public IMUTest()
@@ -34,26 +37,17 @@ namespace TouchCam
         DateTime last = DateTime.Now;
         private void Sensors_ReadingAvailable(Sensors.Reading reading)
         {
-            //FPS.Sensors.Update();
-            //TouchSegmentation.UpdateWithReading(reading);
             OrientationTracker.Primary.UpdateWithReading(reading);
-            //OrientationTracker.Secondary.UpdateWithReading(reading, -1, true);
+            //OrientationTracker.Secondary.UpdateWithReading(reading, -1, true); // uncomment if using two IMUs
             if ((DateTime.Now - last).TotalMilliseconds > 30)
             {
-                //Quaternion orientation = OrientationTracker.Primary.EstimateOrientation();
                 EulerAngles orientation = OrientationTracker.Primary.EstimateOrientation().GetEulerAngles();
-                //OrientationTracker.EulerAngles orientation = OrientationTracker.Primary.EstimateOrientation();
-                //orientation.Roll += (float)Math.PI; if (orientation.Roll > Math.PI) orientation.Roll -= (float)(2 * Math.PI);
-                //orientation.Pitch = -orientation.Pitch;
-
+                
                 int resolution = 1;
                 int yaw = resolution * (int)Math.Round(orientation.Yaw * 180 / Math.PI / resolution);
                 int pitch = resolution * (int)Math.Round(orientation.Pitch * 180 / Math.PI / resolution);
                 int roll = resolution * (int)Math.Round(orientation.Roll * 180 / Math.PI / resolution);
-                //int yaw = resolution * (int)Math.Round(orientation.Yaw / resolution);
-                //int pitch = resolution * (int)Math.Round(orientation.Pitch / resolution);
-                //int roll = resolution * (int)Math.Round(orientation.Roll / resolution);
-
+                
                 if(RemoveGravityCheckbox.Checked)
                 {
                     reading = OrientationTracker.SubtractGravity(reading);
@@ -72,7 +66,6 @@ namespace TouchCam
                     StatusBox.Text += "my = " + reading.Magnetometer1.Y + " gauss" + Environment.NewLine;
                     StatusBox.Text += "mz = " + reading.Magnetometer1.Z + " gauss" + Environment.NewLine;
                     StatusBox.Text += yaw + Environment.NewLine + pitch + Environment.NewLine + roll;
-                    //OrientationLabel.Text = orientation.W.ToString("0.0") + ", " + orientation.X.ToString("0.0") + ", " + orientation.Y.ToString("0.0") + ", " + orientation.Z.ToString("0.0");
                 }));
                 last = DateTime.Now;
             }
