@@ -1,10 +1,10 @@
 # HandSight On-Body Interaction
-This is the code repository for the HandSight On-Body Interaction Project, from the University of Maryland's Human Computer Interaction Lab. *(TODO: add a link to our related papers once they're publicly available; JEF: probably best just to poin to the HandSight project site at makeabilitylab.io)*
+This is the code repository for the HandSight On-Body Interaction Project, from the University of Maryland's Human Computer Interaction Lab. See [https://makeabilitylab.umiacs.umd.edu/project/handsight/](https://makeabilitylab.umiacs.umd.edu/project/handsight/) for more information about the project.
 
 # Requirements:
 ## Hardware
 * [NanEye GS Idule Module](http://www.cmosis.com/products/product_detail/naneyegs_idule_demo_kit)
-* Custom sensor package using an Arduino microcontroller to transmit readings from two 9dof IMUs and two IR reflectance sensors. (*TODO: add schematics*)
+* Custom sensor package using an Arduino microcontroller to transmit readings from two 9dof IMUs and two IR reflectance sensors. See the HardwareDesign folder for schematics.
 
 ## Software
 * [Emgu v3.1 x64 CUDA](https://sourceforge.net/projects/emgucv/files/emgucv/3.1.0/libemgucv-windesktop_x64-cuda-3.1.0.2282.zip.selfextract.exe/download)
